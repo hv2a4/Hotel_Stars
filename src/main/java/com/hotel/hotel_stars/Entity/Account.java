@@ -13,6 +13,7 @@ import java.util.List;
 @Table(name = "accounts", schema = "hotel_manager")
 public class Account {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 
@@ -38,12 +39,10 @@ public class Account {
     @Column(name = "gender")
     private Boolean gender;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
 
-    @OneToMany(mappedBy = "account")
-    List<Rating> ratingList;
 
     @OneToMany(mappedBy = "account")
     List<Booking> bookingList;

@@ -10,8 +10,8 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "rating", schema = "hotel_manager")
-public class Rating {
+@Table(name = "feedback", schema = "hotel_manager")
+public class Feedback {
     @Id
     @Column(name = "id", nullable = false)
     private Integer id;
@@ -30,7 +30,6 @@ public class Rating {
     private Boolean ratingStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_id")
-    private Account account;
-
+    @JoinColumn(name = "invoice_id")
+    private Invoice invoice;
 }
