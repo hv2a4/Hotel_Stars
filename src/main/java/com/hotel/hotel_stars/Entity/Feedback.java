@@ -11,7 +11,7 @@ import java.time.Instant;
 @Setter
 @Entity
 @Table(name = "rating", schema = "hotel_manager")
-public class Rating {
+public class Feedback {
     @Id
     @Column(name = "id", nullable = false)
     private Integer id;

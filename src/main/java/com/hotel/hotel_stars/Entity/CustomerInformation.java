@@ -33,6 +33,12 @@ public class CustomerInformation {
     @Column(name = "birthday")
     private Instant birthday;
 
+    @Column(name = "img_first_card")
+    private String imgFirstCard;
+
+    @Column(name = "img_last_card")
+    private String imgLastCard;
+
     @OneToMany(mappedBy = "customerInformation")
     List<BookingRoomCustomerInformation> customerInformationList;
 }

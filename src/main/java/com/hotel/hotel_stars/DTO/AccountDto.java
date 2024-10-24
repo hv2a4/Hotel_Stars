@@ -1,12 +1,8 @@
 package com.hotel.hotel_stars.DTO;
 
-import com.hotel.hotel_stars.Entity.Booking;
-import com.hotel.hotel_stars.Entity.Rating;
-import com.hotel.hotel_stars.Entity.Role;
 import lombok.Value;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * DTO for {@link com.hotel.hotel_stars.Entity.Account}

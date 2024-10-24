@@ -43,7 +43,7 @@ public class Account {
     private Role role;
 
     @OneToMany(mappedBy = "account")
-    List<Rating> ratingList;
+    List<Feedback> ratingList;
 
     @OneToMany(mappedBy = "account")
     List<Booking> bookingList;

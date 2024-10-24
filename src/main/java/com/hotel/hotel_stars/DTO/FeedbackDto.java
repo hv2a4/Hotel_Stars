@@ -1,16 +1,16 @@
 package com.hotel.hotel_stars.DTO;
 
-import com.hotel.hotel_stars.Entity.Account;
+import com.hotel.hotel_stars.Entity.Feedback;
 import lombok.Value;
 
 import java.io.Serializable;
 import java.time.Instant;
 
 /**
- * DTO for {@link com.hotel.hotel_stars.Entity.Rating}
+ * DTO for {@link Feedback}
  */
 @Value
-public class RatingDto implements Serializable {
+public class FeedbackDto implements Serializable {
     Integer id;
     String content;
     Integer stars;
