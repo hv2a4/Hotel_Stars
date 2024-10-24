@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
+import java.util.List;
 
 @Getter
 @Setter
@@ -30,4 +31,6 @@ public class Invoice {
     @JoinColumn(name = "booking_id")
     private Booking booking;
 
+    @OneToMany(mappedBy = "invoice")
+    List<Feedback> feedbackList;
 }

@@ -1,5 +1,6 @@
 package com.hotel.hotel_stars.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,6 +19,7 @@ public class Role {
     @Column(name = "role_name")
     private String roleName;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "role")
-    List<Account> accountList;
+    private List<Account> accountList;
 }
