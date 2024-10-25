@@ -38,9 +38,10 @@ public class AccountService {
     RoleRepository roleRepository;
     @Autowired
     private PasswordEncoder encoder;
-
     @Autowired
     paramService paramServices;
+    @Autowired
+    JwtService jwtService;
 
     public AccountDto convertToDto(Account account) {
         RoleDto roleDto = account.getRole() != null ? new RoleDto(
@@ -105,6 +106,7 @@ public class AccountService {
             accounts.setPhone(accountModels.getPhone());
             accounts.setAvatar("https://firebasestorage.googleapis.com/v0/b/myprojectimg-164dd.appspot.com/o/files%2F3c7db4be-6f94-4c19-837e-fbfe8848546f?alt=media&token=2aed7a07-6850-4c82-ae7a-5ee1ba606979");
             accounts.setRole(roles.get());
+            accounts.setIsDelete(true);
             accounts.setGender(true);
             accountRepository.save(accounts);
             return true;
@@ -112,5 +114,13 @@ public class AccountService {
             e.printStackTrace();
             return false;
         }
+    }
+    public Boolean sendEmailUpdatePassword(String email){
+        Optional<Account> accountsObject = accountRepository.findByEmail(email);
+        if (accountsObject.isEmpty()) {
+            return false;
+        }
+        paramServices.sendEmails(accountsObject.get().getEmail(),"Đổi mật khẩu ","Click vào đây: "+"http://localhost:8080/api/account/updatePassword?token=" +  jwtService.generateSimpleToken(email));
+        return true;
     }
 }

@@ -28,6 +28,8 @@ public class Account {
 
     @Column(name = "phone")
     private String phone;
+    @Column(name = "is_delete")
+    private Boolean isDelete;
 
     @Column(name = "email")
     private String email;

@@ -74,7 +74,8 @@ public class SecurityConfig {
 						.requestMatchers("/api/account/getAll").permitAll()
 						.requestMatchers("/api/account/register").permitAll()
 						.requestMatchers("/api/account/loginToken").permitAll()
-
+						.requestMatchers("/api/account/sendEmail").permitAll()
+						.requestMatchers("/api/account/updatePassword").permitAll()
 						.requestMatchers("/api/account/login").hasAnyAuthority("Customer")
 						.requestMatchers("/api/account/login").hasAnyAuthority("Staff", "HotelOwner")
 
