@@ -16,5 +16,6 @@ public class AccountDto implements Serializable {
     String email;
     String avatar;
     Boolean gender;
+    Boolean isDelete;
     RoleDto roleDto;
 }

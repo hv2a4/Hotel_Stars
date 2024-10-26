@@ -2,6 +2,7 @@ package com.hotel.hotel_stars.Controller;
 
 import com.hotel.hotel_stars.Config.JwtService;
 import com.hotel.hotel_stars.Config.UserInfoService;
+import com.hotel.hotel_stars.DTO.AccountDto;
 import com.hotel.hotel_stars.Models.accountModel;
 import com.hotel.hotel_stars.Repository.AccountRepository;
 import com.hotel.hotel_stars.Service.AccountService;
@@ -43,7 +44,7 @@ public class AccountController {
     public ResponseEntity<?> registerAccount (@RequestBody accountModel accountModels){
         Map<String, String> response = new HashMap<String, String>();
         System.out.println("password: "+accountModels.getPasswords());
-        boolean flag=accountService.addUser(accountModels);
+        boolean flag  =accountService.addUser(accountModels);
         if(flag == true){
             response= paramServices.messageSuccessApi(200,"success","Đăng ký thành công");
         }else {
@@ -66,5 +67,11 @@ public class AccountController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(paramServices.messageSuccessApi(400, "fail", "Đăng Nhập thất bại"));
         }
+    }
+
+    @PutMapping("/toggleDelete/{id}")
+    public ResponseEntity<AccountDto> toggleDeleteStatus(@PathVariable Integer id) {
+        AccountDto updatedAccount = accountService.toggleIsDeleteStatus(id);
+        return ResponseEntity.ok(updatedAccount);
     }
 }
