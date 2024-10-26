@@ -1,7 +1,5 @@
 package com.hotel.hotel_stars.Service;
 
-import com.hotel.hotel_stars.Config.JwtService;
-import com.hotel.hotel_stars.Config.UserInfoService;
 import com.hotel.hotel_stars.DTO.AccountDto;
 import com.hotel.hotel_stars.DTO.RoleDto;
 import com.hotel.hotel_stars.Entity.Account;
@@ -12,19 +10,10 @@ import com.hotel.hotel_stars.Repository.RoleRepository;
 import com.hotel.hotel_stars.utils.paramService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -56,10 +45,10 @@ public class AccountService {
                 account.getEmail(),
                 account.getAvatar(),
                 account.getGender(),
+                account.getIsDelete(),
                 roleDto // Ánh xạ RoleDto vào AccountDto
         );
     }
-
 
     public Account convertToEntity(AccountDto accountDto) {
         // Chuyển đổi RoleDto sang Role
@@ -70,6 +59,7 @@ public class AccountService {
             // Nếu Role có thêm thuộc tính nào khác, hãy thiết lập ở đây
         }
 
+        // Sử dụng ModelMapper để ánh xạ từ DTO sang Entity
         Account account = modelMapper.map(accountDto, Account.class);
         account.setRole(role); // Thiết lập Role cho Account
         return account;
@@ -92,7 +82,7 @@ public class AccountService {
         System.out.println("phone: " + accountModels.getPhone());
         System.out.println("email: " + accountModels.getEmail());
         System.out.println("password: " + accountModels.getPasswords());
-        if (accountModels == null ) {
+        if (accountModels == null) {
             System.out.println("fffff");
             return false;
         }
@@ -106,6 +96,7 @@ public class AccountService {
             accounts.setAvatar("https://firebasestorage.googleapis.com/v0/b/myprojectimg-164dd.appspot.com/o/files%2F3c7db4be-6f94-4c19-837e-fbfe8848546f?alt=media&token=2aed7a07-6850-4c82-ae7a-5ee1ba606979");
             accounts.setRole(roles.get());
             accounts.setGender(true);
+            accounts.setIsDelete(true);
             accountRepository.save(accounts);
             return true;
         } catch (Exception e) {
@@ -113,4 +104,13 @@ public class AccountService {
             return false;
         }
     }
+
+    public AccountDto toggleIsDeleteStatus(Integer id) {
+        Account account = accountRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Account not found with id: " + id));
+        account.setIsDelete(!account.getIsDelete());
+        Account updated = accountRepository.save(account);
+        return convertToDto(updated);
+    }
+
 }
