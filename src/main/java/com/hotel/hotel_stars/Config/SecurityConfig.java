@@ -75,13 +75,18 @@ public class SecurityConfig {
 						//vu
 						.requestMatchers("/api/account/register").permitAll()
 						.requestMatchers("/api/account/loginToken").permitAll()
+						.requestMatchers("/api/account/sendEmail").permitAll()
+						.requestMatchers("/api/account/updatePassword").permitAll()
+						.requestMatchers("/api/account/changepassword").permitAll()
 
-						.requestMatchers("/api/account/getAll").hasAnyAuthority("Customer")
+
+						.requestMatchers("/api/account/login").hasAnyAuthority("Customer")
+						.requestMatchers("/api/hotel/login").hasAnyAuthority("Customer")
 
 						.requestMatchers("/api/account/login").hasAnyAuthority("Staff", "HotelOwner")
+						.requestMatchers("/api/hotel/getAll").hasAnyAuthority("Staff", "HotelOwner")
 
-						.requestMatchers("/api/hotel/getAll").hasAnyAuthority( "HotelOwner")
-						.requestMatchers("/api/hotel/getAll").hasAnyAuthority( "HotelOwner")
+						.requestMatchers("/api/account/login").hasAnyAuthority( "HotelOwner")
 						.requestMatchers("/api/account/login").hasAuthority("HotelOwner")
 
 

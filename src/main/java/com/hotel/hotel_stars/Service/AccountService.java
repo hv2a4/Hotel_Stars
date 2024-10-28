@@ -3,12 +3,18 @@ package com.hotel.hotel_stars.Service;
 import com.hotel.hotel_stars.DTO.AccountDto;
 import com.hotel.hotel_stars.DTO.RoleDto;
 import com.hotel.hotel_stars.DTO.Select.AccountBookingDTO;
+import com.hotel.hotel_stars.Config.JwtService;
+import com.hotel.hotel_stars.DTO.AccountDto;
+import com.hotel.hotel_stars.DTO.RoleDto;
+import com.hotel.hotel_stars.DTO.selectDTO.FindTypeRoomDto;
 import com.hotel.hotel_stars.Entity.Account;
 import com.hotel.hotel_stars.Entity.Role;
 import com.hotel.hotel_stars.Exception.CustomValidationException;
 import com.hotel.hotel_stars.Models.accountModel;
+import com.hotel.hotel_stars.Models.changePasswordModel;
 import com.hotel.hotel_stars.Repository.AccountRepository;
 import com.hotel.hotel_stars.Repository.RoleRepository;
+import com.hotel.hotel_stars.Repository.TypeRoomRepository;
 import com.hotel.hotel_stars.utils.paramService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +31,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.*;
 
 @Service
 public class AccountService {
@@ -36,10 +47,13 @@ public class AccountService {
     @Autowired
     RoleRepository roleRepository;
     @Autowired
+    TypeRoomRepository typeRoomRepository;
+    @Autowired
     private PasswordEncoder encoder;
-
     @Autowired
     paramService paramServices;
+    @Autowired
+    JwtService jwtService;
 
     public AccountDto convertToDto(Account account) {
         RoleDto roleDto = account.getRole() != null ? new RoleDto(
@@ -84,6 +98,7 @@ public class AccountService {
                 .toList();
     }
 
+
     public boolean addUser(accountModel accountModels) {
         Account accounts = new Account();
 
@@ -105,6 +120,7 @@ public class AccountService {
             accounts.setPhone(accountModels.getPhone());
             accounts.setAvatar("https://firebasestorage.googleapis.com/v0/b/myprojectimg-164dd.appspot.com/o/files%2F3c7db4be-6f94-4c19-837e-fbfe8848546f?alt=media&token=2aed7a07-6850-4c82-ae7a-5ee1ba606979");
             accounts.setRole(roles.get());
+            accounts.setIsDelete(true);
             accounts.setGender(true);
             accounts.setIsDelete(true);
             accountRepository.save(accounts);
@@ -309,4 +325,34 @@ public class AccountService {
         accountRepository.deleteById(id);
     }
 
+    public Boolean sendEmailUpdatePassword(String email){
+        Optional<Account> accountsObject = accountRepository.findByEmail(email);
+        if (accountsObject.isEmpty()) {
+            return false;
+        }
+        paramServices.sendEmails(accountsObject.get().getEmail(),"Đổi mật khẩu ","Click vào đây: "+"http://localhost:8080/api/account/updatePassword?token=" +  jwtService.generateSimpleToken(email));
+        return true;
+    }
+    public Map<String, String> changeUpdatePass (changePasswordModel changePasswordModels){
+        Map<String, String> response = new HashMap<>();
+        Optional<Account> accounts=accountRepository.findByUsername(changePasswordModels.getUsername());
+        if(!accounts.isPresent()){
+            response =paramServices.messageSuccessApi(400,"error","tài khoản này không tồn tại");
+        } else if (!encoder.matches(changePasswordModels.getPassword(), accounts.get().getPasswords())) {
+            response =paramServices.messageSuccessApi(400,"error","mật khẩu cũ không đúng");
+        }else if(!changePasswordModels.getResetPassword().equals(changePasswordModels.getConfirmPassword())){
+            response =paramServices.messageSuccessApi(400,"error","mật khẩu và xác nhận mật khẩu không đúng");
+        }else {
+            try{
+                response =paramServices.messageSuccessApi(200,"success","đổi mật khẩu thành công");
+                String password=encoder.encode(changePasswordModels.getResetPassword());
+                accounts.get().setPasswords(password);
+                accountRepository.save(accounts.get());
+            }catch (Exception ex){
+                ex.printStackTrace();
+            }
+        }
+
+        return  response;
+    }
 }

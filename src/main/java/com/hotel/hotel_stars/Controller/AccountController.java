@@ -4,9 +4,12 @@ import com.hotel.hotel_stars.Config.JwtService;
 import com.hotel.hotel_stars.Config.UserInfoService;
 import com.hotel.hotel_stars.DTO.AccountDto;
 import com.hotel.hotel_stars.Exception.CustomValidationException;
+import com.hotel.hotel_stars.Entity.Account;
 import com.hotel.hotel_stars.Models.accountModel;
+import com.hotel.hotel_stars.Models.changePasswordModel;
 import com.hotel.hotel_stars.Repository.AccountRepository;
 import com.hotel.hotel_stars.Service.AccountService;
+import com.hotel.hotel_stars.Service.TypeRoomService;
 import com.hotel.hotel_stars.utils.paramService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,11 +19,13 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @RestController
 @CrossOrigin("*")
@@ -37,24 +42,33 @@ public class AccountController {
     @Autowired
     UserInfoService userInfoService;
     @Autowired
+    private PasswordEncoder encoder;
+    @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    private TypeRoomService typeRoomService;
     @GetMapping("/getAll")
     public ResponseEntity<?> getAllAccounts() {
         return ResponseEntity.ok(accountService.getAllAccounts());
     }
 
+    @GetMapping("/getAlls")
+    public ResponseEntity<?> getAllTypeRoom() {
+        return ResponseEntity.ok(typeRoomService.getFindTypeRoom());
+    }
     @PostMapping("/register")
     public ResponseEntity<?> registerAccount(@RequestBody accountModel accountModels) {
         Map<String, String> response = new HashMap<String, String>();
-        System.out.println("password: " + accountModels.getPasswords());
-        boolean flag = accountService.addUser(accountModels);
-        if (flag == true) {
+        System.out.println("password: "+accountModels.getPasswords());
+        boolean flag=accountService.addUser(accountModels);
+        if (flag) {
             response = paramServices.messageSuccessApi(200, "success", "Đăng ký thành công");
+            return ResponseEntity.ok(response); // 200 OK for success
         } else {
-            response = paramServices.messageSuccessApi(400, "error", "Đăng ký  thất bại");
+            response = paramServices.messageSuccessApi(400, "error", "Đăng ký thất bại");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response); // 400 Bad Request for failure
         }
-        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/loginToken")
@@ -128,4 +142,48 @@ public class AccountController {
         }
     }
 
+    @PostMapping("/sendEmail")
+    public ResponseEntity<?> sendEmailEmployee(@RequestBody Map<String, String> request) {
+        Map<Object, Object> response = new HashMap<>();
+        String email = request.get("email");
+        Boolean result=accountService.sendEmailUpdatePassword(email);
+        if(result == false){
+            response.put("message", "Email Không tồn tại");
+        }
+        response.put("message", "Email sent successfully");
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/updatePassword")
+    public ResponseEntity<?> updatePassword(@RequestParam("token") String token) {
+        String email = jwtService.extractUsername(token);
+        String randomPassword = paramServices.generateTemporaryPassword();
+        System.out.println(email);
+        Optional<Account> accounts = accountRepository.findByUsername(email);
+        String passwords=encoder.encode(randomPassword) ;
+        accounts.get().setPasswords(passwords);
+        try {
+            accountRepository.save( accounts.get());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (jwtService.isTokenExpired(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token has expired");
+        }
+        paramServices.sendEmails(accounts.get().getEmail(), "Mật khẩu mới", "Mật Khẩu mới: "+randomPassword);
+        String generateHtmls= paramServices.generateHtml("Thông Báo","Mật khẩu thành công vừa gửi qua email của bạn","Mời Bạn quay về login để đăng nhập");
+
+        return ResponseEntity.ok(generateHtmls);
+    }
+
+    @PutMapping("changepassword")
+    public ResponseEntity<?> changepass(@RequestBody changePasswordModel changePasswordModels){
+        Map<String, String> response = new HashMap<String, String>();
+        response=  accountService.changeUpdatePass(changePasswordModels);
+        if(response.get("code").equals( String.valueOf(400))){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(response);
+        }else {
+            return ResponseEntity.ok(response);
+        }
+    }
 }

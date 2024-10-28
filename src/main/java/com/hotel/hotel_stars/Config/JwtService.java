@@ -51,11 +51,14 @@ public class JwtService {
                 .setClaims(claims)
                 .setSubject(user.get().getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 6 )) // Token expires in 30 minutes
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 6 ))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
 
 
+    }
+    public String extractPassword(String token) {
+        return extractClaim(token, claims -> claims.get("password", String.class));
     }
 
     private Key getSignKey() {
@@ -86,12 +89,32 @@ public class JwtService {
 
     }
 
-    private Boolean isTokenExpired(String token) {
+    public Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    }
+
+    public String generateSimpleToken(String email) {
+        Map<String, Object> claims = new HashMap<>();
+        Optional<Account> user = userRepository.findByEmail(email);
+        if(!user.isPresent()){
+           return null;
+        }
+        user.ifPresent(u -> {
+            claims.put("email", u.getEmail());
+            claims.put("username", u.getUsername());
+        });
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(user.get().getUsername())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60))
+                .signWith(getSignKey(), SignatureAlgorithm.HS256)
+                .compact();
     }
 }
