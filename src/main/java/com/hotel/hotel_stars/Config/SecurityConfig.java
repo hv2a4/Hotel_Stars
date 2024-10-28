@@ -70,7 +70,9 @@ public class SecurityConfig {
 				}))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/api/account/login").authenticated()
-						.requestMatchers("/api/account/**").permitAll()
+						//vu
+						.requestMatchers("/api/account/**","/api/booking/**").permitAll()
+						//vu
 						.requestMatchers("/api/account/register").permitAll()
 						.requestMatchers("/api/account/loginToken").permitAll()
 
