@@ -4,8 +4,10 @@ import com.hotel.hotel_stars.Config.JwtService;
 import com.hotel.hotel_stars.Config.UserInfoService;
 import com.hotel.hotel_stars.Entity.Account;
 import com.hotel.hotel_stars.Models.accountModel;
+import com.hotel.hotel_stars.Models.changePasswordModel;
 import com.hotel.hotel_stars.Repository.AccountRepository;
 import com.hotel.hotel_stars.Service.AccountService;
+import com.hotel.hotel_stars.Service.TypeRoomService;
 import com.hotel.hotel_stars.utils.paramService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,11 +41,18 @@ public class AccountController {
     private PasswordEncoder encoder;
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private TypeRoomService typeRoomService;
     @GetMapping("/getAll")
     public ResponseEntity<?> getAllAccounts() {
         return ResponseEntity.ok(accountService.getAllAccounts());
     }
 
+    @GetMapping("/getAlls")
+    public ResponseEntity<?> getAllTypeRoom() {
+        return ResponseEntity.ok(typeRoomService.getFindTypeRoom());
+    }
     @PostMapping("/register")
     public ResponseEntity<?> registerAccount (@RequestBody accountModel accountModels){
         Map<String, String> response = new HashMap<String, String>();
@@ -104,5 +113,17 @@ public class AccountController {
         String generateHtmls= paramServices.generateHtml("Thông Báo","Mật khẩu thành công vừa gửi qua email của bạn","Mời Bạn quay về login để đăng nhập");
 
         return ResponseEntity.ok(generateHtmls);
+    }
+
+    @PutMapping("changepassword")
+    public ResponseEntity<?> changepass(@RequestBody changePasswordModel changePasswordModels){
+        Map<String, String> response = new HashMap<String, String>();
+        response=  accountService.changeUpdatePass(changePasswordModels);
+        if(response.get("code").equals( String.valueOf(400))){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(response);
+        }else {
+            return ResponseEntity.ok(response);
+        }
     }
 }

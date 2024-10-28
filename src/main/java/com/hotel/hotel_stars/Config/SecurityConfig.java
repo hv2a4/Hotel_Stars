@@ -70,16 +70,22 @@ public class SecurityConfig {
 				}))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/api/account/login").authenticated()
-
+						.requestMatchers("/api/account/getAlls").permitAll()
 						.requestMatchers("/api/account/getAll").permitAll()
 						.requestMatchers("/api/account/register").permitAll()
 						.requestMatchers("/api/account/loginToken").permitAll()
 						.requestMatchers("/api/account/sendEmail").permitAll()
 						.requestMatchers("/api/account/updatePassword").permitAll()
-						.requestMatchers("/api/account/login").hasAnyAuthority("Customer")
-						.requestMatchers("/api/account/login").hasAnyAuthority("Staff", "HotelOwner")
+						.requestMatchers("/api/account/changepassword").permitAll()
 
-						.requestMatchers("/api/hotel/getAll").hasAnyAuthority( "HotelOwner")
+
+						.requestMatchers("/api/account/login").hasAnyAuthority("Customer")
+						.requestMatchers("/api/hotel/login").hasAnyAuthority("Customer")
+
+						.requestMatchers("/api/account/login").hasAnyAuthority("Staff", "HotelOwner")
+						.requestMatchers("/api/hotel/getAll").hasAnyAuthority("Staff", "HotelOwner")
+
+						.requestMatchers("/api/account/login").hasAnyAuthority( "HotelOwner")
 						.requestMatchers("/api/account/login").hasAuthority("HotelOwner")
 
 

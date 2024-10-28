@@ -1,31 +1,24 @@
 package com.hotel.hotel_stars.Service;
 
 import com.hotel.hotel_stars.Config.JwtService;
-import com.hotel.hotel_stars.Config.UserInfoService;
 import com.hotel.hotel_stars.DTO.AccountDto;
 import com.hotel.hotel_stars.DTO.RoleDto;
+import com.hotel.hotel_stars.DTO.selectDTO.FindTypeRoomDto;
 import com.hotel.hotel_stars.Entity.Account;
 import com.hotel.hotel_stars.Entity.Role;
 import com.hotel.hotel_stars.Models.accountModel;
+import com.hotel.hotel_stars.Models.changePasswordModel;
 import com.hotel.hotel_stars.Repository.AccountRepository;
 import com.hotel.hotel_stars.Repository.RoleRepository;
+import com.hotel.hotel_stars.Repository.TypeRoomRepository;
 import com.hotel.hotel_stars.utils.paramService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.*;
 
 @Service
 public class AccountService {
@@ -36,6 +29,8 @@ public class AccountService {
     AccountRepository accountRepository;
     @Autowired
     RoleRepository roleRepository;
+    @Autowired
+    TypeRoomRepository typeRoomRepository;
     @Autowired
     private PasswordEncoder encoder;
     @Autowired
@@ -62,6 +57,7 @@ public class AccountService {
     }
 
 
+
     public Account convertToEntity(AccountDto accountDto) {
         // Chuyển đổi RoleDto sang Role
         Role role = null;
@@ -84,6 +80,7 @@ public class AccountService {
                 .map(this::convertToDto)
                 .toList();
     }
+
 
     public boolean addUser(accountModel accountModels) {
         Account accounts = new Account();
@@ -122,5 +119,27 @@ public class AccountService {
         }
         paramServices.sendEmails(accountsObject.get().getEmail(),"Đổi mật khẩu ","Click vào đây: "+"http://localhost:8080/api/account/updatePassword?token=" +  jwtService.generateSimpleToken(email));
         return true;
+    }
+    public Map<String, String> changeUpdatePass (changePasswordModel changePasswordModels){
+        Map<String, String> response = new HashMap<>();
+        Optional<Account> accounts=accountRepository.findByUsername(changePasswordModels.getUsername());
+        if(!accounts.isPresent()){
+            response =paramServices.messageSuccessApi(400,"error","tài khoản này không tồn tại");
+        } else if (!encoder.matches(changePasswordModels.getPassword(), accounts.get().getPasswords())) {
+            response =paramServices.messageSuccessApi(400,"error","mật khẩu cũ không đúng");
+        }else if(!changePasswordModels.getResetPassword().equals(changePasswordModels.getConfirmPassword())){
+            response =paramServices.messageSuccessApi(400,"error","mật khẩu và xác nhận mật khẩu không đúng");
+        }else {
+            try{
+                response =paramServices.messageSuccessApi(200,"success","đổi mật khẩu thành công");
+                String password=encoder.encode(changePasswordModels.getResetPassword());
+                accounts.get().setPasswords(password);
+                accountRepository.save(accounts.get());
+            }catch (Exception ex){
+                ex.printStackTrace();
+            }
+        }
+
+        return  response;
     }
 }
