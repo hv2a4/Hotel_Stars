@@ -3,11 +3,13 @@ package com.hotel.hotel_stars.Service;
 import com.hotel.hotel_stars.DTO.selectDTO.FindTypeRoomDto;
 import com.hotel.hotel_stars.Repository.TypeRoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class TypeRoomService {
     @Autowired
     TypeRoomRepository typeRoomRepository;
