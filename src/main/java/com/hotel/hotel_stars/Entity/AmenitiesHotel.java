@@ -16,6 +16,9 @@ public class AmenitiesHotel {
     @Column(name = "amenities_hotel_name")
     private String amenitiesHotelName;
 
+    @Column(name = "icon")
+    private String icon;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "type_amenities_hotel_id")
     private TypeAmenitiesHotel typeAmenitiesHotel;

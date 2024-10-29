@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @ControllerAdvice
@@ -17,11 +18,17 @@ public class CustomExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(CustomExceptionHandler.class);
 
+    @ExceptionHandler(CustomValidationException.class)
+    public ResponseEntity<Map<String, List<String>>> handleCustomValidationException(CustomValidationException ex) {
+        Map<String, List<String>> errorResponse = new HashMap<>();
+        errorResponse.put("errors", ex.getErrorMessages()); // Đưa tất cả thông báo lỗi vào phản hồi
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleException(Exception ex) {
         Map<String, String> map = new HashMap<>();
         map.put("error", ex.getMessage());
-        logger.error("Lỗi: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(map);
     }
 

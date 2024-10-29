@@ -70,19 +70,25 @@ public class SecurityConfig {
 				}))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/api/account/login").authenticated()
-
-						.requestMatchers("/api/account/getAll").permitAll()
+						//vu
+						.requestMatchers("/api/account/**","/api/booking/**").permitAll()
+						//vu
 						.requestMatchers("/api/account/register").permitAll()
 						.requestMatchers("/api/account/loginToken").permitAll()
 						.requestMatchers("/api/service-room/getAll").permitAll()
 						.requestMatchers("/api/service-room/add").permitAll()
 						.requestMatchers("/api/service-room/update/{id}").permitAll()
 						.requestMatchers("/api/service-room/delete/{id}").permitAll()
+						.requestMatchers("/api/account/sendEmail").permitAll()
+						.requestMatchers("/api/account/updatePassword").permitAll()
+						.requestMatchers("/api/account/changepassword").permitAll()
 
-						.requestMatchers("/api/account/login").hasAnyAuthority("Customer")
-						.requestMatchers("/api/account/login").hasAnyAuthority("Staff", "HotelOwner")
 
-						.requestMatchers("/api/hotel/getAll").hasAnyAuthority( "HotelOwner")
+						.requestMatchers("/api/account/login").hasAnyAuthority("Customer", "Staff", "HotelOwner")
+						.requestMatchers("/api/hotel/login").hasAnyAuthority("Customer")
+						.requestMatchers("/api/hotel/getAll").hasAnyAuthority("Staff", "HotelOwner")
+						.requestMatchers("/api/account/getAll").hasAnyAuthority("Customer")
+						
 						.requestMatchers("/api/account/login").hasAuthority("HotelOwner")
 
 						.requestMatchers("/api/service-room/getAll").hasAnyAuthority("HotelOwner", "Customer", "Staff")

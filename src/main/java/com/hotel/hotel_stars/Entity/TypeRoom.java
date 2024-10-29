@@ -31,8 +31,8 @@ public class TypeRoom {
     @Column(name = "acreage")
     private Double acreage;
 
-    @Column(name = "capacity")
-    private Integer capacity;
+    @Column(name = "guest_limit")
+    private Integer guestLimit;
 
     @OneToMany(mappedBy = "typeRoom")
     List<TypeRoomImage> typeRooms;
