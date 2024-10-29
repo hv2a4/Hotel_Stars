@@ -21,6 +21,9 @@ public class ServiceRoom {
     @Column(name = "price")
     private Double price;
 
+    @Column(name = "image")
+    private String imageName;
+
     @OneToMany(mappedBy = "serviceRoom")
     private List<BookingRoomServiceRoom> bookingRoomServiceRooms;
 

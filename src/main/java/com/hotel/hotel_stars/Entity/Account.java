@@ -28,6 +28,7 @@ public class Account {
 
     @Column(name = "phone")
     private String phone;
+
     @Column(name = "is_delete")
     private Boolean isDelete;
 
@@ -36,9 +37,6 @@ public class Account {
 
     @Column(name = "avatar")
     private String avatar;
-
-    @Column(name = "is_delete")
-    private Boolean isDelete;
 
     @ColumnDefault("b'1'")
     @Column(name = "gender")

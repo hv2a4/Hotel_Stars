@@ -25,9 +25,6 @@ public class Booking {
     @Column(name = "end_at")
     private Instant endAt;
 
-    @Column(name = "update_at")
-    private Instant updateAt;
-
     @Column(name = "status_payment")
     private Boolean statusPayment;
 

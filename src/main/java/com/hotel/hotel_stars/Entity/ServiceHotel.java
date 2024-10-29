@@ -21,6 +21,9 @@ public class ServiceHotel {
     @Column(name = "price")
     private Double price;
 
+    @Column(name = "image")
+    private String imageName;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "type_service_hotel_id")
     private TypeServiceHotel typeServiceHotel;
