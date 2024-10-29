@@ -74,6 +74,10 @@ public class SecurityConfig {
 						.requestMatchers("/api/account/getAll").permitAll()
 						.requestMatchers("/api/account/register").permitAll()
 						.requestMatchers("/api/account/loginToken").permitAll()
+						.requestMatchers("/api/service-room/getAll").permitAll()
+						.requestMatchers("/api/service-room/add").permitAll()
+						.requestMatchers("/api/service-room/update/{id}").permitAll()
+						.requestMatchers("/api/service-room/delete/{id}").permitAll()
 
 						.requestMatchers("/api/account/login").hasAnyAuthority("Customer")
 						.requestMatchers("/api/account/login").hasAnyAuthority("Staff", "HotelOwner")
@@ -81,7 +85,12 @@ public class SecurityConfig {
 						.requestMatchers("/api/hotel/getAll").hasAnyAuthority( "HotelOwner")
 						.requestMatchers("/api/account/login").hasAuthority("HotelOwner")
 
+						.requestMatchers("/api/service-room/getAll").hasAnyAuthority("HotelOwner", "Customer", "Staff")
 
+						// Quyền truy cập cho các API thêm, sửa, xóa ServiceRoom
+						.requestMatchers("/api/service-room/add").hasAnyAuthority("Staff", "HotelOwner")
+						.requestMatchers("/api/service-room/update/**").hasAnyAuthority("Staff", "HotelOwner")
+						.requestMatchers("/api/service-room/delete/**").hasAnyAuthority("Staff", "HotelOwner")
 				)
 				.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authenticationProvider(authenticationProvider())
