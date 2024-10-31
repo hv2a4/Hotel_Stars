@@ -10,6 +10,7 @@ import java.util.Optional;
 public interface AccountRepository extends JpaRepository<Account, Integer> {
     Optional<Account> findByUsername(String userName);
 
+
     @Query(value = """
                 SELECT 
                     a.username AS Username,
@@ -20,7 +21,8 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
                     bh.service_hotel_name AS ServiceName,
                     b.create_at AS BookingCreationDate,
                     a.avatar AS Avt,
-                    a.gender AS Gender
+                    a.gender AS Gender,
+                    a.id as id
                 FROM 
                     accounts a
                 JOIN 
@@ -35,7 +37,10 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
     List<Object[]> findAccountBookings();
 
     boolean existsByUsername(String username);
+
     boolean existsByEmail(String email);
+
     boolean existsByPhone(String phone);
+
     Optional<Account> findByEmail(String email);
 }

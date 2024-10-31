@@ -19,4 +19,5 @@ public class AccountBookingDTO {
     private LocalDateTime bookingCreationDate;
     private String AvtImage;
     private Boolean Gender;
+    private Integer Id;
 }

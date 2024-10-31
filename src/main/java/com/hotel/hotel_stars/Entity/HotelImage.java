@@ -1,15 +1,16 @@
 package com.hotel.hotel_stars.Entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
-@Setter
+@Data
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "hotel_image", schema = "hotel_manager")
 public class HotelImage {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 

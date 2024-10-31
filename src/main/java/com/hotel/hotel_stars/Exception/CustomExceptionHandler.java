@@ -19,10 +19,9 @@ public class CustomExceptionHandler {
     private static final Logger logger = LoggerFactory.getLogger(CustomExceptionHandler.class);
 
     @ExceptionHandler(CustomValidationException.class)
-    public ResponseEntity<Map<String, List<String>>> handleCustomValidationException(CustomValidationException ex) {
-        Map<String, List<String>> errorResponse = new HashMap<>();
-        errorResponse.put("errors", ex.getErrorMessages()); // Đưa tất cả thông báo lỗi vào phản hồi
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    public ResponseEntity<List<ValidationError>> handleCustomValidationException(CustomValidationException ex) {
+        // Trả về danh sách ValidationError
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getErrorMessages());
     }
 
     @ExceptionHandler(Exception.class)

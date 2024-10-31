@@ -4,18 +4,17 @@ import com.hotel.hotel_stars.DTO.AccountDto;
 import com.hotel.hotel_stars.DTO.RoleDto;
 import com.hotel.hotel_stars.DTO.Select.AccountBookingDTO;
 import com.hotel.hotel_stars.Config.JwtService;
-import com.hotel.hotel_stars.DTO.AccountDto;
-import com.hotel.hotel_stars.DTO.RoleDto;
-import com.hotel.hotel_stars.DTO.selectDTO.FindTypeRoomDto;
+import com.hotel.hotel_stars.DTO.Select.AccountInfo;
 import com.hotel.hotel_stars.Entity.Account;
 import com.hotel.hotel_stars.Entity.Role;
 import com.hotel.hotel_stars.Exception.CustomValidationException;
+import com.hotel.hotel_stars.Exception.ValidationError;
 import com.hotel.hotel_stars.Models.accountModel;
 import com.hotel.hotel_stars.Models.changePasswordModel;
 import com.hotel.hotel_stars.Repository.AccountRepository;
 import com.hotel.hotel_stars.Repository.RoleRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomRepository;
-import com.hotel.hotel_stars.utils.paramService;
+import com.hotel.hotel_stars.Utils.paramService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -23,28 +22,23 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
 import java.util.*;
 
 @Service
 public class AccountService {
     @Autowired
     ModelMapper modelMapper;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     @Autowired
     AccountRepository accountRepository;
@@ -162,7 +156,8 @@ public class AccountService {
             }
             String avt = String.valueOf(row[7]);
             Boolean gender = (Boolean) row[8];
-            AccountBookingDTO accountBookingDTO = new AccountBookingDTO(username, fullname, phoneNumber, email, role, serviceName, bookingCreationDate, avt, gender);
+            Integer id = (Integer) row [9];
+            AccountBookingDTO accountBookingDTO = new AccountBookingDTO(username, fullname, phoneNumber, email, role, serviceName, bookingCreationDate, avt, gender, id);
             accountBookings.add(accountBookingDTO);
         }
         return accountBookings;
@@ -180,40 +175,41 @@ public class AccountService {
     }
 
     public AccountDto AddAccountStaff(accountModel accountModel) {
-        List<String> errorMessages = new ArrayList<>(); // Danh sách lưu trữ các thông báo lỗi
-
+        List<ValidationError> validationErrors = new ArrayList<>(); // Danh sách lưu trữ các thông báo lỗi
+        System.out.println(accountModel.getAvatar());
         if (!isValidUsername(accountModel.getUsername())) {
-            errorMessages.add("Tên người dùng không hợp lệ. Tên người dùng phải có ít nhất 6 ký tự và chỉ chứa chữ cái, số, dấu gạch dưới và dấu chấm, không được bắt đầu bằng số.");
+            validationErrors.add(new ValidationError("username", "Tên người dùng không hợp lệ. Tên người dùng phải có ít nhất 6 ký tự và chỉ chứa chữ cái, số, dấu gạch dưới và dấu chấm, không được bắt đầu bằng số."));
         }
         // Kiểm tra xem các trường có giá trị hợp lệ hay không
         if (accountModel.getUsername() == null || accountModel.getUsername().isEmpty()) {
-            errorMessages.add("Tên người dùng không được để trống");
+            validationErrors.add(new ValidationError("username", "Tên người dùng không được để trống"));
         }
         if (accountModel.getEmail() == null || accountModel.getEmail().isEmpty()) {
-            errorMessages.add("Email không được để trống");
+            validationErrors.add(new ValidationError("email", "Email không được để trống"));
         }
         if (accountModel.getPhone() == null || accountModel.getPhone().isEmpty()) {
-            errorMessages.add("Số điện thoại không được để trống");
+            validationErrors.add(new ValidationError("phone", "Số điện thoại không được để trống"));
         }
         if (accountModel.getPasswords() == null || accountModel.getPasswords().length() < 6) {
-            errorMessages.add("Mật khẩu phải có ít nhất 6 ký tự");
+            validationErrors.add(new ValidationError("passwords", "Mật khẩu phải có ít nhất 6 ký tự"));
         }
         // Kiểm tra xem tên người dùng, email và số điện thoại đã tồn tại hay chưa
         if (accountRepository.existsByUsername(accountModel.getUsername())) {
-            errorMessages.add("Tên người dùng đã tồn tại");
+            validationErrors.add(new ValidationError("username", "Tên người dùng đã tồn tại"));
         }
         if (accountRepository.existsByEmail(accountModel.getEmail())) {
-            errorMessages.add("Email đã tồn tại");
+            validationErrors.add(new ValidationError("email", "Email đã tồn tại"));
         }
         if (accountRepository.existsByPhone(accountModel.getPhone())) {
-            errorMessages.add("Số điện thoại đã tồn tại");
+            validationErrors.add(new ValidationError("phone", "Số điện thoại đã tồn tại"));
         }
         if (!isValidPhoneNumber(accountModel.getPhone())) {
-            errorMessages.add("Số điện thoại không hợp lệ");
+            validationErrors.add(new ValidationError("phone", "Số điện thoại không hợp lệ"));
         }
+
         // Nếu có lỗi, ném ngoại lệ với thông báo lỗi
-        if (!errorMessages.isEmpty()) {
-            throw new CustomValidationException(errorMessages); // Ném ngoại lệ tùy chỉnh
+        if (!validationErrors.isEmpty()) {
+            throw new CustomValidationException(validationErrors); // Ném ngoại lệ tùy chỉnh
         }
 
         try {
@@ -234,7 +230,7 @@ public class AccountService {
             account.setGender(accountModel.getGender());
             account.setIsDelete(false); // Đánh dấu tài khoản là không bị xóa
             account.setRole(role); // Gán vai trò cho tài khoản
-
+            account.setAvatar(accountModel.getAvatar());
             // Lưu tài khoản vào cơ sở dữ liệu và chuyển đổi sang DTO
             Account savedAccount = accountRepository.save(account);
             return convertToDto(savedAccount); // Chuyển đổi tài khoản đã lưu sang DTO
@@ -249,47 +245,47 @@ public class AccountService {
     }
 
     public AccountDto UpdateAccountStaff(Integer accountId, accountModel accountModel) {
-        List<String> errorMessages = new ArrayList<>(); // Danh sách lưu trữ các thông báo lỗi
+        List<ValidationError> validationErrors = new ArrayList<>(); // Danh sách lưu trữ các lỗi xác thực
 
         // Kiểm tra xem tài khoản có tồn tại hay không
         Optional<Account> existingAccountOpt = accountRepository.findById(accountId);
         if (!existingAccountOpt.isPresent()) {
-            throw new CustomValidationException(List.of("Tài khoản không tồn tại"));
+            throw new CustomValidationException(List.of(new ValidationError("username", "Tài khoản không tồn tại")));
         }
 
         Account existingAccount = existingAccountOpt.get();
 
         // Kiểm tra các trường có giá trị hợp lệ
         if (accountModel.getUsername() == null || accountModel.getUsername().isEmpty()) {
-            errorMessages.add("Tên người dùng không được để trống");
+            validationErrors.add(new ValidationError("username", "Tên người dùng không được để trống"));
         } else if (!isValidUsername(accountModel.getUsername())) {
-            errorMessages.add("Tên người dùng không hợp lệ. Tên người dùng phải có ít nhất 6 ký tự và chỉ chứa chữ cái, số, dấu gạch dưới và dấu chấm, không được bắt đầu bằng số.");
+            validationErrors.add(new ValidationError("username", "Tên người dùng không hợp lệ. Tên người dùng phải có ít nhất 6 ký tự và chỉ chứa chữ cái, số, dấu gạch dưới và dấu chấm, không được bắt đầu bằng số."));
         } else if (!existingAccount.getUsername().equals(accountModel.getUsername()) && accountRepository.existsByUsername(accountModel.getUsername())) {
-            errorMessages.add("Tên người dùng đã tồn tại");
+            validationErrors.add(new ValidationError("username", "Tên người dùng đã tồn tại"));
         }
 
         if (accountModel.getEmail() == null || accountModel.getEmail().isEmpty()) {
-            errorMessages.add("Email không được để trống");
+            validationErrors.add(new ValidationError("email", "Email không được để trống"));
         } else if (!existingAccount.getEmail().equals(accountModel.getEmail()) && accountRepository.existsByEmail(accountModel.getEmail())) {
-            errorMessages.add("Email đã tồn tại");
+            validationErrors.add(new ValidationError("email", "Email đã tồn tại"));
         }
 
         if (accountModel.getPhone() == null || accountModel.getPhone().isEmpty()) {
-            errorMessages.add("Số điện thoại không được để trống");
+            validationErrors.add(new ValidationError("phone", "Số điện thoại không được để trống"));
         } else if (!isValidPhoneNumber(accountModel.getPhone())) {
-            errorMessages.add("Số điện thoại không hợp lệ");
+            validationErrors.add(new ValidationError("phone", "Số điện thoại không hợp lệ"));
         } else if (!existingAccount.getPhone().equals(accountModel.getPhone()) && accountRepository.existsByPhone(accountModel.getPhone())) {
-            errorMessages.add("Số điện thoại đã tồn tại");
+            validationErrors.add(new ValidationError("phone", "Số điện thoại đã tồn tại"));
         }
 
         // Kiểm tra mật khẩu nếu có thay đổi
         if (accountModel.getPasswords() != null && accountModel.getPasswords().length() < 6) {
-            errorMessages.add("Mật khẩu phải có ít nhất 6 ký tự");
+            validationErrors.add(new ValidationError("passwords", "Mật khẩu phải có ít nhất 6 ký tự"));
         }
 
         // Nếu có lỗi, ném ngoại lệ với thông báo lỗi
-        if (!errorMessages.isEmpty()) {
-            throw new CustomValidationException(errorMessages); // Ném ngoại lệ tùy chỉnh
+        if (!validationErrors.isEmpty()) {
+            throw new CustomValidationException(validationErrors); // Ném ngoại lệ tùy chỉnh
         }
 
         try {
@@ -304,10 +300,9 @@ public class AccountService {
                 String encodedPassword = encoder.encode(accountModel.getPasswords());
                 existingAccount.setPasswords(encodedPassword); // Mã hóa mật khẩu
             }
-
+            existingAccount.setAvatar(accountModel.getAvatar());
             existingAccount.setGender(accountModel.getGender());
             existingAccount.setIsDelete(false); // Đảm bảo tài khoản không bị xóa
-            // Chúng ta không cần gán lại vai trò vì vai trò không thay đổi trong hàm này
 
             // Lưu tài khoản đã cập nhật vào cơ sở dữ liệu và chuyển đổi sang DTO
             Account updatedAccount = accountRepository.save(existingAccount);
@@ -329,34 +324,56 @@ public class AccountService {
         accountRepository.deleteById(id);
     }
 
-    public Boolean sendEmailUpdatePassword(String email){
+    public Boolean sendEmailUpdatePassword(String email) {
         Optional<Account> accountsObject = accountRepository.findByEmail(email);
         if (accountsObject.isEmpty()) {
             return false;
         }
-        paramServices.sendEmails(accountsObject.get().getEmail(),"Đổi mật khẩu ","Click vào đây: "+"http://localhost:8080/api/account/updatePassword?token=" +  jwtService.generateSimpleToken(email));
+        paramServices.sendEmails(accountsObject.get().getEmail(), "Đổi mật khẩu ", "Click vào đây: " + "http://localhost:8080/api/account/updatePassword?token=" + jwtService.generateSimpleToken(email));
         return true;
     }
-    public Map<String, String> changeUpdatePass (changePasswordModel changePasswordModels){
+
+    public Map<String, String> changeUpdatePass(changePasswordModel changePasswordModels) {
         Map<String, String> response = new HashMap<>();
-        Optional<Account> accounts=accountRepository.findByUsername(changePasswordModels.getUsername());
-        if(!accounts.isPresent()){
-            response =paramServices.messageSuccessApi(400,"error","tài khoản này không tồn tại");
+        Optional<Account> accounts = accountRepository.findByUsername(changePasswordModels.getUsername());
+        if (!accounts.isPresent()) {
+            response = paramServices.messageSuccessApi(400, "error", "tài khoản này không tồn tại");
         } else if (!encoder.matches(changePasswordModels.getPassword(), accounts.get().getPasswords())) {
-            response =paramServices.messageSuccessApi(400,"error","mật khẩu cũ không đúng");
-        }else if(!changePasswordModels.getResetPassword().equals(changePasswordModels.getConfirmPassword())){
-            response =paramServices.messageSuccessApi(400,"error","mật khẩu và xác nhận mật khẩu không đúng");
-        }else {
-            try{
-                response =paramServices.messageSuccessApi(200,"success","đổi mật khẩu thành công");
-                String password=encoder.encode(changePasswordModels.getResetPassword());
+            response = paramServices.messageSuccessApi(400, "error", "mật khẩu cũ không đúng");
+        } else if (!changePasswordModels.getResetPassword().equals(changePasswordModels.getConfirmPassword())) {
+            response = paramServices.messageSuccessApi(400, "error", "mật khẩu và xác nhận mật khẩu không đúng");
+        } else {
+            try {
+                response = paramServices.messageSuccessApi(200, "success", "đổi mật khẩu thành công");
+                String password = encoder.encode(changePasswordModels.getResetPassword());
                 accounts.get().setPasswords(password);
                 accountRepository.save(accounts.get());
-            }catch (Exception ex){
+            } catch (Exception ex) {
                 ex.printStackTrace();
             }
         }
+        return response;
+    }
 
-        return  response;
+    public AccountInfo getAccountInfoByUsername(String username) {
+        return accountRepository.findByUsername(username)
+                .map(this::convertDT)
+                .orElse(null);
+    }
+
+    public AccountInfo convertDT(Account account) {
+        if (account == null) {
+            return null; // Hoặc xử lý theo cách bạn muốn
+        }
+        AccountInfo accountInfo = new AccountInfo();
+        accountInfo.setId(account.getId());
+        accountInfo.setUsername(account.getUsername());
+        accountInfo.setFullname(account.getFullname());
+        accountInfo.setPasswords(account.getPasswords());
+        accountInfo.setGender(account.getGender());
+        accountInfo.setEmail(account.getEmail());
+        accountInfo.setAvatar(account.getAvatar());
+        accountInfo.setPhone(account.getPhone());
+        return accountInfo;
     }
 }

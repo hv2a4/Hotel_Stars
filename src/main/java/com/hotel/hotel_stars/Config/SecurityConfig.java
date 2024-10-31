@@ -47,10 +47,6 @@ public class SecurityConfig {
 	@Autowired
 	private CustomAccessDeniedHandler accessDeniedHandler;
 
-
-
-
-
 	// User Creation
 	@Bean
 	public UserDetailsService userDetailsService() {
@@ -72,6 +68,7 @@ public class SecurityConfig {
 						.requestMatchers("/api/account/login").authenticated()
 						//vu
 						.requestMatchers("/api/account/**","/api/booking/**").permitAll()
+						.requestMatchers("api/image/**").permitAll()
 						//vu
 						.requestMatchers("/api/account/register").permitAll()
 						.requestMatchers("/api/account/loginToken").permitAll()

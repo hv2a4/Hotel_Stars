@@ -10,7 +10,7 @@ import com.hotel.hotel_stars.Models.changePasswordModel;
 import com.hotel.hotel_stars.Repository.AccountRepository;
 import com.hotel.hotel_stars.Service.AccountService;
 import com.hotel.hotel_stars.Service.TypeRoomService;
-import com.hotel.hotel_stars.utils.paramService;
+import com.hotel.hotel_stars.Utils.paramService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -57,6 +57,7 @@ public class AccountController {
     public ResponseEntity<?> getAllTypeRoom() {
         return ResponseEntity.ok(typeRoomService.getFindTypeRoom());
     }
+
     @PostMapping("/register")
     public ResponseEntity<?> registerAccount(@RequestBody accountModel accountModels) {
         Map<String, String> response = new HashMap<String, String>();
@@ -112,6 +113,7 @@ public class AccountController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Có lỗi xảy ra: " + ex.getMessage());
         }
     }
+
     @PutMapping("update-account-staff/{id}")
     public ResponseEntity<?> updateAccountStaff(@PathVariable Integer id, @Valid @RequestBody accountModel accountModel) {
         try {
@@ -153,6 +155,7 @@ public class AccountController {
         response.put("message", "Email sent successfully");
         return ResponseEntity.ok(response);
     }
+
     @GetMapping("/updatePassword")
     public ResponseEntity<?> updatePassword(@RequestParam("token") String token) {
         String email = jwtService.extractUsername(token);
@@ -185,5 +188,10 @@ public class AccountController {
         }else {
             return ResponseEntity.ok(response);
         }
+    }
+
+    @GetMapping("account-by-id/{username}")
+    public ResponseEntity<?> getAccountById(@PathVariable("username") String username){
+        return ResponseEntity.ok(accountService.getAccountInfoByUsername(username));
     }
 }
