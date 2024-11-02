@@ -71,19 +71,23 @@ public class SecurityConfig {
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/api/account/login").authenticated()
 						//vu
-						.requestMatchers("/api/account/**","/api/booking/**").permitAll()
+						.requestMatchers("/api/account/getAll").permitAll()
+						.requestMatchers("/api/account/getAlls").permitAll()
 						//vu
+
+						//nghia
 						.requestMatchers("/api/account/register").permitAll()
+						.requestMatchers("/api/account/getTokenGG").permitAll()
 						.requestMatchers("/api/account/loginToken").permitAll()
 						.requestMatchers("/api/account/sendEmail").permitAll()
+						.requestMatchers("/api/account/updateAccount").permitAll()
 						.requestMatchers("/api/account/updatePassword").permitAll()
-						.requestMatchers("/api/account/changepassword").permitAll()
+						//nghia
 
 
-						.requestMatchers("/api/account/login").hasAnyAuthority("Customer", "Staff", "HotelOwner")
-						.requestMatchers("/api/hotel/login").hasAnyAuthority("Customer")
+
 						.requestMatchers("/api/hotel/getAll").hasAnyAuthority("Staff", "HotelOwner")
-						.requestMatchers("/api/account/getAll").hasAnyAuthority("Customer")
+						.requestMatchers("/api/hotel/getAll").hasAnyAuthority("Customer")
 						
 						.requestMatchers("/api/account/login").hasAuthority("HotelOwner")
 

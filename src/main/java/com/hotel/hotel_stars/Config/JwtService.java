@@ -54,8 +54,6 @@ public class JwtService {
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 6 ))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
-
-
     }
     public String extractPassword(String token) {
         return extractClaim(token, claims -> claims.get("password", String.class));
@@ -109,12 +107,20 @@ public class JwtService {
             claims.put("username", u.getUsername());
         });
 
-        return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(user.get().getUsername())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60))
-                .signWith(getSignKey(), SignatureAlgorithm.HS256)
-                .compact();
+        try {
+            return Jwts.builder()
+                    .setClaims(claims)
+                    .setSubject(user.get().getUsername())
+                    .setIssuedAt(new Date(System.currentTimeMillis()))
+                    .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60))
+                    .signWith(getSignKey(), SignatureAlgorithm.HS256)
+                    .compact();
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            System.out.println("Token đã hết hạn sử dụng.");
+            return null;
+        } catch (Exception e) {
+            System.out.println("Đã xảy ra lỗi khi tạo token: " + e.getMessage());
+            return null;
+        }
     }
 }
