@@ -18,10 +18,6 @@ public class Floor {
     @Column(name = "floor_name")
     private String floorName;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hotel_id")
-    private Hotel hotel;
-
     @OneToMany(mappedBy = "floor")
     private List<Room> rooms;
 }

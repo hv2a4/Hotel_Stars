@@ -16,7 +16,4 @@ public class ImgageModel {
     @Size(min = 2, max = 100, message = "Tên ảnh phải có độ dài từ 2 đến 100 ký tự")
     private String imageName;
 
-    @NotNull(message = "ID của khách sạn không được để trống")
-    private Integer idHotel;
-
 }

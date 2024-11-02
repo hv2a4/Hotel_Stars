@@ -20,7 +20,7 @@ public class AmenitiesHotel {
     private String icon;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "type_amenities_hotel_id")
-    private TypeAmenitiesHotel typeAmenitiesHotel;
+    @JoinColumn(name = "hotel_id")
+    private Hotel hotel;
 
 }

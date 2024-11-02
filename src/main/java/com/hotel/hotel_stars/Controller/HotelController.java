@@ -1,12 +1,13 @@
 package com.hotel.hotel_stars.Controller;
 
+import com.hotel.hotel_stars.DTO.StatusResponseDto;
+import com.hotel.hotel_stars.Models.HotelModel;
 import com.hotel.hotel_stars.Service.HotelService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin("*")
@@ -14,8 +15,26 @@ import org.springframework.web.bind.annotation.RestController;
 public class HotelController {
     @Autowired
     HotelService hotelService;
+
     @GetMapping("/getAll")
     public ResponseEntity<?> getAllAccounts() {
         return ResponseEntity.ok(hotelService.getAllHotels());
+    }
+
+    @PutMapping("/update-hotel/{id}")
+    public ResponseEntity<StatusResponseDto> updateHotel(
+            @Valid @RequestBody HotelModel hotelModel,
+            @PathVariable Integer id
+    ) {
+        StatusResponseDto response = hotelService.updateHotel(hotelModel, id);
+
+        switch (response.getCode()) {
+            case "404":
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            case "500":
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            default:
+                return ResponseEntity.ok(response);
+        }
     }
 }

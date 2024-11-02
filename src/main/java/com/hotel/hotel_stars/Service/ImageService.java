@@ -1,18 +1,24 @@
 package com.hotel.hotel_stars.Service;
 
-import com.hotel.hotel_stars.DTO.HotelDto;
-import com.hotel.hotel_stars.DTO.HotelImageDto;
+import com.hotel.hotel_stars.DTO.*;
 import com.hotel.hotel_stars.Entity.Hotel;
 import com.hotel.hotel_stars.Entity.HotelImage;
+import com.hotel.hotel_stars.Entity.TypeRoom;
+import com.hotel.hotel_stars.Entity.TypeRoomImage;
 import com.hotel.hotel_stars.Models.ImgageModel;
 import com.hotel.hotel_stars.Repository.HotelImageRepository;
 import com.hotel.hotel_stars.Repository.HotelRepository;
+import com.hotel.hotel_stars.Repository.TypeRoomImageRepository;
+import com.hotel.hotel_stars.Repository.TypeRoomRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ImageService {
@@ -24,6 +30,12 @@ public class ImageService {
 
     @Autowired
     ModelMapper modelMapper;
+
+    @Autowired
+    TypeRoomImageRepository typeRoomImageRepository;
+
+    @Autowired
+    TypeRoomRepository typeRoomRepository;
 
     // Ánh xạ HotelImage sang HotelImageDto và bao gồm cả HotelDto
     public HotelImageDto convertToDto(HotelImage hotelImage) {
@@ -48,19 +60,11 @@ public class ImageService {
 
     public List<HotelImageDto> addImages(List<ImgageModel> imgageModels) {
         List<HotelImageDto> hotelImageDtos = new ArrayList<>();
-        imgageModels.forEach(imgageModel -> {
-            // Tạo đối tượng HotelImage từ ImgageModel
-            HotelImage hotelImage = modelMapper.map(imgageModel, HotelImage.class);
 
-            // Lấy Hotel dựa trên id của khách sạn từ ImgageModel (idHotel)
-            Hotel hotel = hotelRepository.findById(imgageModel.getIdHotel())
-                    .orElseThrow(() -> new RuntimeException("Khách sạn không tồn tại với id: " + imgageModel.getIdHotel()));
-
+        imgageModels.stream().map(imgageModel -> modelMapper.map(imgageModel, HotelImage.class)).forEach(hotelImage -> {
+            Hotel hotel = hotelRepository.findById(1).get();
             hotelImage.setHotel(hotel);
-
-            // Lưu đối tượng HotelImage vào cơ sở dữ liệu
             HotelImage savedHotelImage = hotelImageRepository.save(hotelImage);
-            // Thêm đối tượng DTO vào danh sách trả về
             hotelImageDtos.add(convertToDto(savedHotelImage));
         });
         return hotelImageDtos;
@@ -78,8 +82,7 @@ public class ImageService {
             hotelImage.setImageName(imgageModel.getImageName());
 
             // Lấy thông tin khách sạn dựa trên ID khách sạn từ hình ảnh
-            Hotel hotel = hotelRepository.findById(imgageModel.getIdHotel())
-                    .orElseThrow(() -> new RuntimeException("Khách sạn không tồn tại với id: " + imgageModel.getIdHotel()));
+            Hotel hotel = hotelRepository.findById(1).get();
 
             hotelImage.setHotel(hotel);
 
@@ -92,4 +95,110 @@ public class ImageService {
 
         return hotelImageDtos;
     }
+
+    public StatusResponseDto deleteImage(List<ImgageModel> imgageModels) {
+        StatusResponseDto statusResponseDto = new StatusResponseDto();
+
+        try {
+            imgageModels.forEach(imgageModel -> {
+                hotelImageRepository.deleteById(imgageModel.getId());
+            });
+            // Trường hợp xóa thành công
+            statusResponseDto.setCode("200");
+            statusResponseDto.setStatus("THÀNH CÔNG");
+            statusResponseDto.setMessage("Xóa ảnh thành công");
+        } catch (Exception e) {
+            // Trường hợp xóa thất bại
+            statusResponseDto.setCode("500");
+            statusResponseDto.setStatus("THẤT BẠI");
+            statusResponseDto.setMessage("Xóa ảnh thất bại: " + e.getMessage());
+        }
+
+        return statusResponseDto;
+    }
+
+    //--------------------------------------------------------type room image-----------------------------------------------
+    public TypeRoomImageDto toDto(TypeRoomImage typeRoomImage) {
+        TypeRoomImageDto dto = modelMapper.map(typeRoomImage, TypeRoomImageDto.class);
+        dto.setTypeRoomDto(modelMapper.map(typeRoomImage.getTypeRoom(), TypeRoomDto.class));
+        return dto;
+    }
+
+    public List<TypeRoomImageDto> getAllImageTypes() {
+        List<TypeRoomImage> typeRoomImages = typeRoomImageRepository.findAll();
+        return typeRoomImages.stream()
+                .map(this::toDto)
+                .toList();
+    }
+
+    public List<StatusResponseDto> addImageTypes(List<TypeRoomImageModel> typeRoomImageModels) {
+        List<StatusResponseDto> responses = new ArrayList<>();
+
+        for (TypeRoomImageModel model : typeRoomImageModels) {
+            try {
+                Optional<TypeRoom> optionalTypeRoom = typeRoomRepository.findById(model.getTypeRoom_Id());
+                if (optionalTypeRoom.isPresent()) {
+                    TypeRoomImage typeRoomImage = new TypeRoomImage();
+                    typeRoomImage.setImageName(model.getImageName());
+                    typeRoomImage.setTypeRoom(optionalTypeRoom.get());
+                    TypeRoomImage savedImage = typeRoomImageRepository.save(typeRoomImage);
+                    responses.add(new StatusResponseDto("200", "SUCCESS", "Thêm thành công hình ảnh ID: " + savedImage.getId()));
+                } else {
+                    responses.add(new StatusResponseDto("404", "NOT_FOUND", "Không tìm thấy TypeRoom với ID: " + model.getTypeRoom_Id()));
+                }
+            } catch (DataIntegrityViolationException e) {
+                responses.add(new StatusResponseDto("400", "BAD_REQUEST", "Dữ liệu không hợp lệ cho hình ảnh: " + model.getImageName()));
+            } catch (Exception e) {
+                responses.add(new StatusResponseDto("500", "INTERNAL_SERVER_ERROR", "Lỗi hệ thống khi thêm hình ảnh: " + model.getImageName()));
+            }
+        }
+
+        return responses;
+    }
+
+    public List<StatusResponseDto> updateImageTypes(List<TypeRoomImageModel> typeRoomImageModels) {
+        List<StatusResponseDto> responses = new ArrayList<>();
+
+        for (TypeRoomImageModel typeRoomImageModel : typeRoomImageModels) {
+            try {
+                Optional<TypeRoomImage> optionalTypeRoomImage = typeRoomImageRepository.findById(typeRoomImageModel.getId());
+                Optional<TypeRoom> optionalTypeRoom = typeRoomRepository.findById(typeRoomImageModel.getTypeRoom_Id());
+
+                if (optionalTypeRoomImage.isPresent() && optionalTypeRoom.isPresent()) {
+                    TypeRoomImage typeRoomImage = optionalTypeRoomImage.get();
+                    typeRoomImage.setTypeRoom(optionalTypeRoom.get());
+                    typeRoomImage.setImageName(typeRoomImageModel.getImageName());
+                    TypeRoomImage savedImage = typeRoomImageRepository.save(typeRoomImage);
+                    responses.add(new StatusResponseDto("200", "SUCCESS", "Cập nhật thành công hình ảnh ID: " + savedImage.getId()));
+                } else if (!optionalTypeRoomImage.isPresent()) {
+                    responses.add(new StatusResponseDto("404", "NOT_FOUND", "Không tìm thấy TypeRoomImage với ID: " + typeRoomImageModel.getId()));
+                } else {
+                    responses.add(new StatusResponseDto("404", "NOT_FOUND", "Không tìm thấy TypeRoom với ID: " + typeRoomImageModel.getTypeRoom_Id()));
+                }
+            } catch (DataIntegrityViolationException e) {
+                responses.add(new StatusResponseDto("400", "BAD_REQUEST", "Dữ liệu không hợp lệ cho hình ảnh ID: " + typeRoomImageModel.getId()));
+            } catch (Exception e) {
+                responses.add(new StatusResponseDto("500", "INTERNAL_SERVER_ERROR", "Lỗi hệ thống khi cập nhật hình ảnh ID: " + typeRoomImageModel.getId()));
+            }
+        }
+
+        return responses;
+    }
+
+
+    public List<StatusResponseDto> deleteByIdImages(List<ImgageModel> imageModels) {
+        List<StatusResponseDto> results = new ArrayList<>();
+        for (ImgageModel imageModel : imageModels) {
+            try {
+                typeRoomImageRepository.deleteById(imageModel.getId());
+                results.add(new StatusResponseDto("200", "SUCCESS", "Xóa thành công hình ảnh ID: " + imageModel.getId()));
+            } catch (DataAccessException e) {
+                results.add(new StatusResponseDto("500", "FAILURE", "Lỗi cơ sở dữ liệu khi xóa hình ảnh ID: " + imageModel.getId()));
+            } catch (Exception e) {
+                results.add(new StatusResponseDto("500", "FAILURE", "Xóa thất bại hình ảnh ID: " + imageModel.getId()));
+            }
+        }
+        return results;
+    }
+
 }

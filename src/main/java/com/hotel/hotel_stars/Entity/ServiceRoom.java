@@ -24,6 +24,10 @@ public class ServiceRoom {
     @Column(name = "image")
     private String imageName;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "type_service_room_id")
+    private TypeServiceRoom typeServiceRoomId;
+
     @OneToMany(mappedBy = "serviceRoom")
     private List<BookingRoomServiceRoom> bookingRoomServiceRooms;
 

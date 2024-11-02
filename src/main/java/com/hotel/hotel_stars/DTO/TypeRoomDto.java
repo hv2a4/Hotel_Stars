@@ -1,19 +1,24 @@
 package com.hotel.hotel_stars.DTO;
 
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * DTO for {@link com.hotel.hotel_stars.Entity.TypeRoom}
  */
-@Value
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class TypeRoomDto implements Serializable {
-    Integer id;
-    String typeRoomName;
-    Double price;
-    String bedType;
-    Integer bedCount;
-    Double acreage;
-    Integer capacity;
+    private Integer id;
+    private String typeRoomName;
+    private Double price;
+    private TypeBedDto bedType;
+    private Integer bedCount;
+    private Double acreage;
+    private Integer guestLimit;
 }

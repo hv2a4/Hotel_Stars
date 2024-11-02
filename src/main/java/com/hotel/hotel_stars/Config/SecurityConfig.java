@@ -40,76 +40,77 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-	@Lazy
-	@Autowired
-	private JwtAuthFilter authFilter;
+    @Lazy
+    @Autowired
+    private JwtAuthFilter authFilter;
 
-	@Autowired
-	private CustomAccessDeniedHandler accessDeniedHandler;
+    @Autowired
+    private CustomAccessDeniedHandler accessDeniedHandler;
 
-	// User Creation
-	@Bean
-	public UserDetailsService userDetailsService() {
-		return new UserInfoService();
-	}
+    // User Creation
+    @Bean
+    public UserDetailsService userDetailsService() {
+        return new UserInfoService();
+    }
 
-	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		return http
-				.csrf(AbstractHttpConfigurer::disable)
-				.cors(cors -> cors.configurationSource(request -> {
-					CorsConfiguration configuration = new CorsConfiguration();
-					configuration.setAllowedOrigins(List.of("*")); // Thay đổi miền nếu cần
-					configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-					configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
-					return configuration;
-				}))
-				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/api/account/login").authenticated()
-						//vu
-						.requestMatchers("/api/account/**","/api/booking/**").permitAll()
-						.requestMatchers("api/image/**").permitAll()
-						//vu
-						.requestMatchers("/api/account/register").permitAll()
-						.requestMatchers("/api/account/loginToken").permitAll()
-						.requestMatchers("/api/account/sendEmail").permitAll()
-						.requestMatchers("/api/account/updatePassword").permitAll()
-						.requestMatchers("/api/account/changepassword").permitAll()
-
-
-						.requestMatchers("/api/account/login").hasAnyAuthority("Customer", "Staff", "HotelOwner")
-						.requestMatchers("/api/hotel/login").hasAnyAuthority("Customer")
-						.requestMatchers("/api/hotel/getAll").hasAnyAuthority("Staff", "HotelOwner")
-						.requestMatchers("/api/account/getAll").hasAnyAuthority("Customer")
-						
-						.requestMatchers("/api/account/login").hasAuthority("HotelOwner")
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        return http
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(request -> {
+                    CorsConfiguration configuration = new CorsConfiguration();
+                    configuration.setAllowedOrigins(List.of("*")); // Thay đổi miền nếu cần
+                    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                    configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+                    return configuration;
+                }))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/account/login").authenticated()
+                        //vu
+                        .requestMatchers("/api/hotel/getAll","/api/account/account-by-id/{username}", "/api/account/toggleDelete/{id}", "/api/account/get-info-staff", "/api/booking/**").permitAll()
+                        .requestMatchers("/api/image/**","api/service-hotel/**","api/discount/**","api/service-package/**","api/room/**").hasAnyAuthority("HotelOwner")
+                        .requestMatchers("/api/account/add-account-staff", "/api/account/update-account-staff/{id}", "/api/account/delete-account-staff/{id}", "api/hotel/update-hotel/{id}").hasAuthority("HotelOwner")
+                        //vu
+                        .requestMatchers("/api/account/register").permitAll()
+                        .requestMatchers("/api/account/loginToken").permitAll()
+                        .requestMatchers("/api/account/sendEmail").permitAll()
+                        .requestMatchers("/api/account/updatePassword").permitAll()
+                        .requestMatchers("/api/account/changepassword").permitAll()
 
 
-				)
-				.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.authenticationProvider(authenticationProvider())
-				.exceptionHandling(ex -> ex.accessDeniedHandler(accessDeniedHandler))
-				.addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
-				.build();
-	}
+                        .requestMatchers("/api/account/login").hasAnyAuthority("Customer", "Staff", "HotelOwner")
+                        .requestMatchers("/api/hotel/login").hasAnyAuthority("Customer")
+                        .requestMatchers("/api/hotel/getAll").hasAnyAuthority("Staff", "HotelOwner")
+                        .requestMatchers("/api/account/getAll").hasAnyAuthority("Customer")
 
-	// Password Encoding
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
+                        .requestMatchers("/api/account/login").hasAuthority("HotelOwner")
 
-	@Bean
-	public AuthenticationProvider authenticationProvider() {
-		DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-		authenticationProvider.setUserDetailsService(userDetailsService());
-		authenticationProvider.setPasswordEncoder(passwordEncoder());
-		return authenticationProvider;
-	}
 
-	@Bean
-	public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-		return config.getAuthenticationManager();
-	}
+                )
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authenticationProvider())
+                .exceptionHandling(ex -> ex.accessDeniedHandler(accessDeniedHandler))
+                .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
+    }
+
+    // Password Encoding
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userDetailsService());
+        authenticationProvider.setPasswordEncoder(passwordEncoder());
+        return authenticationProvider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
 
 }

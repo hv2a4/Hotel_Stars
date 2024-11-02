@@ -37,11 +37,8 @@ public class Hotel {
     private List<HotelImage> hotelImageList;
 
     @OneToMany(mappedBy = "hotel")
-    private List<Floor> floors;
+    private List<AmenitiesHotel> amenitiesHotelList;
 
     @OneToMany(mappedBy = "hotel")
-    private List<TypeServiceHotel> serviceHotelList;
-
-    @OneToMany(mappedBy = "hotel")
-    private List<TypeAmenitiesHotel> amenitiesHotelList;
+    private List<ServiceHotel> serviceHotelList;
 }

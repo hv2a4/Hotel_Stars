@@ -22,9 +22,6 @@ public class TypeRoom {
     @Column(name = "price")
     private Double price;
 
-    @Column(name = "bed_type")
-    private String bedType;
-
     @Column(name = "bed_count")
     private Integer bedCount;
 
@@ -48,4 +45,8 @@ public class TypeRoom {
 
     @OneToMany(mappedBy = "typeRoom")
     List<Room> roomList;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "type_bed_id")
+    private TypeBed typeBed;
 }

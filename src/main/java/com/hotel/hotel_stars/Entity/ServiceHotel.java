@@ -12,6 +12,8 @@ import java.util.List;
 @Table(name = "service_hotel", schema = "hotel_manager")
 public class ServiceHotel {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     @Column(name = "id", nullable = false)
     private Integer id;
 
@@ -25,8 +27,8 @@ public class ServiceHotel {
     private String imageName;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "type_service_hotel_id")
-    private TypeServiceHotel typeServiceHotel;
+    @JoinColumn(name = "hotel_id")
+    private Hotel hotel;
 
     @OneToMany(mappedBy = "serviceHotel")
     private List<BookingRoomServiceHotel> serviceHotelList;

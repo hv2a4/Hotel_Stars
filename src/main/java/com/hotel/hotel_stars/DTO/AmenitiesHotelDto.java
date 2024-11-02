@@ -1,6 +1,5 @@
 package com.hotel.hotel_stars.DTO;
 
-import com.hotel.hotel_stars.Entity.TypeAmenitiesHotel;
 import lombok.Value;
 
 import java.io.Serializable;
