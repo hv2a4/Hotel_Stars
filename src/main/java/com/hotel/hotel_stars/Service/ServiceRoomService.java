@@ -1,6 +1,7 @@
 package com.hotel.hotel_stars.Service;
 
 import com.hotel.hotel_stars.DTO.ServiceRoomDto;
+import com.hotel.hotel_stars.DTO.TypeServiceRoomDto;
 import com.hotel.hotel_stars.Entity.ServiceRoom;
 import com.hotel.hotel_stars.Exception.CustomValidationException;
 import com.hotel.hotel_stars.Models.serviceRoomModel;
@@ -23,11 +24,9 @@ public class ServiceRoomService {
 
     // chuyển đổi entity sang dto (đổ dữ liệu lên web)
     public ServiceRoomDto convertToDto(ServiceRoom sr) {
-        return new ServiceRoomDto(
-                sr.getId(),
-                sr.getServiceRoomName(),
-                sr.getPrice(),
-                sr.getImageName());
+        TypeServiceRoomDto typeServiceRoomDto = new TypeServiceRoomDto(sr.getId(), sr.getServiceRoomName());
+        ServiceRoomDto serviceRoomDto = modelMapper.map(sr, ServiceRoomDto.class);
+        return serviceRoomDto;
     }
 
     // Hiển thị danh sách dịch vụ phòng
@@ -61,11 +60,6 @@ public class ServiceRoomService {
             errorMessages.add("Hình ảnh không được để trống");
         }
 
-        // Nếu có lỗi, ném ngoại lệ với thông báo lỗi
-        if (!errorMessages.isEmpty()) {
-            throw new CustomValidationException(errorMessages); // Ném ngoại lệ tùy chỉnh
-        }
-
         try {
             ServiceRoom sr = new ServiceRoom();
             // In ra màn hình
@@ -93,9 +87,6 @@ public class ServiceRoomService {
 
         // Kiểm tra xem tài khoản có tồn tại hay không
         Optional<ServiceRoom> existingServiveRoomOpt = srrep.findById(srId);
-        if (!existingServiveRoomOpt.isPresent()) {
-            throw new CustomValidationException(List.of("Tên dịch vụ phòng không tồn tại"));
-        }
 
         ServiceRoom existingServiceRoom = existingServiveRoomOpt.get();
 

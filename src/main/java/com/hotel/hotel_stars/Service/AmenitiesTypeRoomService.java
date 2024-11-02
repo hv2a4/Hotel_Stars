@@ -43,10 +43,6 @@ public class AmenitiesTypeRoomService {
             errorMessages.add("Tên này đã tồn tại");
         }
 
-        // Nếu có lỗi, ném ngoại lệ
-        if (!errorMessages.isEmpty()) {
-            throw new CustomValidationException(errorMessages);
-        }
         try {
             AmenitiesTypeRoom atr = new AmenitiesTypeRoom();
             // In ra màn hình
@@ -70,9 +66,6 @@ public class AmenitiesTypeRoomService {
 
         // Kiểm tra xem tài khoản có tồn tại hay không
         Optional<AmenitiesTypeRoom> existingAtrOpt = atrrep.findById(atrId);
-        if (!existingAtrOpt.isPresent()) {
-            throw new CustomValidationException(List.of("Tên dịch vụ phòng không tồn tại"));
-        }
 
         AmenitiesTypeRoom existingAtr = existingAtrOpt.get();
 

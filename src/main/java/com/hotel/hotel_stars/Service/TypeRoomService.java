@@ -64,7 +64,6 @@ public class TypeRoomService {
                 tr.getId(),
                 tr.getTypeRoomName(),
                 tr.getPrice(),
-                tr.getBedType(),
                 tr.getBedCount(),
                 tr.getAcreage(),
                 tr.getGuestLimit()
@@ -123,22 +122,15 @@ public class TypeRoomService {
             errorMessages.add("Giới hạn số lượng khách bạn nhập không hợp lệ");
         }
 
-        // Nếu có lỗi, ném ngoại lệ với thông báo lỗi
-        if (!errorMessages.isEmpty()) {
-            throw new CustomValidationException(errorMessages); // Ném ngoại lệ tùy chỉnh
-        }
-
         try {
             TypeRoom typeRoom = new TypeRoom();
 
             // Đặt thông tin loại phòng
             typeRoom.setTypeRoomName(trmodel.getTypeRoomName());
             typeRoom.setPrice(trmodel.getPrice());
-            typeRoom.setBedType(trmodel.getBedType());
             typeRoom.setBedCount(trmodel.getBedCount());
             typeRoom.setAcreage(trmodel.getAcreage());
             typeRoom.setGuestLimit(trmodel.getGuestLimit());
-
             // Lưu thông tin loại phòng vào cơ sở dữ liệu và chuyển đổi sang DTO
             TypeRoom savedTypeRoom = typeRoomRepository.save(typeRoom);
             return convertTypeRoomDto(savedTypeRoom);
@@ -156,9 +148,6 @@ public class TypeRoomService {
 
         // Kiểm tra xem loại phòng có tồn tại hay không
         Optional<TypeRoom> existingTypeRoomOpt = typeRoomRepository.findById(trId);
-        if (!existingTypeRoomOpt.isPresent()) {
-            throw new CustomValidationException(List.of("Loại phòng không tồn tại"));
-        }
 
         TypeRoom existingTypeRoom = existingTypeRoomOpt.get();
 
@@ -212,7 +201,6 @@ public class TypeRoomService {
             // Cập nhật các thuộc tính cho loại phòng
             existingTypeRoom.setTypeRoomName(trModel.getTypeRoomName());
             existingTypeRoom.setPrice(trModel.getPrice());
-            existingTypeRoom.setBedType(trModel.getBedType());
             existingTypeRoom.setBedCount(trModel.getBedCount());
             existingTypeRoom.setAcreage(trModel.getAcreage());
             existingTypeRoom.setGuestLimit(trModel.getGuestLimit());

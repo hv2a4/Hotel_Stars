@@ -17,7 +17,6 @@ public class TypeRoomDto implements Serializable {
     Integer id;
     String typeRoomName;
     Double price;
-    String bedType;
     Integer bedCount;
     Double acreage;
     Integer guestLimit;
