@@ -14,11 +14,11 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TypeRoomDto implements Serializable {
-    private Integer id;
-    private String typeRoomName;
-    private Double price;
-    private TypeBedDto bedType;
-    private Integer bedCount;
-    private Double acreage;
-    private Integer guestLimit;
+    Integer id;
+    String typeRoomName;
+    Double price;
+    String bedType;
+    Integer bedCount;
+    Double acreage;
+    Integer guestLimit;
 }

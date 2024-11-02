@@ -13,4 +13,5 @@ public class ServiceRoomDto implements Serializable {
     String serviceRoomName;
     Double price;
     TypeServiceRoomDto typeServiceRoomDto;
+    String imageName;
 }
