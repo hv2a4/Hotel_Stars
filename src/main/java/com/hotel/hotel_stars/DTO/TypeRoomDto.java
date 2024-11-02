@@ -15,5 +15,5 @@ public class TypeRoomDto implements Serializable {
     String bedType;
     Integer bedCount;
     Double acreage;
-    Integer capacity;
+    Integer guestLimit;
 }

@@ -25,5 +25,7 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
 
 
 
+    // kiểm tên loại phòng có tồn tại trong csdl
+    boolean existsByTypeRoomName(String typeRoomName);
 
 }

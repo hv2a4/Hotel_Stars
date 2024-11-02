@@ -1,51 +1,43 @@
 package com.hotel.hotel_stars.Controller;
 
-
-import com.hotel.hotel_stars.DTO.AccountDto;
-import com.hotel.hotel_stars.DTO.ServiceRoomDto;
-import com.hotel.hotel_stars.Entity.ServiceRoom;
+import com.hotel.hotel_stars.DTO.TypeRoomDto;
 import com.hotel.hotel_stars.Exception.CustomValidationException;
-import com.hotel.hotel_stars.Models.accountModel;
-import com.hotel.hotel_stars.Service.ServiceRoomService;
-import com.hotel.hotel_stars.Models.serviceRoomModel;
+import com.hotel.hotel_stars.Models.typeRoomModel;
+import com.hotel.hotel_stars.Service.TypeRoomService;
 import jakarta.validation.Valid;
-import jakarta.validation.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
 @RestController
 @CrossOrigin("*")
-@RequestMapping("api/service-room")
-public class ServiceRoomController {
+@RequestMapping("api/type-room")
+public class TypeRoomController {
     @Autowired
-    ServiceRoomService srservice;
-
+    TypeRoomService trservice;
 
     @GetMapping("/getAll")
-    public ResponseEntity<?> getAllServiceRooms() {
-        return ResponseEntity.ok(srservice.getAllServiceRooms());
+    public ResponseEntity<?> getAllTypeRooms() {
+        return ResponseEntity.ok(trservice.getAllTypeRooms());
     }
 
-    @PostMapping("/add-service-room")
-    public ResponseEntity<?> addServiceRoom(@Valid @RequestBody serviceRoomModel srmodel) {
+    @PostMapping("/add")
+    public ResponseEntity<?> addServiceRoom(@Valid @RequestBody typeRoomModel trmodel) {
         try {
-            ServiceRoomDto srdto = srservice.addServiceRoom(srmodel);
+            TypeRoomDto trdto = trservice.addTypeRoom(trmodel);
             Map<String, Object> response = new HashMap<>();
             response.put("code", 200);
-            response.put("message", "Thêm dịch vụ phòng thành công");
+            response.put("message", "Thêm loại phòng thành công");
             response.put("status", "success");
 //            response.put("data", srdto);
             return ResponseEntity.ok(response); // Trả về phản hồi với mã 200
         } catch (CustomValidationException ex) {
             // Trả về lỗi xác thực với danh sách thông báo lỗi
-            // Hiển thỉ lỗi 400, 500
             return ResponseEntity.badRequest().body(ex.getErrorMessages());
         } catch (RuntimeException ex) {
             // Trả về lỗi chung cho các lỗi không xác thực
@@ -53,16 +45,16 @@ public class ServiceRoomController {
         }
     }
 
-    @PutMapping("update-service-room/{id}")
-    public ResponseEntity<?> updateServiceRoom(@PathVariable Integer id, @Valid @RequestBody serviceRoomModel srmodel) {
+    @PutMapping("update/{id}")
+    public ResponseEntity<?> updateServiceRoom(@PathVariable Integer id, @Valid @RequestBody typeRoomModel trmodel) {
         try {
-            ServiceRoomDto updatedServiceRoom = srservice.updateServiceRoom(id, srmodel);
+            TypeRoomDto updatedTypeRoom = trservice.updateTypeRoom(id, trmodel);
             // tạo thông báo
             Map<String, Object> response = new HashMap<>();
             response.put("code", 200);
             response.put("message", "Cập nhật dịch vụ phòng thành công");
             response.put("status", "success");
-//            response.put("data", updatedServiceRoom);
+//            response.put("data", updatedTypeRoom);
             return ResponseEntity.ok(response); // Trả về phản hồi với mã 200
         } catch (CustomValidationException ex) {
             // Trả về lỗi xác thực với danh sách thông báo lỗi
@@ -74,11 +66,11 @@ public class ServiceRoomController {
     }
 
 
-    @DeleteMapping("delete-service-room/{id}")
-    public ResponseEntity<?> deleteServiceRoom(@PathVariable Integer id) {
+    @DeleteMapping("delete/{id}")
+    public ResponseEntity<?> deleteTypeRoom(@PathVariable Integer id) {
         try {
             // Gọi phương thức trong service để xóa tài khoản
-            srservice.deleteServiceRoom(id);
+            trservice.deleteServiceRoom(id);
             return ResponseEntity.ok("Dịch vụ phòng này đã được xóa thành công."); // Phản hồi thành công
         } catch (NoSuchElementException ex) {
             // Trả về lỗi nếu tài khoản không tồn tại
