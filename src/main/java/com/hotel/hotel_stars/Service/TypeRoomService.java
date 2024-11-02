@@ -15,18 +15,19 @@ public class TypeRoomService {
     TypeRoomRepository typeRoomRepository;
 
     public List<FindTypeRoomDto> getFindTypeRoom() {
-        LocalDate startDate = LocalDate.parse("2023-10-28");
-        LocalDate endDate = LocalDate.parse("2023-10-29");
+        LocalDate startDate = LocalDate.parse("2023-10-29");
+        LocalDate endDate = LocalDate.parse("2023-10-31");
         List<Object[]> results = typeRoomRepository.findAllTypeRoomDetailsWithCost(startDate, endDate);
         List<FindTypeRoomDto> dtoList = new ArrayList<>();
 
         results.stream().forEach(row -> {
             String typeRoomName = (String) row[0];
-            Double acreage = (Double) row[1];
-            Integer capacity = (Integer) row[2];
-            String amenitiesTypeRoomName = (String) row[3];
-            Double estCost = (Double) row[4];
-
+            Double price = (Double) row[1];
+            Double acreage = (Double) row[2];
+            Integer guestLimit = (Integer) row[3];
+            String amenitiesTypeRoomName = (String) row[4];
+            Double estCost = (Double) row[5];
+            String image= (String) row[6];
             // Kiểm tra xem DTO đã tồn tại trong danh sách chưa bằng Stream API
             FindTypeRoomDto existingDto = dtoList.stream()
                     .filter(dto -> dto.getTypeRoomName().equals(typeRoomName))
@@ -35,7 +36,7 @@ public class TypeRoomService {
 
             if (existingDto == null) {
                 // Nếu chưa có DTO cho loại phòng này, tạo mới
-                existingDto = new FindTypeRoomDto(typeRoomName, acreage, capacity, new ArrayList<>(), estCost);
+                existingDto = new FindTypeRoomDto(typeRoomName, price,acreage, guestLimit, new ArrayList<>(), estCost,image);
                 dtoList.add(existingDto);
             }
 

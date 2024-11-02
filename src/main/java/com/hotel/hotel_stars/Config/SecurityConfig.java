@@ -94,23 +94,70 @@ public class SecurityConfig {
                 .build();
     }
 
-    // Password Encoding
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(userDetailsService());
-        authenticationProvider.setPasswordEncoder(passwordEncoder());
-        return authenticationProvider;
-    }
-
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		return http
+				.csrf(AbstractHttpConfigurer::disable)
+				.cors(cors -> cors.configurationSource(request -> {
+					CorsConfiguration configuration = new CorsConfiguration();
+					configuration.setAllowedOrigins(List.of("*")); // Thay đổi miền nếu cần
+					configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+					configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+					return configuration;
+				}))
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers("/api/account/login").authenticated()
+						//vu
+						.requestMatchers("/api/account/getAll").permitAll()
+						.requestMatchers("/api/account/getAlls").permitAll()
+						//vu
+
+						//nghia
+						.requestMatchers("/api/account/register").permitAll()
+						.requestMatchers("/api/account/getTokenGG").permitAll()
+						.requestMatchers("/api/account/loginToken").permitAll()
+						.requestMatchers("/api/account/sendEmail").permitAll()
+						.requestMatchers("/api/account/updateAccount").permitAll()
+						.requestMatchers("/api/account/updatePassword").permitAll()
+						//nghia
+
+
+
+						.requestMatchers("/api/hotel/getAll").hasAnyAuthority("Staff", "HotelOwner")
+						.requestMatchers("/api/hotel/getAll").hasAnyAuthority("Customer")
+						
+						.requestMatchers("/api/account/login").hasAuthority("HotelOwner")
+
+
+				)
+				.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.authenticationProvider(authenticationProvider())
+				.exceptionHandling(ex -> ex.accessDeniedHandler(accessDeniedHandler))
+				.addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
+				.build();
+	}
+
+	// Password Encoding
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+
+	@Bean
+	public AuthenticationProvider authenticationProvider() {
+		DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+		authenticationProvider.setUserDetailsService(userDetailsService());
+		authenticationProvider.setPasswordEncoder(passwordEncoder());
+		return authenticationProvider;
+	}
+
+	@Bean
+	public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+		return config.getAuthenticationManager();
+	}
 
 }

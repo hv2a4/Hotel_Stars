@@ -11,16 +11,20 @@ import java.util.List;
 public class FindTypeRoomDto {
     private String typeRoomName;
     private Double acreage;
-    private Integer capacity;
+    private Double price;
+    private Integer guestLimit;
     private List<String> amenitiesTypeRoomNames;
     private Double estCost;
-
-    public FindTypeRoomDto(String typeRoomName, Double acreage, Integer capacity, List<String> amenitiesTypeRoomNames, Double estCost) {
+    private String image;
+    public FindTypeRoomDto(String typeRoomName,  Double price,Double acreage, Integer guestLimit, List<String> amenitiesTypeRoomNames, Double estCost
+    ,String image) {
         this.typeRoomName = typeRoomName;
+        this.price = price;
         this.acreage = acreage;
-        this.capacity = capacity;
+        this.guestLimit = guestLimit;
         this.amenitiesTypeRoomNames = amenitiesTypeRoomNames;
         this.estCost = estCost;
+        this.image = image;
     }
 
 

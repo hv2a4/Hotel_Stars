@@ -36,7 +36,7 @@ public class paramService {
     private JavaMailSender emailSender;
     public Account getTokenGG(String token){
         Account accounts=new Account();
-        Optional<Role> roles=rolesRepository.findById(4);
+        Optional<Role> roles=rolesRepository.findById(3);
         try {
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new JacksonFactory())
                     .setAudience(Collections.singletonList("435509292296-0rf1v3tbl70s3ae1dd1ose1hmv146iqn.apps.googleusercontent.com")) // Replace with your client ID
@@ -59,6 +59,7 @@ public class paramService {
             accounts.setFullname(name);
             accounts.setRole(roles.get());
             accounts.setGender(true);
+            accounts.setIsDelete(true);
         } catch (GeneralSecurityException | IOException e) {
             throw new RuntimeException(e);
         }
@@ -119,4 +120,5 @@ public class paramService {
                 "</body>" +
                 "</html>";
     }
+
 }

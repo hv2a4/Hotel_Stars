@@ -1,5 +1,6 @@
 package com.hotel.hotel_stars.Service;
 
+import com.hotel.hotel_stars.Config.UserInfoService;
 import com.hotel.hotel_stars.DTO.AccountDto;
 import com.hotel.hotel_stars.DTO.RoleDto;
 import com.hotel.hotel_stars.DTO.Select.AccountBookingDTO;
@@ -18,6 +19,10 @@ import com.hotel.hotel_stars.Utils.paramService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +35,7 @@ import java.util.NoSuchElementException;
 
 import java.util.Optional;
 import java.util.regex.Pattern;
+
 import java.util.*;
 
 @Service
@@ -52,6 +58,10 @@ public class AccountService {
     paramService paramServices;
     @Autowired
     JwtService jwtService;
+    @Autowired
+    UserInfoService userInfoService;
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     public AccountDto convertToDto(Account account) {
         RoleDto roleDto = account.getRole() != null ? new RoleDto(
@@ -100,11 +110,6 @@ public class AccountService {
     public boolean addUser(accountModel accountModels) {
         Account accounts = new Account();
 
-        System.out.println("tên người dùng: " + accountModels.getUsername());
-        System.out.println("tên: " + accountModels.getFullname());
-        System.out.println("phone: " + accountModels.getPhone());
-        System.out.println("email: " + accountModels.getEmail());
-        System.out.println("password: " + accountModels.getPasswords());
         if (accountModels == null) {
             System.out.println("fffff");
             return false;
@@ -162,7 +167,55 @@ public class AccountService {
         }
         return accountBookings;
     }
+    public String loginSimple(String username,String password){
+        try {
+            Optional<Account> accounts=accountRepository.findByUsername(username);
+            if(!accounts.get().getIsDelete()){
+                return null;
+            }
+            UserDetails userDetails = userInfoService.loadUserByUsername(username);
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username, password));
+            return jwtService.generateToken(username);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    public boolean updateProfiles(accountModel accountModels){
+        if(accountModels==null){
+            return  false;
+        }
+        Optional<Account> getAccount=accountRepository.findByUsername(accountModels.getUsername());
+        System.out.println("tài khoản được tìm thấy: "+getAccount.get().getUsername());
+        System.out.println("id được tìm thấy: "+getAccount.get().getId());
+        getAccount.get().setEmail(accountModels.getEmail());
+        getAccount.get().setFullname(accountModels.getFullname());
+        getAccount.get().setGender(accountModels.getGender());
+        getAccount.get().setPhone(accountModels.getPhone());
+        getAccount.get().setAvatar(accountModels.getAvatar());
+        accountRepository.save(getAccount.get());
+        return true;
+    }
+    public boolean sendPassword(String token){
+        String username = jwtService.extractUsername(token);
+        String randomPassword = paramServices.generateTemporaryPassword();
+        System.out.println(username);
+        Optional<Account> accounts = accountRepository.findByUsername(username);
+        System.out.println("email được tìm thấy: "+ accounts.get().getEmail());
 
+        String passwords=encoder.encode(randomPassword) ;
+        accounts.get().setPasswords(passwords);
+        System.out.println("mật khẩu vừa đổi: "+accounts.get().getPasswords());
+        try {
+            accountRepository.save( accounts.get());
+            System.out.println(randomPassword);
+            paramServices.sendEmails(accounts.get().getEmail(), "Mật khẩu mới", "Mật Khẩu mới: "+randomPassword);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
     private boolean isValidUsername(String username) {
         // Quy tắc: ít nhất 6 ký tự, chỉ chứa chữ cái, số, dấu gạch dưới và dấu chấm, không bắt đầu bằng số
         String regex = "^(?!\\d)([a-zA-Z0-9_.]{6,})$"; // Biểu thức chính quy
@@ -329,7 +382,8 @@ public class AccountService {
         if (accountsObject.isEmpty()) {
             return false;
         }
-        paramServices.sendEmails(accountsObject.get().getEmail(), "Đổi mật khẩu ", "Click vào đây: " + "http://localhost:8080/api/account/updatePassword?token=" + jwtService.generateSimpleToken(email));
+        paramServices.sendEmails(accountsObject.get().getEmail(),"Đổi mật khẩu ",
+                "Click vào đây: "+"http://localhost:8080/api/account/updatePassword?token=" +  jwtService.generateSimpleToken(email));
         return true;
     }
 
@@ -376,4 +430,44 @@ public class AccountService {
         accountInfo.setPhone(account.getPhone());
         return accountInfo;
     }
+
+    public String loginGG(String email){
+        System.out.println("tham số vào: "+email);
+        Account accounts= new Account();
+        List<Account> listAccount=accountRepository.findAll();
+        accounts = paramServices.getTokenGG(email);
+        email=accounts.getEmail();
+
+
+        if (email == null) {
+            System.out.println("null rôì");
+            return null;
+        }
+
+        try {
+            System.out.println("accoutGmail: "+accounts.getEmail());
+            System.out.println("accoutUserName: "+accounts.getUsername());
+            Optional<Account> getAccounts = accountRepository.findByUsername(accounts.getUsername());
+
+            if (getAccounts.isPresent()) {
+                System.out.println("tài khoản: "+getAccounts.get().getUsername());
+                System.out.println("có tài khoản");
+                return jwtService.generateToken(accounts.getUsername());
+            } else {
+                boolean isDuplicate = listAccount.stream()
+                        .map(Account::getEmail)
+                        .anyMatch(email::equals);
+                if(isDuplicate){
+                    return null;
+                }
+                System.out.println("không có tài khoản: "+accounts.getUsername());
+                accountRepository.save(accounts);
+                return jwtService.generateToken(accounts.getUsername());
+            }
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
 }
+

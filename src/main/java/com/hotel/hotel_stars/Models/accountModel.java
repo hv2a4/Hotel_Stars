@@ -22,7 +22,7 @@ public class accountModel {
 
     private String avatar;
 
-    @NotNull(message = "Giới tính không được để trống")
+
     private Boolean gender;
 
     private Integer idRoles;
