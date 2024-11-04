@@ -1,5 +1,6 @@
 package com.hotel.hotel_stars.Controller;
 
+import com.hotel.hotel_stars.DTO.Select.TypeRoomBookingCountDto;
 import com.hotel.hotel_stars.DTO.TypeRoomDto;
 import com.hotel.hotel_stars.Exception.CustomValidationException;
 import com.hotel.hotel_stars.Models.typeRoomModel;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -79,5 +81,10 @@ public class TypeRoomController {
             // Trả về lỗi chung cho các lỗi không xác thực
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Có lỗi xảy ra: " + ex.getMessage());
         }
+    }
+
+    @GetMapping("/top3")
+    public List<TypeRoomBookingCountDto> getTop3TypeRooms() {
+        return trservice.getTop3TypeRooms();
     }
 }

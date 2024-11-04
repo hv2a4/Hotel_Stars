@@ -108,4 +108,9 @@ public class ImageController {
         return ResponseEntity.ok(results);
     }
 
+    @GetMapping("/selectById")
+    public ResponseEntity<?> selectHotelImageById(@RequestBody List<TypeRoomImageModel> imgageModels) {
+        return ResponseEntity.ok(imageService.getTypeRoomImageModelByImageName(imgageModels));
+    }
+
 }

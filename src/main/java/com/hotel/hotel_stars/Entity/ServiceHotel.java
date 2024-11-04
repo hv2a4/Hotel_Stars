@@ -26,6 +26,10 @@ public class ServiceHotel {
     @Column(name = "image")
     private String imageName;
 
+    @Column(name = "icon")
+    private String icon;
+
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hotel_id")
     private Hotel hotel;

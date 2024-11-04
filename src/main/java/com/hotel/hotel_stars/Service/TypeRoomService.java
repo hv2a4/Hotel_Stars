@@ -1,19 +1,17 @@
 package com.hotel.hotel_stars.Service;
 
-import com.hotel.hotel_stars.DTO.ServiceRoomDto;
+import com.hotel.hotel_stars.DTO.Select.TypeRoomBookingCountDto;
+import com.hotel.hotel_stars.DTO.TypeBedDto;
 import com.hotel.hotel_stars.DTO.TypeRoomDto;
 import com.hotel.hotel_stars.DTO.selectDTO.FindTypeRoomDto;
-import com.hotel.hotel_stars.Entity.ServiceRoom;
+import com.hotel.hotel_stars.Entity.TypeBed;
 import com.hotel.hotel_stars.Entity.TypeRoom;
-import com.hotel.hotel_stars.Exception.CustomValidationException;
-import com.hotel.hotel_stars.Models.serviceRoomModel;
 import com.hotel.hotel_stars.Models.typeRoomModel;
+import com.hotel.hotel_stars.Repository.TypeBedRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomRepository;
 import jakarta.validation.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -23,6 +21,9 @@ import java.util.*;
 public class TypeRoomService {
     @Autowired
     TypeRoomRepository typeRoomRepository;
+
+    @Autowired
+    TypeBedRepository typeBedRepository;
 
     // Tìm kiếm loại phòng
     public List<FindTypeRoomDto> getFindTypeRoom() {
@@ -38,7 +39,7 @@ public class TypeRoomService {
             Integer guestLimit = (Integer) row[3];
             String amenitiesTypeRoomName = (String) row[4];
             Double estCost = (Double) row[5];
-            String image= (String) row[6];
+            String image = (String) row[6];
             // Kiểm tra xem DTO đã tồn tại trong danh sách chưa bằng Stream API
             FindTypeRoomDto existingDto = dtoList.stream()
                     .filter(dto -> dto.getTypeRoomName().equals(typeRoomName))
@@ -47,7 +48,7 @@ public class TypeRoomService {
 
             if (existingDto == null) {
                 // Nếu chưa có DTO cho loại phòng này, tạo mới
-                existingDto = new FindTypeRoomDto(typeRoomName, price,acreage, guestLimit, new ArrayList<>(), estCost,image);
+                existingDto = new FindTypeRoomDto(typeRoomName, price, acreage, guestLimit, new ArrayList<>(), estCost, image);
                 dtoList.add(existingDto);
             }
 
@@ -60,13 +61,17 @@ public class TypeRoomService {
 
     // chuyển đổi entity sang dto (đổ dữ liệu lên web)
     public TypeRoomDto convertTypeRoomDto(TypeRoom tr) {
+        TypeBedDto typeBedDto = new TypeBedDto();
+        typeBedDto.setId(tr.getTypeBed().getId());
+        typeBedDto.setBedName(tr.getTypeBed().getBedName());
         return new TypeRoomDto(
                 tr.getId(),
                 tr.getTypeRoomName(),
                 tr.getPrice(),
                 tr.getBedCount(),
                 tr.getAcreage(),
-                tr.getGuestLimit()
+                tr.getGuestLimit(),
+                typeBedDto
         );
     }
 
@@ -130,7 +135,7 @@ public class TypeRoomService {
             typeRoom.setPrice(trmodel.getPrice());
             typeRoom.setBedCount(trmodel.getBedCount());
             typeRoom.setAcreage(trmodel.getAcreage());
-            typeRoom.setGuestLimit(trmodel.getGuestLimit());
+            typeRoom.setGuestLimit(String.valueOf(trmodel.getGuestLimit()));
             // Lưu thông tin loại phòng vào cơ sở dữ liệu và chuyển đổi sang DTO
             TypeRoom savedTypeRoom = typeRoomRepository.save(typeRoom);
             return convertTypeRoomDto(savedTypeRoom);
@@ -203,7 +208,7 @@ public class TypeRoomService {
             existingTypeRoom.setPrice(trModel.getPrice());
             existingTypeRoom.setBedCount(trModel.getBedCount());
             existingTypeRoom.setAcreage(trModel.getAcreage());
-            existingTypeRoom.setGuestLimit(trModel.getGuestLimit());
+            existingTypeRoom.setGuestLimit(String.valueOf(trModel.getGuestLimit()));
 
             // Lưu loại phòng đã cập nhật vào cơ sở dữ liệu và chuyển đổi sang DTO
             TypeRoom updatedTypeRoom = typeRoomRepository.save(existingTypeRoom);
@@ -227,8 +232,6 @@ public class TypeRoomService {
         typeRoomRepository.deleteById(id);
     }
 
-
-
     // checkValidation cho các trường dữ liệu
     private boolean isValidPrice(Double price) {
         // Kiểm tra xem giá có null hay không
@@ -237,7 +240,7 @@ public class TypeRoomService {
         }
 
         // Kiểm tra xem giá có lớn hơn 0 hay không
-        if (price <= 0 ) {
+        if (price <= 0) {
             return false; // Giá phải lớn hơn 0
         }
 
@@ -258,7 +261,7 @@ public class TypeRoomService {
         }
 
         // Kiểm tra xem giá có lớn hơn 0 hay không
-        if (bedCount <= 0 ) {
+        if (bedCount <= 0) {
             return false; // Giá phải lớn hơn 0
         }
 
@@ -279,7 +282,7 @@ public class TypeRoomService {
         }
 
         // Kiểm tra xem giá có lớn hơn 0 hay không
-        if (acreage <= 0 ) {
+        if (acreage <= 0) {
             return false; // Giá phải lớn hơn 0
         }
 
@@ -300,7 +303,7 @@ public class TypeRoomService {
         }
 
         // Kiểm tra xem giá có lớn hơn 0 hay không
-        if (guestLimit <= 0 ) {
+        if (guestLimit <= 0) {
             return false; // Giá phải lớn hơn 0
         }
 
@@ -314,7 +317,28 @@ public class TypeRoomService {
         return true; // Nếu tất cả các kiểm tra đều hợp lệ
     }
 
-//    private boolean isValidPrice(Double price) {
-//        return price != null && price > 0 && price.toString().matches("^[0-9]+(\\.[0-9]{1,2})?$");
-//    }
+    public TypeBedDto convert(TypeBed typeBed) {
+        return new TypeBedDto(
+                typeBed.getId(),
+                typeBed.getBedName()
+        );
+    }
+
+    public List<TypeRoomBookingCountDto> getTop3TypeRooms() {
+        List<Object[]> results = typeRoomRepository.findTop3TypeRooms();
+
+        return results.stream().map(result -> {
+            Long typeRoomBookingCount = (Long) result[0];
+            Integer id = (Integer) result[1];
+            String typeRoomName = (String) result[2];
+            Double price = (Double) result[3];
+            Integer bedCount = (Integer) result[4];
+            Double acreage = (Double) result[5];
+            String guestLimit = (String) result[6];
+            Integer typeBedId = (Integer) result[7];
+            TypeBed bookingTypeBed = typeBedRepository.findById(typeBedId).get();
+            TypeRoomBookingCountDto dto = new TypeRoomBookingCountDto(typeRoomBookingCount.intValue(), id, typeRoomName, price, bedCount, acreage, guestLimit, convert(bookingTypeBed));
+            return dto;
+        }).toList();
+    }
 }

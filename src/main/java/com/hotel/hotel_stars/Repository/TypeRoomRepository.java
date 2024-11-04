@@ -1,5 +1,6 @@
 package com.hotel.hotel_stars.Repository;
 
+import com.hotel.hotel_stars.DTO.Select.TypeRoomBookingCountDto;
 import com.hotel.hotel_stars.DTO.selectDTO.FindTypeRoomDto;
 import com.hotel.hotel_stars.Entity.TypeRoom;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,9 +26,28 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
     List<Object[]> findAllTypeRoomDetailsWithCost(@Param("startDate") LocalDate startDate,
                                                   @Param("endDate") LocalDate endDate);
 
-
-
     // kiểm tên loại phòng có tồn tại trong csdl
     boolean existsByTypeRoomName(String typeRoomName);
+
+    @Query(value = """
+            SELECT COUNT(booking_room.booking_id) AS booking_count,
+                   type_room.id AS id,
+                   type_room.type_room_name AS typeRoomName,
+                   type_room.price AS price,
+                   type_room.bed_count AS bedCount,
+                   type_room.acreage AS acreage,
+                   type_room.guest_limit AS guestLimit,
+                   type_room.type_bed_id AS typeBedId
+            FROM room
+                     JOIN type_room ON room.type_room_id = type_room.id
+                     JOIN booking_room br ON room.id = br.room_id
+                     JOIN booking ON br.booking_id = booking.id
+                     JOIN booking_room ON br.booking_id = booking_room.booking_id
+            GROUP BY type_room.id, type_room.type_room_name, type_room.price, type_room.bed_count, 
+                     type_room.acreage, type_room.guest_limit, type_room.type_bed_id
+            ORDER BY booking_count DESC
+            LIMIT 3
+            """, nativeQuery = true)
+    List<Object[]> findTop3TypeRooms();
 
 }

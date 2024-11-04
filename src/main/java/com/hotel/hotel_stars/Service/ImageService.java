@@ -1,10 +1,7 @@
 package com.hotel.hotel_stars.Service;
 
 import com.hotel.hotel_stars.DTO.*;
-import com.hotel.hotel_stars.Entity.Hotel;
-import com.hotel.hotel_stars.Entity.HotelImage;
-import com.hotel.hotel_stars.Entity.TypeRoom;
-import com.hotel.hotel_stars.Entity.TypeRoomImage;
+import com.hotel.hotel_stars.Entity.*;
 import com.hotel.hotel_stars.Models.ImgageModel;
 import com.hotel.hotel_stars.Repository.HotelImageRepository;
 import com.hotel.hotel_stars.Repository.HotelRepository;
@@ -119,10 +116,45 @@ public class ImageService {
 
     //--------------------------------------------------------type room image-----------------------------------------------
     public TypeRoomImageDto toDto(TypeRoomImage typeRoomImage) {
-        TypeRoomImageDto dto = modelMapper.map(typeRoomImage, TypeRoomImageDto.class);
-        dto.setTypeRoomDto(modelMapper.map(typeRoomImage.getTypeRoom(), TypeRoomDto.class));
+        // Khởi tạo TypeRoomImageDto và ánh xạ các trường cơ bản
+        TypeRoomImageDto dto = new TypeRoomImageDto();
+        dto.setId(typeRoomImage.getId());
+        dto.setImageName(typeRoomImage.getImageName());
+
+        // Kiểm tra và ánh xạ `TypeRoom` nếu không null
+        if (typeRoomImage.getTypeRoom() != null) {
+            dto.setTypeRoomDto(mapTypeRoomToDto(typeRoomImage.getTypeRoom()));
+        }
+
         return dto;
     }
+
+    // Phương thức phụ để ánh xạ từ TypeRoom sang TypeRoomDto
+    private TypeRoomDto mapTypeRoomToDto(TypeRoom typeRoom) {
+        TypeRoomDto typeRoomDto = new TypeRoomDto();
+        typeRoomDto.setId(typeRoom.getId());
+        typeRoomDto.setTypeRoomName(typeRoom.getTypeRoomName());
+        typeRoomDto.setPrice(typeRoom.getPrice());
+        typeRoomDto.setBedCount(typeRoom.getBedCount());
+        typeRoomDto.setAcreage(typeRoom.getAcreage());
+        typeRoomDto.setGuestLimit(typeRoom.getGuestLimit());
+
+        // Kiểm tra và ánh xạ `TypeBed` nếu không null
+        if (typeRoom.getTypeBed() != null) {
+            typeRoomDto.setTypeBedDto(mapTypeBedToDto(typeRoom.getTypeBed()));
+        }
+
+        return typeRoomDto;
+    }
+
+    // Phương thức phụ để ánh xạ từ TypeBed sang TypeBedDto
+    private TypeBedDto mapTypeBedToDto(TypeBed typeBed) {
+        TypeBedDto typeBedDto = new TypeBedDto();
+        typeBedDto.setId(typeBed.getId());
+        typeBedDto.setBedName(typeBed.getBedName());
+        return typeBedDto;
+    }
+
 
     public List<TypeRoomImageDto> getAllImageTypes() {
         List<TypeRoomImage> typeRoomImages = typeRoomImageRepository.findAll();
@@ -185,7 +217,6 @@ public class ImageService {
         return responses;
     }
 
-
     public List<StatusResponseDto> deleteByIdImages(List<ImgageModel> imageModels) {
         List<StatusResponseDto> results = new ArrayList<>();
         for (ImgageModel imageModel : imageModels) {
@@ -201,4 +232,12 @@ public class ImageService {
         return results;
     }
 
+    public List<TypeRoomImageDto> getTypeRoomImageModelByImageName(List<TypeRoomImageModel> typeRoomImageModels) {
+        List<TypeRoomImageDto> results = new ArrayList<>();
+        typeRoomImageModels.forEach(typeRoomImageModel -> {
+            TypeRoomImage typeRoomImage = typeRoomImageRepository.findById(typeRoomImageModel.getId()).get();
+            results.add(toDto(typeRoomImage));
+        });
+        return results;
+    }
 }

@@ -17,4 +17,6 @@ public class ServiceHotelDto implements Serializable {
     String serviceHotelName;
     Double price;
     HotelDto hotel;
+    String icon;
+    String image;
 }
