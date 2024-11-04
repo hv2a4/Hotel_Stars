@@ -70,7 +70,7 @@ public class SecurityConfig {
                                 "/api/account/toggleDelete/{id}", "/api/account/get-info-staff", "/api/booking/**")
                         .permitAll()
                         .requestMatchers("/api/image/**", "api/service-hotel/**", "api/discount/**",
-                                "api/service-package/**", "api/room/**")
+                                "api/service-package/**")
                         .hasAnyAuthority("HotelOwner")
                         .requestMatchers("/api/account/add-account-staff", "/api/account/update-account-staff/{id}",
                                 "/api/account/delete-account-staff/{id}", "api/hotel/update-hotel/{id}")
@@ -84,6 +84,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/account/sendEmail").permitAll()
                         .requestMatchers("/api/account/updateAccount").permitAll()
                         .requestMatchers("/api/account/updatePassword").permitAll()
+                        .requestMatchers("/api/room/getCountRoom").permitAll()
                         // nghia
 
                         // son

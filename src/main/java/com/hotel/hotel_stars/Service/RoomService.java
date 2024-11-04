@@ -1,6 +1,7 @@
 package com.hotel.hotel_stars.Service;
 
 import com.hotel.hotel_stars.DTO.*;
+import com.hotel.hotel_stars.DTO.selectDTO.countDto;
 import com.hotel.hotel_stars.Entity.Floor;
 import com.hotel.hotel_stars.Entity.Room;
 import com.hotel.hotel_stars.Entity.StatusRoom;
@@ -11,6 +12,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -72,6 +74,19 @@ public class RoomService {
             // Log the exception if necessary
             return new StatusResponseDto("500", "Error", "Có lỗi xảy ra khi thêm phòng: " + e.getMessage());
         }
+    }
+
+    public List<countDto> displayCounts() {
+        List<Object[]> results = roomRepository.getCounts();
+        List<countDto> listDto = new ArrayList<>();
+        for (Object[] result : results) {
+            Long countStaff = ((Number) result[0]).longValue(); // Chuyển đổi đúng kiểu
+            Long countCustomers = ((Number) result[1]).longValue(); // Chuyển đổi đúng kiểu
+            Long totalRooms = ((Number) result[2]).longValue(); // Chuyển đổi đúng kiểu
+            countDto dto =new countDto(countStaff,countCustomers,totalRooms);
+            listDto.add(dto);
+        }
+        return listDto;
     }
 
     public StatusResponseDto PutRoom(RoomModel roomModel) {
