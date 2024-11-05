@@ -67,14 +67,15 @@ public class SecurityConfig {
                         .requestMatchers("/api/account/login").authenticated()
                         // vu
                         .requestMatchers("/api/hotel/getAll", "/api/account/account-by-id/{username}",
-                                "/api/account/toggleDelete/{id}", "/api/account/get-info-staff", "/api/booking/**")
+                                "/api/account/toggleDelete/{id}", "/api/account/get-info-staff", "/api/booking/**","api/feedback/**")
                         .permitAll()
-                        .requestMatchers("/api/image/**", "api/service-hotel/**", "api/discount/**",
+                        .requestMatchers("api/service-hotel/**", "api/discount/**",
                                 "api/service-package/**", "api/room/**")
                         .hasAnyAuthority("HotelOwner")
                         .requestMatchers("/api/account/add-account-staff", "/api/account/update-account-staff/{id}",
                                 "/api/account/delete-account-staff/{id}", "api/hotel/update-hotel/{id}")
                         .hasAuthority("HotelOwner")
+                        .requestMatchers("/api/image/**").permitAll()
                         // vu
 
                         // nghia
