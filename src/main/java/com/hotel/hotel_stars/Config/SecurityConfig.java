@@ -65,26 +65,19 @@ public class SecurityConfig {
                 }))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/account/login").authenticated()
-                        // vu
-                        .requestMatchers("/api/hotel/getAll", "/api/account/account-by-id/{username}",
-                                "/api/account/toggleDelete/{id}", "/api/account/get-info-staff", "/api/booking/**")
-                        .permitAll()
-                        .requestMatchers("/api/image/**", "api/service-hotel/**", "api/discount/**",
-                                "api/service-package/**")
-                        .hasAnyAuthority("HotelOwner")
-                        .requestMatchers("/api/account/add-account-staff", "/api/account/update-account-staff/{id}",
-                                "/api/account/delete-account-staff/{id}", "api/hotel/update-hotel/{id}")
-                        .hasAuthority("HotelOwner")
-                        // vu
+
 
                         // nghia
                         .requestMatchers("/api/account/register").permitAll()
                         .requestMatchers("/api/account/getTokenGG").permitAll()
                         .requestMatchers("/api/account/loginToken").permitAll()
                         .requestMatchers("/api/account/sendEmail").permitAll()
+                        .requestMatchers("/api/discount/getAll").permitAll()
                         .requestMatchers("/api/account/updateAccount").permitAll()
                         .requestMatchers("/api/account/updatePassword").permitAll()
                         .requestMatchers("/api/room/getCountRoom").permitAll()
+                        .requestMatchers("/api/booking/sendBooking").permitAll()
+                        .requestMatchers("/api/booking/confirmBooking").permitAll()
                         // nghia
 
                         // son

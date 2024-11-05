@@ -29,5 +29,5 @@ public class typeRoomModel {
 
     @NotNull(message = "Giới hạn khách không được để trống")
     @Positive(message = "Giới hạn khách phải lớn hơn 0")
-    private Integer guestLimit;
+    private String guestLimit;
 }

@@ -24,12 +24,12 @@ public class HotelService {
                 hotel.getProvince(), hotel.getDistrict(), hotel.getWard(), hotel.getAddress());
     }
 
-    public List<HotelDto> getAllHotels() {
+    public HotelDto getAllHotels() {
         List<Hotel> hotels = hotelRepository.findAll();
-        return hotels.
-                stream()
-                .map(this::convertHotelDto)
-                .toList();
+        return hotels.stream()
+                .findFirst() // Lấy khách sạn đầu tiên
+                .map(this::convertHotelDto) // Chuyển đổi thành HotelDto
+                .orElse(null); // Trả về null nếu không có khách sạn
     }
 
     public StatusResponseDto updateHotel(HotelModel hotelModel, Integer hotelId) {

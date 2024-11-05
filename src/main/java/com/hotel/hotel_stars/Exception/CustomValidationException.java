@@ -1,5 +1,7 @@
 package com.hotel.hotel_stars.Exception;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class CustomValidationException extends RuntimeException {
@@ -13,4 +15,6 @@ public class CustomValidationException extends RuntimeException {
     public List<ValidationError> getErrorMessages() {
         return errorMessages;
     }
+
+
 }
