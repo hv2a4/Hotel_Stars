@@ -47,8 +47,4 @@ public class Booking {
 
     @OneToMany(mappedBy = "booking")
     List<BookingRoom> bookingRooms;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "type_room_id")
-    private TypeRoom typeRoom;
 }

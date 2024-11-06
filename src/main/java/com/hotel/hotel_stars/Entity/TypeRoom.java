@@ -57,6 +57,4 @@ public class TypeRoom {
     @JoinColumn(name = "type_bed_id")
     private TypeBed typeBed;
 
-    @OneToMany(mappedBy = "typeRoom")
-    List<Booking> bookingList;
 }
