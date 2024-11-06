@@ -1,4 +1,4 @@
-package com.hotel.hotel_stars.Utils;
+package com.hotel.hotel_stars.utils;
 
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;

@@ -66,10 +66,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/account/login").authenticated()
                         // vu
-                        .requestMatchers("/api/hotel/getAll", "/api/account/account-by-id/{username}",
-                                "/api/account/toggleDelete/{id}", "/api/account/get-info-staff", "/api/booking/**")
+                        .requestMatchers("/api/image/**","/api/hotel/**", "/api/account/account-by-id/{username}",
+                                "/api/account/toggleDelete/{id}", "/api/account/get-info-staff", "/api/booking/**","api/service-hotel/**", "/api/account/getAll")
                         .permitAll()
-                        .requestMatchers("/api/image/**", "api/service-hotel/**", "api/discount/**",
+                        .requestMatchers( "api/discount/**",
                                 "api/service-package/**", "api/room/**")
                         .hasAnyAuthority("HotelOwner")
                         .requestMatchers("/api/account/add-account-staff", "/api/account/update-account-staff/{id}",
