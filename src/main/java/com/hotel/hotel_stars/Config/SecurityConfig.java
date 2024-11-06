@@ -89,6 +89,9 @@ public class SecurityConfig {
                         // son
                         .requestMatchers("/api/amenities-type-room/**").permitAll()
                         .requestMatchers("/api/type-room/**").permitAll()
+                        .requestMatchers("/api/floor/**").permitAll()
+                        .requestMatchers("/api/status-room/**").permitAll()
+//                        .requestMatchers("/api/room/**").permitAll()
                         // son
 
                         .requestMatchers("/api/account/login").hasAnyAuthority("Customer", "Staff", "HotelOwner")
