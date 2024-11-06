@@ -37,6 +37,9 @@ public class RoomServiceFilter {
 
     public List<TypeRoomDto> searchTypeRoom(String keyword) {
         List<TypeRoom> typeRooms = typeRoomRepository.findByTypeRoomNameContaining(keyword);
+        if (typeRooms.isEmpty()) {
+            throw new EntityNotFoundException("No type rooms found for the keyword: " + keyword);
+        }
         return typeRooms.stream()
                 .map(typeRoom -> modelMapper.map(typeRoom, TypeRoomDto.class))
                 .toList();
