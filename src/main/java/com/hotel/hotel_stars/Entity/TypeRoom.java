@@ -32,6 +32,9 @@ public class TypeRoom {
     @Column(name = "guest_limit")
     private String guestLimit;
 
+    @Column(name = "describes")
+    private String describes;
+
     @OneToMany(mappedBy = "typeRoom")
     List<TypeRoomImage> typeRooms;
 
@@ -50,4 +53,7 @@ public class TypeRoom {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "type_bed_id")
     private TypeBed typeBed;
+
+    @OneToMany(mappedBy = "typeRoom")
+    List<Booking> bookingList;
 }

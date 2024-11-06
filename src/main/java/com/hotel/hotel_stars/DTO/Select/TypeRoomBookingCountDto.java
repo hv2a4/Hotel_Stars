@@ -16,6 +16,7 @@ public class TypeRoomBookingCountDto {
     private Integer bedCount;
     private Double acreage;
     private String guestLimit;
-    private TypeBedDto typeBedDto;
+    private String typeBedDto;
+    private Double averageStars;
 
 }

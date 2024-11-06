@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
 
@@ -30,24 +31,28 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
     boolean existsByTypeRoomName(String typeRoomName);
 
     @Query(value = """
-            SELECT COUNT(booking_room.booking_id) AS booking_count,
-                   type_room.id AS id,
-                   type_room.type_room_name AS typeRoomName,
-                   type_room.price AS price,
-                   type_room.bed_count AS bedCount,
-                   type_room.acreage AS acreage,
-                   type_room.guest_limit AS guestLimit,
-                   type_room.type_bed_id AS typeBedId
-            FROM room
-                     JOIN type_room ON room.type_room_id = type_room.id
-                     JOIN booking_room br ON room.id = br.room_id
-                     JOIN booking ON br.booking_id = booking.id
-                     JOIN booking_room ON br.booking_id = booking_room.booking_id
-            GROUP BY type_room.id, type_room.type_room_name, type_room.price, type_room.bed_count, 
-                     type_room.acreage, type_room.guest_limit, type_room.type_bed_id
+            SELECT COUNT(br.booking_id) AS booking_count,
+                   tr.id AS id,
+                   tr.type_room_name AS typeRoomName,
+                   tr.price AS price,
+                   tr.bed_count AS bedCount,
+                   tr.acreage AS acreage,
+                   tr.guest_limit AS guestLimit,
+                   tr.type_bed_id AS typeBedId,
+                   ROUND(AVG(f.stars), 1) AS averageStars
+            FROM room r
+                     JOIN type_room tr ON r.type_room_id = tr.id
+                     JOIN booking_room br ON r.id = br.room_id
+                     JOIN booking b ON br.booking_id = b.id
+                     JOIN Invoice i ON b.id = i.booking_id
+                     JOIN Feedback f ON i.id = f.invoice_id
+            GROUP BY tr.id, tr.type_room_name, tr.price, tr.bed_count, 
+                     tr.acreage, tr.guest_limit, tr.type_bed_id
             ORDER BY booking_count DESC
             LIMIT 3
             """, nativeQuery = true)
     List<Object[]> findTop3TypeRooms();
 
+    @Query("SELECT tr FROM TypeRoom tr WHERE tr.typeRoomName LIKE %:keyword%")
+    List<TypeRoom> findByTypeRoomNameContaining(@Param("keyword") String keyword);
 }

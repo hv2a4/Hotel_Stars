@@ -67,9 +67,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/account/login").authenticated()
                         // vu
                         .requestMatchers("/api/hotel/getAll", "/api/account/account-by-id/{username}",
-                                "/api/account/toggleDelete/{id}", "/api/account/get-info-staff", "/api/booking/**","api/feedback/**")
+                                "/api/account/toggleDelete/{id}", "/api/account/get-info-staff", "/api/booking/**", "api/feedback/**", "api/service-hotel/**","/api/status/**")
                         .permitAll()
-                        .requestMatchers("api/service-hotel/**", "api/discount/**",
+                        .requestMatchers("api/discount/**",
                                 "api/service-package/**", "api/room/**")
                         .hasAnyAuthority("HotelOwner")
                         .requestMatchers("/api/account/add-account-staff", "/api/account/update-account-staff/{id}",

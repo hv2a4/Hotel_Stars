@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -41,10 +42,7 @@ public class TypeRoomService {
             Double estCost = (Double) row[5];
             String image = (String) row[6];
             // Kiểm tra xem DTO đã tồn tại trong danh sách chưa bằng Stream API
-            FindTypeRoomDto existingDto = dtoList.stream()
-                    .filter(dto -> dto.getTypeRoomName().equals(typeRoomName))
-                    .findFirst()
-                    .orElse(null);
+            FindTypeRoomDto existingDto = dtoList.stream().filter(dto -> dto.getTypeRoomName().equals(typeRoomName)).findFirst().orElse(null);
 
             if (existingDto == null) {
                 // Nếu chưa có DTO cho loại phòng này, tạo mới
@@ -64,23 +62,13 @@ public class TypeRoomService {
         TypeBedDto typeBedDto = new TypeBedDto();
         typeBedDto.setId(tr.getTypeBed().getId());
         typeBedDto.setBedName(tr.getTypeBed().getBedName());
-        return new TypeRoomDto(
-                tr.getId(),
-                tr.getTypeRoomName(),
-                tr.getPrice(),
-                tr.getBedCount(),
-                tr.getAcreage(),
-                tr.getGuestLimit(),
-                typeBedDto
-        );
+        return new TypeRoomDto(tr.getId(), tr.getTypeRoomName(), tr.getPrice(), tr.getBedCount(), tr.getAcreage(), tr.getGuestLimit(), typeBedDto);
     }
 
     // Hiển thị danh sách dịch vụ phòng
     public List<TypeRoomDto> getAllTypeRooms() {
         List<TypeRoom> trs = typeRoomRepository.findAll();
-        return trs.stream()
-                .map(this::convertTypeRoomDto)
-                .toList();
+        return trs.stream().map(this::convertTypeRoomDto).toList();
     }
 
     // thêm dịch vụ phòng
@@ -159,8 +147,7 @@ public class TypeRoomService {
         // Kiểm tra tên loại phòng
         if (trModel.getTypeRoomName() == null || trModel.getTypeRoomName().isEmpty()) {
             errorMessages.add("Tên loại phòng không được để trống");
-        } else if (!existingTypeRoom.getTypeRoomName().equals(trModel.getTypeRoomName())
-                && typeRoomRepository.existsByTypeRoomName(trModel.getTypeRoomName())) {
+        } else if (!existingTypeRoom.getTypeRoomName().equals(trModel.getTypeRoomName()) && typeRoomRepository.existsByTypeRoomName(trModel.getTypeRoomName())) {
             errorMessages.add("Tên loại phòng này đã tồn tại");
         }
 
@@ -317,13 +304,6 @@ public class TypeRoomService {
         return true; // Nếu tất cả các kiểm tra đều hợp lệ
     }
 
-    public TypeBedDto convert(TypeBed typeBed) {
-        return new TypeBedDto(
-                typeBed.getId(),
-                typeBed.getBedName()
-        );
-    }
-
     public List<TypeRoomBookingCountDto> getTop3TypeRooms() {
         List<Object[]> results = typeRoomRepository.findTop3TypeRooms();
 
@@ -337,7 +317,11 @@ public class TypeRoomService {
             String guestLimit = (String) result[6];
             Integer typeBedId = (Integer) result[7];
             TypeBed bookingTypeBed = typeBedRepository.findById(typeBedId).get();
-            TypeRoomBookingCountDto dto = new TypeRoomBookingCountDto(typeRoomBookingCount.intValue(), id, typeRoomName, price, bedCount, acreage, guestLimit, convert(bookingTypeBed));
+            BigDecimal averageStars = (BigDecimal) result[8];
+            // If you need to convert it to Double later, do so like this:
+            Double averageStarsAsDouble = averageStars.doubleValue();
+
+            TypeRoomBookingCountDto dto = new TypeRoomBookingCountDto(typeRoomBookingCount.intValue(), id, typeRoomName, price, bedCount, acreage, guestLimit,bookingTypeBed.getBedName() , averageStarsAsDouble);
             return dto;
         }).toList();
     }
