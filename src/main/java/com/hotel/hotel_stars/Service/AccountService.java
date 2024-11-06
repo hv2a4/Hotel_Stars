@@ -281,7 +281,7 @@ public class AccountService {
             String encodedPassword = encoder.encode(accountModel.getPasswords());
             account.setPasswords(encodedPassword); // Mã hóa mật khẩu
             account.setGender(accountModel.getGender());
-            account.setIsDelete(false); // Đánh dấu tài khoản là không bị xóa
+            account.setIsDelete(true); // Đánh dấu tài khoản là không bị xóa
             account.setRole(role); // Gán vai trò cho tài khoản
             account.setAvatar(accountModel.getAvatar());
             // Lưu tài khoản vào cơ sở dữ liệu và chuyển đổi sang DTO

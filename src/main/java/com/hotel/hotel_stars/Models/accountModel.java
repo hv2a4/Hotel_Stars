@@ -28,7 +28,6 @@ public class accountModel {
 
     private String avatar;
 
-
     private Boolean gender;
 
     private Integer idRoles;
