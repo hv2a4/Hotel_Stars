@@ -111,8 +111,6 @@ public class TypeRoomService {
         // Kiểm tra giới hạn số lượng khách
         if (trmodel.getGuestLimit() == null) {
             errorMessages.add("Giới hạn số lượng khách không được để trống");
-        } else if (!isValidGuestLimit(trmodel.getGuestLimit())) {
-            errorMessages.add("Giới hạn số lượng khách bạn nhập không hợp lệ");
         }
 
         try {
@@ -180,8 +178,6 @@ public class TypeRoomService {
         // Kiểm tra giới hạn khách
         if (trModel.getGuestLimit() == null) {
             errorMessages.add("Giới hạn số khách không được để trống");
-        } else if (!isValidGuestLimit(trModel.getGuestLimit())) {
-            errorMessages.add("Giới hạn số khách không hợp lệ");
         }
 
         // Nếu có lỗi, ném ngoại lệ với thông báo lỗi

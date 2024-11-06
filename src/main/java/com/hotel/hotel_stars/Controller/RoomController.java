@@ -16,9 +16,9 @@ public class RoomController {
     @Autowired
     private RoomService roomService;
 
-    @GetMapping("getAll")
+    @GetMapping("/getCountRoom")
     public ResponseEntity<?> getAll() {
-        return ResponseEntity.ok(roomService.getAllRooms());
+        return ResponseEntity.ok(roomService.displayCounts());
     }
 
     @GetMapping("getById/{id}")

@@ -13,6 +13,7 @@ import java.util.List;
 @Table(name = "booking_room", schema = "hotel_manager")
 public class BookingRoom {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 
@@ -25,8 +26,6 @@ public class BookingRoom {
     @Column(name = "price")
     private Double price;
 
-    @Column(name = "status_payment")
-    private Boolean statusPayment;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "booking_id")

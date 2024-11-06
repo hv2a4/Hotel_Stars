@@ -1,4 +1,4 @@
-package com.hotel.hotel_stars.Utils;
+package com.hotel.hotel_stars.utils;
 
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
@@ -6,6 +6,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.hotel.hotel_stars.Entity.Account;
+import com.hotel.hotel_stars.Entity.Booking;
 import com.hotel.hotel_stars.Entity.Role;
 import com.hotel.hotel_stars.Repository.RoleRepository;
 import jakarta.mail.MessagingException;
@@ -24,6 +25,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.security.GeneralSecurityException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 
 @Service
@@ -97,6 +101,12 @@ public class paramService {
             e.printStackTrace();
         }
     }
+
+    public Instant stringToInstant(String dateString){
+        LocalDate localDate = LocalDate.parse(dateString);
+        return localDate.atStartOfDay(ZoneId.of("UTC")).toInstant();
+    }
+
     public String generateHtml(String title, String message,String content) {
         return "<!DOCTYPE html>" +
                 "<html lang=\"vi\">" +
@@ -119,6 +129,80 @@ public class paramService {
                 "</div>" +
                 "</body>" +
                 "</html>";
+    }
+    public String generateInvoice(Booking booking, Integer quantityRoom, Double totalAmount,Double price){
+        return "<!doctype html>\n" +
+                "<html lang=\"en\">\n" +
+                "    <head>\n" +
+                "        <title>Title</title>\n" +
+                "        <meta charset=\"utf-8\" />\n" +
+                "        <meta\n" +
+                "            name=\"viewport\"\n" +
+                "            content=\"width=device-width, initial-scale=1, shrink-to-fit=no\"\n" +
+                "        />\n" +
+                "        <link\n" +
+                "            href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css\"\n" +
+                "            rel=\"stylesheet\"\n" +
+                "            integrity=\"sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN\"\n" +
+                "            crossorigin=\"anonymous\"\n" +
+                "        />\n" +
+                "    </head>\n" +
+                "    <body>\n" +
+                "        <div class=\"mt-3\" style=\"max-width: 800px; margin: 0 auto; padding: 10px; font-family: Arial, sans-serif; border: 1px solid #ddd;\">\n" +
+                "            <div class=\"invoice-content\">\n" +
+                "                <header style=\"text-align: center; margin-bottom: 20px;\">\n" +
+                "                    <p>Khách sạn Stars</p>\n" +
+                "                    <p>Điện thoại: 1900 6522</p>\n" +
+                "                </header>\n" +
+                "                <section style=\"border-bottom: 1px solid #ddd; padding-bottom: 20px; margin-bottom: 20px;\">\n" +
+                "                    <h2 style=\"text-align: center;\">Phiếu đặt phòng</h2>\n" +
+                "                    <p style=\"text-align: center;\">Booking_Id: BK0000"+booking.getId()+" </p>\n" +
+                "                </section>\n" +
+                "                <section style=\"margin-bottom: 20px;\">\n" +
+                "                    <p><strong>Tên khách hàng:</strong> "+booking.getAccount().getFullname()+" </p>\n" +
+                "                    <p><strong>username:</strong> "+booking.getAccount().getUsername()+" </p>\n" +
+                "                    <p><strong>Số điện thoại:</strong>"+booking.getAccount().getPhone()+"</p>\n" +
+                "                </section>\n" +
+                "                <table style=\"width: 100%; border-collapse: collapse; margin-bottom: 20px;\">\n" +
+                "                    <thead>\n" +
+                "                        <tr>\n" +
+                "                            <th style=\"border: 1px solid #ddd; padding: 8px;\">Nội dung</th>\n" +
+                "                            <th style=\"border: 1px solid #ddd; padding: 8px;\">Đơn giá</th>\n" +
+                "                            <th style=\"border: 1px solid #ddd; padding: 8px;\">SL</th>\n" +
+                "                            <th style=\"border: 1px solid #ddd; padding: 8px;\">Thành tiền</th>\n" +
+                "                        </tr>\n" +
+                "                    </thead>\n" +
+                "                    <tbody>\n" +
+                "                        <tr>\n" +
+                "                            <td style=\"border: 1px solid #ddd; padding: 8px;\">"+booking.getTypeRoom().getTypeRoomName()+"</td>\n" +
+                "                            <td style=\"border: 1px solid #ddd; padding: 8px;\">"+price+"</td>\n" +
+                "                            <td style=\"border: 1px solid #ddd; padding: 8px;\">"+quantityRoom+"</td>\n" +
+                "                            <td style=\"border: 1px solid #ddd; padding: 8px;\">"+totalAmount+"</td>\n" +
+                "                        </tr>\n" +
+                "                    </tbody>\n" +
+                "                </table>\n" +
+                "                <section style=\"margin-bottom: 20px; text-align: right;\">\n" +
+                "                    <p><strong>Tổng tiền hàng:</strong> "+totalAmount+" </p>\n" +
+                "                    <p><strong>Chiết khấu:</strong> 0</p>\n" +
+                "                    <p><strong>Tổng cộng:</strong> "+totalAmount+"</p>\n" +
+                "                </section>\n" +
+                "                <footer style=\"text-align: center; border-top: 1px solid #ddd; padding-top: 20px;\">\n" +
+                "                    <p>Cảm ơn và hẹn gặp lại</p>\n" +
+                "                </footer>\n" +
+                "            </div>\n" +
+                "        </div>\n" +
+                "        <script\n" +
+                "            src=\"https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js\"\n" +
+                "            integrity=\"sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r\"\n" +
+                "            crossorigin=\"anonymous\"\n" +
+                "        ></script>\n" +
+                "        <script\n" +
+                "            src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js\"\n" +
+                "            integrity=\"sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+\"\n" +
+                "            crossorigin=\"anonymous\"\n" +
+                "        ></script>\n" +
+                "    </body>\n" +
+                "</html>\n";
     }
 
 }

@@ -9,7 +9,7 @@ import com.hotel.hotel_stars.Models.changePasswordModel;
 import com.hotel.hotel_stars.Repository.AccountRepository;
 import com.hotel.hotel_stars.Service.AccountService;
 import com.hotel.hotel_stars.Service.TypeRoomService;
-import com.hotel.hotel_stars.Utils.paramService;
+import com.hotel.hotel_stars.utils.paramService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,6 +39,7 @@ public class AccountController {
     UserInfoService userInfoService;
     @Autowired
     private PasswordEncoder encoder;
+
     @Autowired
     private AuthenticationManager authenticationManager;
 

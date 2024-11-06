@@ -6,6 +6,7 @@ import com.hotel.hotel_stars.DTO.TypeRoomImageDto;
 import com.hotel.hotel_stars.Models.ImgageModel;
 import com.hotel.hotel_stars.Service.ImageService;
 import com.hotel.hotel_stars.Service.TypeRoomImageModel;
+import com.hotel.hotel_stars.utils.paramService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -22,9 +23,17 @@ import java.util.NoSuchElementException;
 public class ImageController {
     @Autowired
     private ImageService imageService;
+    @Autowired
+    paramService paramServices;
 
     @GetMapping("getAll")
     public ResponseEntity<?> getResponseEntity() {
+        List<HotelImageDto> images = imageService.getAllImages();
+        if (images.isEmpty()) {
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body( paramServices.messageSuccessApi(400,"error","Không có lấy ra được dữ liệu"));
+        }
         return ResponseEntity.ok(imageService.getAllImages());
     }
 
