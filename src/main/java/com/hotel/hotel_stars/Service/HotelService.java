@@ -31,9 +31,12 @@ public class HotelService {
                 .map(this::convertHotelDto) // Chuyển đổi thành HotelDto
                 .orElse(null); // Trả về null nếu không có khách sạn
     }
-
-    public StatusResponseDto updateHotel(HotelModel hotelModel, Integer hotelId) {
-        Optional<Hotel> optionalHotel = hotelRepository.findById(hotelId);
+    public HotelDto getHotel(){
+        Optional<Hotel> hotel = hotelRepository.findById(1);
+        return convertHotelDto(hotel.get());
+    }
+    public StatusResponseDto updateHotel(HotelModel hotelModel) {
+        Optional<Hotel> optionalHotel = hotelRepository.findById(hotelModel.getId());
 
         if (!optionalHotel.isPresent()) {
             // Return 404 Not Found response details

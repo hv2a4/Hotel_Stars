@@ -69,7 +69,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/hotel/getAll", "/api/account/account-by-id/{username}",
                                 "/api/account/toggleDelete/{id}", "/api/account/get-info-staff", "/api/booking/**", "api/feedback/**", "api/service-hotel/**","/api/status/**")
                         .permitAll()
-                        .requestMatchers("api/discount/**",
+                        .requestMatchers("api/discount/**").permitAll()
+                        .requestMatchers("/api/image/**","/api/hotel/**", "/api/account/account-by-id/{username}",
+                                "/api/account/toggleDelete/{id}", "/api/account/get-info-staff", "/api/booking/**","api/service-hotel/**", "/api/account/getAll")
+                        .permitAll()
+                        .requestMatchers( "api/discount/**",
                                 "api/service-package/**", "api/room/**")
                         .hasAnyAuthority("HotelOwner")
                         .requestMatchers("/api/account/add-account-staff", "/api/account/update-account-staff/{id}",

@@ -36,7 +36,6 @@ public class ImageController {
         }
         return ResponseEntity.ok(imageService.getAllImages());
     }
-
     @PostMapping("add-image")
     public ResponseEntity<List<HotelImageDto>> addHotelImages(@RequestBody List<ImgageModel> imageModels) {
         if (imageModels == null || imageModels.isEmpty()) {

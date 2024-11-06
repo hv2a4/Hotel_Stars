@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin("*")
-@RequestMapping("api/hotel")
+@RequestMapping("/api/hotel")
 public class HotelController {
     @Autowired
     HotelService hotelService;
@@ -21,12 +21,15 @@ public class HotelController {
         return ResponseEntity.ok(hotelService.getAllHotels());
     }
 
-    @PutMapping("/update-hotel/{id}")
+    @GetMapping("/getHotel")
+    public ResponseEntity<?> getHotel () {
+        return ResponseEntity.ok(hotelService.getHotel());
+    }
+    @PutMapping("/update-hotel")
     public ResponseEntity<StatusResponseDto> updateHotel(
-            @Valid @RequestBody HotelModel hotelModel,
-            @PathVariable Integer id
+            @Valid @RequestBody HotelModel hotelModel
     ) {
-        StatusResponseDto response = hotelService.updateHotel(hotelModel, id);
+        StatusResponseDto response = hotelService.updateHotel(hotelModel);
 
         switch (response.getCode()) {
             case "404":
