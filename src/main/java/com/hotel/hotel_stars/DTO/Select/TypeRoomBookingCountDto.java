@@ -5,18 +5,21 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class TypeRoomBookingCountDto {
-    private Integer typeRoomBookingCount;
-    private Integer id;
-    private String typeRoomName;
-    private Double price;
-    private Integer bedCount;
-    private Double acreage;
-    private String guestLimit;
-    private String typeBedDto;
-    private Double averageStars;
-
+    private Integer typeRoomBookingCount; // Số lần đặt
+    private Integer id; // ID loại phòng
+    private String typeRoomName; // Tên loại phòng
+    private Double price; // Giá
+    private Integer bedCount; // Số giường
+    private Double acreage; // Diện tích
+    private String guestLimit; // Giới hạn khách
+    private String typeBedDto; // Tên loại giường
+    private Double averageStars; // Đánh giá trung bình
+    private String[] amenities; // Tiện nghi
+    private String[] amenitiesIcon; // Biểu tượng tiện nghi
 }

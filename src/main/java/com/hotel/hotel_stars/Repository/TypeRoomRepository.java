@@ -39,13 +39,17 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
                    tr.acreage AS acreage,
                    tr.guest_limit AS guestLimit,
                    tr.type_bed_id AS typeBedId,
-                   ROUND(AVG(f.stars), 1) AS averageStars
+                   ROUND(AVG(f.stars), 1) AS averageStars,
+                   GROUP_CONCAT(atr.amenities_type_room_name) AS amenities,
+                   GROUP_CONCAT(atr.icon) AS amenities_icon
             FROM room r
                      JOIN type_room tr ON r.type_room_id = tr.id
                      JOIN booking_room br ON r.id = br.room_id
                      JOIN booking b ON br.booking_id = b.id
                      JOIN Invoice i ON b.id = i.booking_id
                      JOIN Feedback f ON i.id = f.invoice_id
+                     JOIN type_room_amenities_type_room trat ON tr.id = trat.type_room_id
+                     JOIN amenities_type_room atr ON trat.amenities_type_room_id = atr.id
             GROUP BY tr.id, tr.type_room_name, tr.price, tr.bed_count, 
                      tr.acreage, tr.guest_limit, tr.type_bed_id
             ORDER BY booking_count DESC

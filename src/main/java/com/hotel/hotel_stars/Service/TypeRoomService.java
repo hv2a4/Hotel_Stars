@@ -304,20 +304,44 @@ public class TypeRoomService {
         List<Object[]> results = typeRoomRepository.findTop3TypeRooms();
 
         return results.stream().map(result -> {
-            Long typeRoomBookingCount = (Long) result[0];
-            Integer id = (Integer) result[1];
-            String typeRoomName = (String) result[2];
-            Double price = (Double) result[3];
-            Integer bedCount = (Integer) result[4];
-            Double acreage = (Double) result[5];
-            String guestLimit = (String) result[6];
-            Integer typeBedId = (Integer) result[7];
-            TypeBed bookingTypeBed = typeBedRepository.findById(typeBedId).get();
-            BigDecimal averageStars = (BigDecimal) result[8];
-            // If you need to convert it to Double later, do so like this:
-            Double averageStarsAsDouble = averageStars.doubleValue();
+            Long typeRoomBookingCount = (Long) result[0]; // Số lần đặt
+            Integer id = ((Number) result[1]).intValue(); // ID loại phòng
+            String typeRoomName = (String) result[2]; // Tên loại phòng
+            Double price = (Double) result[3]; // Giá
+            Integer bedCount = ((Number) result[4]).intValue(); // Số giường
+            Double acreage = (Double) result[5]; // Diện tích
+            String guestLimit = (String) result[6]; // Giới hạn khách
+            Integer typeBedId = ((Number) result[7]).intValue(); // ID loại giường
 
-            TypeRoomBookingCountDto dto = new TypeRoomBookingCountDto(typeRoomBookingCount.intValue(), id, typeRoomName, price, bedCount, acreage, guestLimit,bookingTypeBed.getBedName() , averageStarsAsDouble);
+            // Lấy thông tin loại giường từ repository
+            TypeBed bookingTypeBed = typeBedRepository.findById(typeBedId).orElse(null);
+            String bedName = bookingTypeBed != null ? bookingTypeBed.getBedName() : "N/A"; // Kiểm tra null
+
+            BigDecimal averageStars = (BigDecimal) result[8]; // Đánh giá trung bình
+            Double averageStarsAsDouble = averageStars != null ? averageStars.doubleValue() : 0.0; // Chuyển đổi thành Double
+
+            // Tiện nghi
+            String amenitiesString = (String) result[9]; // Tiện nghi dưới dạng chuỗi
+            String amenitiesIconString = (String) result[10]; // Biểu tượng tiện nghi dưới dạng chuỗi
+
+            // Chuyển đổi chuỗi thành mảng
+            String[] amenities = amenitiesString != null ? amenitiesString.split(",") : new String[0];
+            String[] amenitiesIcon = amenitiesIconString != null ? amenitiesIconString.split(",") : new String[0];
+
+            // Tạo DTO với tất cả thông tin
+            TypeRoomBookingCountDto dto = new TypeRoomBookingCountDto(
+                    typeRoomBookingCount.intValue(),
+                    id,
+                    typeRoomName,
+                    price,
+                    bedCount,
+                    acreage,
+                    guestLimit,
+                    bedName,
+                    averageStarsAsDouble,
+                    amenities, // Mảng tiện nghi
+                    amenitiesIcon // Mảng biểu tượng tiện nghi
+            );
             return dto;
         }).toList();
     }

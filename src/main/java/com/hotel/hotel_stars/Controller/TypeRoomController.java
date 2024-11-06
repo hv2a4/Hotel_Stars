@@ -84,7 +84,7 @@ public class TypeRoomController {
     }
 
     @GetMapping("/top3")
-    public List<TypeRoomBookingCountDto> getTop3TypeRooms() {
-        return trservice.getTop3TypeRooms();
+    public ResponseEntity<List<TypeRoomBookingCountDto>> getTop3TypeRooms() {
+        return ResponseEntity.ok(trservice.getTop3TypeRooms());
     }
 }
