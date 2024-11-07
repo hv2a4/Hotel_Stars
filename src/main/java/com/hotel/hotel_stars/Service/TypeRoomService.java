@@ -9,6 +9,7 @@ import com.hotel.hotel_stars.Entity.TypeRoom;
 import com.hotel.hotel_stars.Models.typeRoomModel;
 import com.hotel.hotel_stars.Repository.TypeBedRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.Predicate;
 
 @Service
 public class TypeRoomService {
@@ -94,37 +96,36 @@ public class TypeRoomService {
             errorMessages.add("Dịch vụ phòng này đã tồn tại");
         }
 
-        // Kiểm tra giá
         if (trmodel.getPrice() == null) {
             errorMessages.add("Giá không được để trống");
-        } else if (!isValidPrice(trmodel.getPrice())) {
+        } else if (trmodel.getPrice().doubleValue() <= 0) {
             errorMessages.add("Giá bạn nhập không hợp lệ");
-        }
-
-        // Kiểm tra loại giường
-        if (trmodel.getBedType() == null || trmodel.getBedType().isEmpty()) {
-            errorMessages.add("Loại giường không được để trống");
         }
 
         // Kiểm tra số lượng giường
         if (trmodel.getBedCount() == null) {
             errorMessages.add("Số lượng giường không được để trống");
-        } else if (!isValidBedCount(trmodel.getBedCount())) {
-            errorMessages.add("Số lượng giường bạn nhập không hợp lệ");
+        } else if (trmodel.getBedCount() <= 0) {
+            errorMessages.add("Số lượng giường phải là số dương");
         }
 
         // Kiểm tra diện tích
         if (trmodel.getAcreage() == null) {
-            errorMessages.add("Diện tích không được để trống");
-        } else if (!isValidAcreage(trmodel.getAcreage())) {
-            errorMessages.add("Diện tích bạn nhập không hợp lệ");
+            errorMessages.add("Diện tích phòng không được để trống");
+        } else if (trmodel.getAcreage().doubleValue() <= 0) {
+            errorMessages.add("Diện tích phòng phải là số dương");
         }
 
-        // Kiểm tra giới hạn số lượng khách
-        if (trmodel.getGuestLimit() == null) {
-            errorMessages.add("Giới hạn số lượng khách không được để trống");
-        } else if (!isValidGuestLimit(trmodel.getGuestLimit())) {
-            errorMessages.add("Giới hạn số lượng khách bạn nhập không hợp lệ");
+        if (trmodel.getGuestLimit() == null || trmodel.getGuestLimit().isEmpty()) {
+            errorMessages.add("Giới hạn khách không được để trống");
+        }
+
+        if (trmodel.getTypeBedId() == null) {
+            errorMessages.add("ID loại giường không được để trống");
+        }
+
+        if (!errorMessages.isEmpty()) {
+            throw new ValidationException(String.join(", ", errorMessages));
         }
 
         try {
@@ -135,6 +136,8 @@ public class TypeRoomService {
             typeRoom.setPrice(trmodel.getPrice());
             typeRoom.setBedCount(trmodel.getBedCount());
             typeRoom.setAcreage(trmodel.getAcreage());
+            Optional<TypeBed> typeBed = typeBedRepository.findById(trmodel.getTypeBedId());
+            typeRoom.setTypeBed(typeBed.get());
             typeRoom.setGuestLimit(String.valueOf(trmodel.getGuestLimit()));
             // Lưu thông tin loại phòng vào cơ sở dữ liệu và chuyển đổi sang DTO
             TypeRoom savedTypeRoom = typeRoomRepository.save(typeRoom);
@@ -146,14 +149,15 @@ public class TypeRoomService {
         }
     }
 
-
     // cập nhật dịch vụ phòng
     public TypeRoomDto updateTypeRoom(Integer trId, typeRoomModel trModel) {
         List<String> errorMessages = new ArrayList<>(); // Danh sách lưu trữ các thông báo lỗi
 
         // Kiểm tra xem loại phòng có tồn tại hay không
         Optional<TypeRoom> existingTypeRoomOpt = typeRoomRepository.findById(trId);
-
+        if (!existingTypeRoomOpt.isPresent()) {
+            throw new EntityNotFoundException("Loại phòng với ID " + trId + " không tồn tại.");
+        }
         TypeRoom existingTypeRoom = existingTypeRoomOpt.get();
 
         // Kiểm tra tên loại phòng
@@ -164,37 +168,32 @@ public class TypeRoomService {
             errorMessages.add("Tên loại phòng này đã tồn tại");
         }
 
-        // Kiểm tra giá
         if (trModel.getPrice() == null) {
             errorMessages.add("Giá không được để trống");
-        } else if (!isValidPrice(trModel.getPrice())) {
+        } else if (trModel.getPrice().doubleValue() <= 0) {
             errorMessages.add("Giá bạn nhập không hợp lệ");
-        }
-
-        // Kiểm tra loại giường
-        if (trModel.getBedType() == null || trModel.getBedType().isEmpty()) {
-            errorMessages.add("Loại giường không được để trống");
         }
 
         // Kiểm tra số lượng giường
         if (trModel.getBedCount() == null) {
             errorMessages.add("Số lượng giường không được để trống");
-        } else if (!isValidBedCount(trModel.getBedCount())) {
-            errorMessages.add("Số lượng giường không hợp lệ");
+        } else if (trModel.getBedCount() <= 0) {
+            errorMessages.add("Số lượng giường phải là số dương");
         }
 
         // Kiểm tra diện tích
         if (trModel.getAcreage() == null) {
-            errorMessages.add("Diện tích không được để trống");
-        } else if (!isValidAcreage(trModel.getAcreage())) {
-            errorMessages.add("Diện tích không hợp lệ");
+            errorMessages.add("Diện tích phòng không được để trống");
+        } else if (trModel.getAcreage().doubleValue() <= 0) {
+            errorMessages.add("Diện tích phòng phải là số dương");
         }
 
-        // Kiểm tra giới hạn khách
-        if (trModel.getGuestLimit() == null) {
-            errorMessages.add("Giới hạn số khách không được để trống");
-        } else if (!isValidGuestLimit(trModel.getGuestLimit())) {
-            errorMessages.add("Giới hạn số khách không hợp lệ");
+        if (trModel.getGuestLimit() == null || trModel.getGuestLimit().isEmpty()) {
+            errorMessages.add("Giới hạn khách không được để trống");
+        }
+
+        if (trModel.getTypeBedId() == null) {
+            errorMessages.add("ID loại giường không được để trống");
         }
 
         // Nếu có lỗi, ném ngoại lệ với thông báo lỗi
@@ -223,99 +222,14 @@ public class TypeRoomService {
         }
     }
 
-
     // xóa dịch vụ phòng
-    public void deleteServiceRoom(Integer id) {
+    public void deleteTypeRoom(Integer id) {
         if (!typeRoomRepository.existsById(id)) {
             throw new NoSuchElementException("Loại phòng phòng này không tồn tại"); // Ném ngoại lệ nếu không tồn tại
         }
         typeRoomRepository.deleteById(id);
     }
 
-    // checkValidation cho các trường dữ liệu
-    private boolean isValidPrice(Double price) {
-        // Kiểm tra xem giá có null hay không
-        if (price == null) {
-            return false; // không được để trống
-        }
-
-        // Kiểm tra xem giá có lớn hơn 0 hay không
-        if (price <= 0) {
-            return false; // Giá phải lớn hơn 0
-        }
-
-        // Kiểm tra xem số có hợp lệ hay không
-        String priceStr = price.toString();
-        // Nếu giá không phải là một số hợp lệ (chỉ chứa số và có thể có dấu phẩy)
-        if (!priceStr.matches("^[0-9]+(\\.[0-9]{1,2})?$")) {
-            return false; // số không hợp lệ
-        }
-
-        return true; // Nếu tất cả các kiểm tra đều hợp lệ
-    }
-
-    private boolean isValidBedCount(Integer bedCount) {
-        // Kiểm tra xem giá có null hay không
-        if (bedCount == null) {
-            return false; // không được để trống
-        }
-
-        // Kiểm tra xem giá có lớn hơn 0 hay không
-        if (bedCount <= 0) {
-            return false; // Giá phải lớn hơn 0
-        }
-
-        // Kiểm tra xem số có hợp lệ hay không
-        String bedCountStr = bedCount.toString();
-        // Nếu giá không phải là một số hợp lệ (chỉ chứa số và có thể có dấu phẩy)
-        if (!bedCountStr.matches("^[0-9]+(\\.[0-9]{1,2})?$")) {
-            return false; // số không hợp lệ
-        }
-
-        return true; // Nếu tất cả các kiểm tra đều hợp lệ
-    }
-
-    private boolean isValidAcreage(Double acreage) {
-        // Kiểm tra xem giá có null hay không
-        if (acreage == null) {
-            return false; // không được để trống
-        }
-
-        // Kiểm tra xem giá có lớn hơn 0 hay không
-        if (acreage <= 0) {
-            return false; // Giá phải lớn hơn 0
-        }
-
-        // Kiểm tra xem số có hợp lệ hay không
-        String acreageStr = acreage.toString();
-        // Nếu giá không phải là một số hợp lệ (chỉ chứa số và có thể có dấu phẩy)
-        if (!acreageStr.matches("^[0-9]+(\\.[0-9]{1,2})?$")) {
-            return false; // số không hợp lệ
-        }
-
-        return true; // Nếu tất cả các kiểm tra đều hợp lệ
-    }
-
-    private boolean isValidGuestLimit(Integer guestLimit) {
-        // Kiểm tra xem giá có null hay không
-        if (guestLimit == null) {
-            return false; // không được để trống
-        }
-
-        // Kiểm tra xem giá có lớn hơn 0 hay không
-        if (guestLimit <= 0) {
-            return false; // Giá phải lớn hơn 0
-        }
-
-        // Kiểm tra xem số có hợp lệ hay không
-        String guestLimitStr = guestLimit.toString();
-        // Nếu giá không phải là một số hợp lệ (chỉ chứa số và có thể có dấu phẩy)
-        if (!guestLimitStr.matches("^[0-9]+(\\.[0-9]{1,2})?$")) {
-            return false; // số không hợp lệ
-        }
-
-        return true; // Nếu tất cả các kiểm tra đều hợp lệ
-    }
 
     public TypeBedDto convert(TypeBed typeBed) {
         return new TypeBedDto(

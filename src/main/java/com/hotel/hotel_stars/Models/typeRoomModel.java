@@ -4,8 +4,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
 
 @Data
+@Getter
+@Setter
 public class typeRoomModel {
     private Integer id;
 
@@ -16,8 +21,8 @@ public class typeRoomModel {
     @Positive(message = "Giá phải lớn hơn 0")
     private Double price;
 
-    @NotBlank(message = "Tên loại giường không được để trống")
-    private String bedType;
+//    @NotBlank(message = "Tên loại giường không được để trống")
+    private Integer typeBedId;
 
     @NotNull(message = "Số lượng giường không được để trống")
     @Positive(message = "Số lượng giường phải lớn hơn 0")
@@ -27,7 +32,6 @@ public class typeRoomModel {
     @Positive(message = "Diện tích loại phòng phải lớn hơn 0")
     private Double acreage;
 
-    @NotNull(message = "Giới hạn khách không được để trống")
-    @Positive(message = "Giới hạn khách phải lớn hơn 0")
-    private Integer guestLimit;
+    @NotBlank(message = "Giới hạn khách không được để trống")
+    private String guestLimit;
 }

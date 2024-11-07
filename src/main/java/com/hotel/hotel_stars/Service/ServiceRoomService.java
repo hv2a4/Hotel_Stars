@@ -162,5 +162,4 @@ public class ServiceRoomService {
         return true; // Nếu tất cả các kiểm tra đều hợp lệ
     }
 
-
 }
