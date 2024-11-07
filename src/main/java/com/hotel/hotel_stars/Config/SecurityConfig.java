@@ -64,64 +64,67 @@ public class SecurityConfig {
                     return configuration;
                 }))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/account/login").authenticated()
-                        //--------------------------  code này dành cho mấy cái api không cần token
-                        // vu
-                        .requestMatchers(
-                                "/api/hotel/getAll",
-                                "/api/account/account-by-id/{username}",
-                                "/api/account/toggleDelete/{id}",
-                                "/api/account/get-info-staff",
-                                "/api/booking/**",
-                                "api/feedback/**",
-                                "api/service-hotel/**",
-                                "/api/status/**",
-                                "/api/image/**"
+                                .requestMatchers("/api/account/login").authenticated()
+                                //--------------------------  code này dành cho mấy cái api không cần token
+                                // vu
+                                .requestMatchers(
+                                        "/api/hotel/getAll",
+                                        "/api/account/account-by-id/{username}",
+                                        "/api/account/toggleDelete/{id}",
+                                        "/api/account/get-info-staff",
+                                        "/api/booking/**",
+                                        "api/feedback/**",
+                                        "api/service-hotel/**",
+                                        "/api/status/**",
+                                        "/api/image/**"
                                 )
-                        .permitAll()
-                        // vu
+                                .permitAll()
+                                // vu
 
-                        // nghia
-                        .requestMatchers("/api/account/register").permitAll()
-                        .requestMatchers("/api/account/getTokenGG").permitAll()
-                        .requestMatchers("/api/account/loginToken").permitAll()
-                        .requestMatchers("/api/account/sendEmail").permitAll()
-                        .requestMatchers("/api/discount/getAll").permitAll()
-                        .requestMatchers("/api/account/updateAccount").permitAll()
-                        .requestMatchers("/api/account/updatePassword").permitAll()
-                        .requestMatchers("/api/room/getCountRoom").permitAll()
-                        .requestMatchers("/api/booking/sendBooking").permitAll()
-                        .requestMatchers("/api/booking/confirmBooking").permitAll()
-                        // nghia
+                                // nghia
+                                .requestMatchers("/api/account/register").permitAll()
+                                .requestMatchers("/api/account/getTokenGG").permitAll()
+                                .requestMatchers("/api/account/loginToken").permitAll()
+                                .requestMatchers("/api/account/sendEmail").permitAll()
+                                .requestMatchers("/api/discount/getAll").permitAll()
+                                .requestMatchers("/api/account/updateAccount").permitAll()
+                                .requestMatchers("/api/account/updatePassword").permitAll()
+                                .requestMatchers("/api/room/getCountRoom").permitAll()
+                                .requestMatchers("/api/booking/sendBooking").permitAll()
+                                .requestMatchers("/api/booking/confirmBooking").permitAll()
+                                // nghia
 
-                        //son
-                        .requestMatchers("/api/amenities-type-room/**").permitAll()
-                        .requestMatchers("/api/type-room/**").permitAll()
-                        //son
+                                //son
+                                .requestMatchers("/api/amenities-type-room/**").permitAll()
+                                .requestMatchers("/api/type-room/**").permitAll()
+                                //son
 
-                        //---------------------------api cần token có phân quyền Customer  ( khách hàng )
-                        //vu
-                        .requestMatchers("api/discount/**").hasAnyAuthority("Customer")
-                        //vu
-
-
-                        //--------------------------- api cần token có phân quyền Staff  ( nhân viên )
-                        .requestMatchers("/api/hotel/login").hasAnyAuthority("Staff", "HotelOwner")
-                        .requestMatchers("/api/hotel/getAll").hasAnyAuthority("Staff", "HotelOwner")
+                                //---------------------------api cần token có phân quyền Customer  ( khách hàng )
+                                //vu
+                                .requestMatchers("api/discount/**").hasAnyAuthority("Customer")
+                                //vu
 
 
-                        //--------------------------- api cần token có phân quyền HotelOwner  (chủ  khách sạn )
-                        .requestMatchers("/api/account/login").hasAuthority("HotelOwner")
-                        //vu
-                        .requestMatchers(
-                                "api/discount/**",
-                                "api/service-package/**",
-                                "api/room/**",
-                                "/api/account/add-account-staff",
-                                "/api/account/update-account-staff/{id}",
-                                "/api/account/delete-account-staff/{id}",
-                                "api/hotel/update-hotel/{id}")
-                        .hasAnyAuthority("HotelOwner")
+                                //--------------------------- api cần token có phân quyền Staff  ( nhân viên )
+                                .requestMatchers("/api/hotel/login").hasAnyAuthority("Staff", "HotelOwner")
+                                .requestMatchers("/api/hotel/getAll").hasAnyAuthority("Staff", "HotelOwner")
+
+
+                                //--------------------------- api cần token có phân quyền HotelOwner  (chủ  khách sạn )
+                                .requestMatchers("/api/account/login").hasAuthority("HotelOwner")
+                                //vu
+                                .requestMatchers("api/overview/room-types/get-all","api/overview/room-types/get-by-id").hasAuthority("HotelOwner")
+                                //vu
+                                //vu
+                                .requestMatchers(
+                                        "api/discount/**",
+                                        "api/service-package/**",
+                                        "api/room/**",
+                                        "/api/account/add-account-staff",
+                                        "/api/account/update-account-staff/{id}",
+                                        "/api/account/delete-account-staff/{id}",
+                                        "api/hotel/update-hotel/{id}")
+                                .hasAnyAuthority("HotelOwner")
                         //vu
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
