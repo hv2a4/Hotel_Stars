@@ -1,5 +1,6 @@
 package com.hotel.hotel_stars.DTO;
 
+import com.hotel.hotel_stars.Entity.ServiceRoom;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,6 +9,7 @@ import lombok.Value;
 import org.checkerframework.checker.units.qual.A;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * DTO for {@link com.hotel.hotel_stars.Entity.TypeServiceRoom}
@@ -19,4 +21,5 @@ public class TypeServiceRoomDto implements Serializable {
     Integer id;
     @Size(max = 255)
     String serviceRoomName;
+    //private List<ServiceRoomDto> serviceRooms;
 }

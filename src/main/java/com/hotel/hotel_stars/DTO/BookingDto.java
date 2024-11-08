@@ -29,4 +29,5 @@ public class BookingDto implements Serializable {
     Instant endAt;
     Boolean statusPayment;
     AccountDto accountDto;
+    //List<BookingRoomDto> bookingRooms;
 }

@@ -73,5 +73,7 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
             booking_room.check_in ASC
         """, nativeQuery = true)
     List<Object[]> findBookingsByTypeRoomIdOrderedByCheckIn(int typeRoomId);
+    @Query("select r from Room r where r.floor.id = ?1")
+    List<Room> findByFloorId(Integer floorId);
 
 }

@@ -77,7 +77,8 @@ public class SecurityConfig {
                                         "/api/status/**",
                                         "/api/image/**",
                                         "api/hotel/**",
-                                        "/api/status-room/getAll"
+                                        "/api/status-room/getAll",
+                                        "/api/floor/getAll"
                                 )
                                 .permitAll()
                                 // vu
@@ -112,7 +113,6 @@ public class SecurityConfig {
                                 //--------------------------- api cần token có phân quyền Staff  ( nhân viên )
                                 .requestMatchers("/api/hotel/login").hasAnyAuthority("Staff", "HotelOwner")
                                 .requestMatchers("/api/hotel/getAll").hasAnyAuthority("Staff", "HotelOwner")
-
 
                                 // nghia
                                 .requestMatchers("/api/account/register").permitAll()
