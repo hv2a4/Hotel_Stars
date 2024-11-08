@@ -18,13 +18,20 @@ public class TypeRoomOverviewController {
         return ResponseEntity.ok(typeRoomOverviewService.getTypeRoomOverview());
     }
 
+    // tìm kiếm danh sách phòng của loại phòng theo ID
     @GetMapping("get-by-id")
     public ResponseEntity<?> getTypeRoomOverviewById(@RequestParam Integer id) {
         return ResponseEntity.ok(typeRoomOverviewService.seleteTypeRoom(id));
     }
 
+    // danh sách đặt phòng
     @GetMapping("get-list-room")
     public ResponseEntity<?> getTypeRoomOverviewList() {
         return ResponseEntity.ok(typeRoomOverviewService.getAllListRoom());
+    }
+
+    @GetMapping("booking-history")
+    public ResponseEntity<?> getTypeRoomOverviewBookingHistory(@RequestParam Integer id) {
+        return ResponseEntity.ok(typeRoomOverviewService.getRoomReservationList(id));
     }
 }

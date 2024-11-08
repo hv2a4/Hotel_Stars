@@ -30,7 +30,6 @@ public class FeedbackService {
 
         // Tạo một BookingDto và gán AccountDto vào
         BookingDto bookingDto = new BookingDto();
-        bookingDto.setAccountDto(accountDto);
 
         // Chuyển đổi Invoice sang InvoiceDto và gán BookingDto
         InvoiceDto invoiceDto = modelMapper.map(feedback.getInvoice(), InvoiceDto.class);

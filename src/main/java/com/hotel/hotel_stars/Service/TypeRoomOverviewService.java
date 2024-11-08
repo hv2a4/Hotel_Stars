@@ -2,6 +2,7 @@ package com.hotel.hotel_stars.Service;
 
 import com.hotel.hotel_stars.DTO.RoomDto;
 import com.hotel.hotel_stars.DTO.Select.RoomInfoDTO;
+import com.hotel.hotel_stars.DTO.Select.RoomReservationDTO;
 import com.hotel.hotel_stars.DTO.Select.TypeRoomOverviewDTO;
 import com.hotel.hotel_stars.DTO.TypeRoomDto;
 import com.hotel.hotel_stars.DTO.TypeRoomImageDto;
@@ -14,6 +15,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,7 +78,7 @@ public class TypeRoomOverviewService {
         return listRoom.stream().map((element) -> modelMapper.map(element, RoomDto.class)).toList();
     }
 
-    public List<RoomInfoDTO> getAllListRoom(){
+    public List<RoomInfoDTO> getAllListRoom() {
         List<Object[]> roomList = roomRepository.findAllRoomInfo();
         List<RoomInfoDTO> roomInfoDTOList = new ArrayList<>();
         roomList.forEach(row -> {
@@ -92,4 +94,22 @@ public class TypeRoomOverviewService {
         });
         return roomInfoDTOList;
     }
+
+    public List<RoomReservationDTO> getRoomReservationList(Integer IdTypeRoom) {
+        List<Object[]> list = roomRepository.findBookingsByTypeRoomIdOrderedByCheckIn(IdTypeRoom);
+        List<RoomReservationDTO> roomReservationDTOList = new ArrayList<>();
+        list.forEach(row -> {
+            RoomReservationDTO dto = new RoomReservationDTO(
+                    (String) row[0],  // room_name
+                    (String) row[1],  // type_room_name
+                    ((java.sql.Timestamp) row[2]).toLocalDateTime(),  // check_in
+                    ((java.sql.Timestamp) row[3]).toLocalDateTime(),  // check_out
+                    (String) row[4],  // guest_name
+                    (String) row[5]   // status_room_name
+            );
+            roomReservationDTOList.add(dto);
+        });
+        return roomReservationDTOList;
+    }
+
 }
