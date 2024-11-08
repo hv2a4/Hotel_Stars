@@ -76,17 +76,17 @@ public class RoomService {
         }
     }
 
-    public List<countDto> displayCounts() {
+    public countDto displayCounts() {
         List<Object[]> results = roomRepository.getCounts();
-        List<countDto> listDto = new ArrayList<>();
+        countDto dto=new countDto();
         for (Object[] result : results) {
-            Long countStaff = ((Number) result[0]).longValue(); // Chuyển đổi đúng kiểu
-            Long countCustomers = ((Number) result[1]).longValue(); // Chuyển đổi đúng kiểu
-            Long totalRooms = ((Number) result[2]).longValue(); // Chuyển đổi đúng kiểu
-            countDto dto =new countDto(countStaff,countCustomers,totalRooms);
-            listDto.add(dto);
+            // Chuyển đổi đúng kiểu
+            dto.setCountStaff( ((Number) result[0]).longValue());
+            dto.setCountCustomers(((Number) result[1]).longValue());
+            dto.setTotalRoom(((Number) result[2]).longValue());
+
         }
-        return listDto;
+        return dto;
     }
 
     public StatusResponseDto PutRoom(RoomModel roomModel) {

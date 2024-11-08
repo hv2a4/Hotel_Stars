@@ -32,7 +32,6 @@ public class TypeRoomService {
         LocalDate endDate = LocalDate.parse("2023-10-31");
         List<Object[]> results = typeRoomRepository.findAllTypeRoomDetailsWithCost(startDate, endDate);
         List<FindTypeRoomDto> dtoList = new ArrayList<>();
-
         results.stream().forEach(row -> {
             String typeRoomName = (String) row[0];
             Double price = (Double) row[1];
@@ -49,11 +48,8 @@ public class TypeRoomService {
                 existingDto = new FindTypeRoomDto(typeRoomName, price, acreage, guestLimit, new ArrayList<>(), estCost, image);
                 dtoList.add(existingDto);
             }
-
-            // Thêm tiện nghi vào danh sách
             existingDto.getAmenitiesTypeRoomNames().add(amenitiesTypeRoomName);
         });
-
         return dtoList; // Trả về danh sách DTO
     }
 

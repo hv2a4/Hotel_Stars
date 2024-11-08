@@ -1,5 +1,6 @@
 package com.hotel.hotel_stars.Entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -46,5 +47,11 @@ public class Booking {
     private StatusBooking status;
 
     @OneToMany(mappedBy = "booking")
+    @JsonManagedReference
     List<BookingRoom> bookingRooms;
+
+    @Override
+    public String toString() {
+        return "Booking{id=" + id + ", StDate=" + startAt + "}";
+    }
 }

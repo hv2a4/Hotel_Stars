@@ -2,11 +2,13 @@ package com.hotel.hotel_stars.Service;
 
 import com.hotel.hotel_stars.Config.UserInfoService;
 import com.hotel.hotel_stars.DTO.AccountDto;
+import com.hotel.hotel_stars.DTO.BookingDto;
 import com.hotel.hotel_stars.DTO.RoleDto;
 import com.hotel.hotel_stars.DTO.Select.AccountBookingDTO;
 import com.hotel.hotel_stars.Config.JwtService;
 import com.hotel.hotel_stars.DTO.Select.AccountInfo;
 import com.hotel.hotel_stars.Entity.Account;
+import com.hotel.hotel_stars.Entity.Booking;
 import com.hotel.hotel_stars.Entity.Role;
 import com.hotel.hotel_stars.Exception.CustomValidationException;
 import com.hotel.hotel_stars.Exception.ValidationError;
@@ -37,6 +39,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class AccountService {
@@ -68,7 +71,6 @@ public class AccountService {
                 account.getRole().getId(),
                 account.getRole().getRoleName()
         ) : null;
-
         return new AccountDto(
                 account.getId(),
                 account.getUsername(),
@@ -78,7 +80,8 @@ public class AccountService {
                 account.getAvatar(),
                 account.getGender(),
                 account.getIsDelete(),
-                roleDto // Ánh xạ RoleDto vào AccountDto
+                roleDto,
+                convertToBookingDtoList(account.getBookingList())// Ánh xạ RoleDto vào AccountDto
         );
     }
 
@@ -97,6 +100,25 @@ public class AccountService {
         return account;
     }
 
+    public List<BookingDto> convertToBookingDtoList(List<Booking> bookings) {
+        bookings.forEach(bk->{
+            System.out.println("id bk: "+bk.getId());
+        });
+        return bookings.stream()
+                .map(this::convertToBookingDto)  // Gọi hàm chuyển đổi từng Booking
+                .toList();
+    }
+
+    private BookingDto convertToBookingDto(Booking booking) {
+        System.out.println("ggg: "+booking.getId());
+        return new BookingDto(
+                booking.getId(),
+                booking.getCreateAt(),
+                booking.getStartAt(),
+                booking.getEndAt(),
+                booking.getStatusPayment()
+        );
+    }
 
     public List<AccountDto> getAllAccounts() {
         List<Account> accounts = accountRepository.findAll();
@@ -199,16 +221,12 @@ public class AccountService {
     public boolean sendPassword(String token){
         String username = jwtService.extractUsername(token);
         String randomPassword = paramServices.generateTemporaryPassword();
-        System.out.println(username);
         Optional<Account> accounts = accountRepository.findByUsername(username);
-        System.out.println("email được tìm thấy: "+ accounts.get().getEmail());
-
         String passwords=encoder.encode(randomPassword) ;
         accounts.get().setPasswords(passwords);
         System.out.println("mật khẩu vừa đổi: "+accounts.get().getPasswords());
         try {
             accountRepository.save( accounts.get());
-            System.out.println(randomPassword);
             paramServices.sendEmails(accounts.get().getEmail(), "Mật khẩu mới", "Mật Khẩu mới: "+randomPassword);
             return true;
         } catch (Exception e) {

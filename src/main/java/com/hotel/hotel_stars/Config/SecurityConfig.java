@@ -109,8 +109,19 @@ public class SecurityConfig {
                                 .requestMatchers("/api/hotel/getAll").hasAnyAuthority("Staff", "HotelOwner")
 
 
-                        //--------------------------- api cần token có phân quyền Staff  ( nhân viên )
-                        .requestMatchers("/api/hotel/login").hasAnyAuthority("Staff", "HotelOwner")
+                        // nghia
+                        .requestMatchers("/api/account/register").permitAll()
+                        .requestMatchers("/api/account/getTokenGG").permitAll()
+                        .requestMatchers("/api/account/loginToken").permitAll()
+                        .requestMatchers("/api/account/sendEmail").permitAll()
+                        .requestMatchers("/api/account/getAll").permitAll()
+                        .requestMatchers("/api/account/updateAccount").permitAll()
+                        .requestMatchers("/api/account/updatePassword").permitAll()
+                        .requestMatchers("/api/room/getCountRoom").permitAll()
+                        .requestMatchers("/api/booking/sendBooking").permitAll()
+                        .requestMatchers("/api/booking/confirmBooking").permitAll()
+                        .requestMatchers("/api/booking/getAll").permitAll()
+                        // nghia
 
 
                         //--------------------------- api cần token có phân quyền HotelOwner  (chủ  khách sạn )
