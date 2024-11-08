@@ -1,6 +1,5 @@
 package com.hotel.hotel_stars.Controller;
 
-import com.hotel.hotel_stars.Entity.TypeRoom;
 import com.hotel.hotel_stars.Service.TypeRoomOverviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,5 +21,10 @@ public class TypeRoomOverviewController {
     @GetMapping("get-by-id")
     public ResponseEntity<?> getTypeRoomOverviewById(@RequestParam Integer id) {
         return ResponseEntity.ok(typeRoomOverviewService.seleteTypeRoom(id));
+    }
+
+    @GetMapping("get-list-room")
+    public ResponseEntity<?> getTypeRoomOverviewList() {
+        return ResponseEntity.ok(typeRoomOverviewService.getAllListRoom());
     }
 }

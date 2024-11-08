@@ -1,5 +1,6 @@
 package com.hotel.hotel_stars.Repository;
 
+import com.hotel.hotel_stars.DTO.Select.RoomInfoDTO;
 import com.hotel.hotel_stars.Entity.Room;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -33,4 +34,22 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
     List<Object[]> getRoomTypeData();
 
     List<Room> findByTypeRoomId(Integer typeRoomId);
+
+    @Query(value = """
+                SELECT 
+                    r.roomName,
+                    tr.typeRoomName,
+                    f.floorName,
+                    sr.statusRoomName,
+                    r.id,
+                    tr.id,
+                    sr.id
+                FROM Room r
+                JOIN r.typeRoom tr
+                JOIN r.floor f
+                JOIN r.statusRoom sr
+            """)
+    List<Object[]> findAllRoomInfo();
+
+
 }

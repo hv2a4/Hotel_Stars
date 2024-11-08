@@ -1,6 +1,7 @@
 package com.hotel.hotel_stars.Service;
 
 import com.hotel.hotel_stars.DTO.RoomDto;
+import com.hotel.hotel_stars.DTO.Select.RoomInfoDTO;
 import com.hotel.hotel_stars.DTO.Select.TypeRoomOverviewDTO;
 import com.hotel.hotel_stars.DTO.TypeRoomDto;
 import com.hotel.hotel_stars.DTO.TypeRoomImageDto;
@@ -46,7 +47,6 @@ public class TypeRoomOverviewService {
             TypeRoomOverviewDTO typeRoomOverviewDTO = new TypeRoomOverviewDTO();
             Long roomCount = (Long) row[2];
             Integer imageId = (Integer) row[7];
-            Integer imageType = (Integer) row[0];
 
             typeRoomOverviewDTO.setTypeId((Integer) row[0]);
             typeRoomOverviewDTO.setTypeName((String) row[1]);
@@ -74,5 +74,22 @@ public class TypeRoomOverviewService {
     public List<RoomDto> seleteTypeRoom(Integer IdTypeRoom) {
         List<Room> listRoom = roomRepository.findByTypeRoomId(IdTypeRoom);
         return listRoom.stream().map((element) -> modelMapper.map(element, RoomDto.class)).toList();
+    }
+
+    public List<RoomInfoDTO> getAllListRoom(){
+        List<Object[]> roomList = roomRepository.findAllRoomInfo();
+        List<RoomInfoDTO> roomInfoDTOList = new ArrayList<>();
+        roomList.forEach(row -> {
+            RoomInfoDTO roomInfoDTO = new RoomInfoDTO();
+            roomInfoDTO.setRoomName((String) row[0]);
+            roomInfoDTO.setTypeRoomName((String) row[1]);
+            roomInfoDTO.setFloorName((String) row[2]);
+            roomInfoDTO.setStatusRoomName((String) row[3]);
+            roomInfoDTO.setRoomId((Integer) row[4]);
+            roomInfoDTO.setTypeRoomId((Integer) row[5]);
+            roomInfoDTO.setStatusRoomId((Integer) row[6]);
+            roomInfoDTOList.add(roomInfoDTO);
+        });
+        return roomInfoDTOList;
     }
 }

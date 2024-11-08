@@ -104,7 +104,6 @@ public class SecurityConfig {
                                 .requestMatchers("api/discount/**").hasAnyAuthority("Customer")
                                 //vu
 
-
                                 //--------------------------- api cần token có phân quyền Staff  ( nhân viên )
                                 .requestMatchers("/api/hotel/login").hasAnyAuthority("Staff", "HotelOwner")
                                 .requestMatchers("/api/hotel/getAll").hasAnyAuthority("Staff", "HotelOwner")
@@ -113,7 +112,7 @@ public class SecurityConfig {
                                 //--------------------------- api cần token có phân quyền HotelOwner  (chủ  khách sạn )
                                 .requestMatchers("/api/account/login").hasAuthority("HotelOwner")
                                 //vu
-                                .requestMatchers("api/overview/room-types/get-all","api/overview/room-types/get-by-id").hasAuthority("HotelOwner")
+                                .requestMatchers("api/overview/room-types/get-all","api/overview/room-types/get-by-id","api/overview/room-types/get-list-room").hasAuthority("HotelOwner")
                                 //vu
                                 //vu
                                 .requestMatchers(
