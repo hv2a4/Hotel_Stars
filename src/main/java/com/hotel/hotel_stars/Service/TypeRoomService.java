@@ -67,6 +67,7 @@ public class TypeRoomService {
         typeBedDto.setBedName(tr.getTypeBed().getBedName());
         return new TypeRoomDto(tr.getId(), tr.getTypeRoomName(), tr.getPrice(), tr.getBedCount(), tr.getAcreage(), tr.getGuestLimit(), typeBedDto,tr.getDescribes());
     }
+    
 
     // Hiển thị danh sách dịch vụ phòng
     public List<TypeRoomDto> getAllTypeRooms() {

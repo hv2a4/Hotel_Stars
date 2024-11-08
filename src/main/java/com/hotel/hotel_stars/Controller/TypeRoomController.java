@@ -115,4 +115,5 @@ public class TypeRoomController {
     public ResponseEntity<List<TypeRoomDto>> getTop3TypeRooms() {
         return ResponseEntity.ok(trservice.getTypeRooms());
     }
+    
 }

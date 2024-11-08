@@ -22,7 +22,8 @@ public class AmenitiesTypeRoomService {
     public AmenitiesTypeRoomDto convertToDto(AmenitiesTypeRoom atr) {
         return new AmenitiesTypeRoomDto(
                 atr.getId(),
-                atr.getAmenitiesTypeRoomName()
+                atr.getAmenitiesTypeRoomName(),
+                atr.getIcon()
         );
     }
 
