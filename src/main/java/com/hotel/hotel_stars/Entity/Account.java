@@ -42,7 +42,7 @@ public class Account {
     @Column(name = "gender")
     private Boolean gender;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id")
     private Role role;
 

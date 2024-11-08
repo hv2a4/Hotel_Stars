@@ -28,5 +28,5 @@ public class BookingDto implements Serializable {
     Instant startAt;
     Instant endAt;
     Boolean statusPayment;
-
+    AccountDto accountDto;
 }
