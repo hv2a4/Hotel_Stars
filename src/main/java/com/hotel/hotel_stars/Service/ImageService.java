@@ -251,17 +251,9 @@ public class ImageService {
 		return results;
 	}
 
-    public List<TypeRoomImageDto> getTypeRoomImageModelByImageName(List<TypeRoomImageModel> typeRoomImageModels) {
-        List<TypeRoomImageDto> results = new ArrayList<>();
-        typeRoomImageModels.forEach(typeRoomImageModel -> {
-            TypeRoomImage typeRoomImage = typeRoomImageRepository.findById(typeRoomImageModel.getId()).get();
-            results.add(toDto(typeRoomImage));
-        });
-        return results;
+    public List<TypeRoomImageDto> getTypeRoomImageModelByTypeRoomId(Integer typeRoomId) {
+		List <TypeRoomImage> room = typeRoomImageRepository.findByTypeRoomId(typeRoomId);
+        return room.stream().map(this::toDto).toList();
     }
 
-    public TypeRoomImageDto getTypeRoomImageModelByTypeRoomId(Integer typeRoomId) {
-        TypeRoomImage room = typeRoomImageRepository.findByTypeRoomId(typeRoomId);
-        return toDto(room);
-    }
 }
