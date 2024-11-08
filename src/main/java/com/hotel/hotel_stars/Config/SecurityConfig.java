@@ -68,7 +68,6 @@ public class SecurityConfig {
                         //--------------------------  code này dành cho mấy cái api không cần token
                         // vu
                         .requestMatchers(
-                                "/api/hotel/getAll",
                                 "/api/account/account-by-id/{username}",
                                 "/api/account/toggleDelete/{id}",
                                 "/api/account/get-info-staff",
@@ -76,7 +75,8 @@ public class SecurityConfig {
                                 "api/feedback/**",
                                 "api/service-hotel/**",
                                 "/api/status/**",
-                                "/api/image/**"
+                                "/api/image/**",
+                                "api/hotel/**"
                                 )
                         .permitAll()
                         // vu
@@ -107,7 +107,6 @@ public class SecurityConfig {
 
                         //--------------------------- api cần token có phân quyền Staff  ( nhân viên )
                         .requestMatchers("/api/hotel/login").hasAnyAuthority("Staff", "HotelOwner")
-                        .requestMatchers("/api/hotel/getAll").hasAnyAuthority("Staff", "HotelOwner")
 
 
                         //--------------------------- api cần token có phân quyền HotelOwner  (chủ  khách sạn )
@@ -117,12 +116,17 @@ public class SecurityConfig {
                                 "api/discount/**",
                                 "api/service-package/**",
                                 "api/room/**",
-                                "/api/account/add-account-staff",
+//                                "/api/account/add-account-staff",
                                 "/api/account/update-account-staff/{id}",
                                 "/api/account/delete-account-staff/{id}",
                                 "api/hotel/update-hotel/{id}")
                         .hasAnyAuthority("HotelOwner")
                         //vu
+                        
+                        //khoi
+                        .requestMatchers("/api/account/getAll").permitAll()
+                        .requestMatchers("/api/account/add-account-staff").permitAll()
+                        //khoi
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
