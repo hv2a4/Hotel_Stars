@@ -64,19 +64,19 @@ public class SecurityConfig {
                     return configuration;
                 }))
                 .authorizeHttpRequests(auth -> auth
-                                .requestMatchers("/api/account/login").authenticated()
-                                //--------------------------  code này dành cho mấy cái api không cần token
-                                // vu
-                                .requestMatchers(
-                                        "/api/hotel/getAll",
-                                        "/api/account/account-by-id/{username}",
-                                        "/api/account/toggleDelete/{id}",
-                                        "/api/account/get-info-staff",
-                                        "/api/booking/**",
-                                        "api/feedback/**",
-                                        "api/service-hotel/**",
-                                        "/api/status/**",
-                                        "/api/image/**"
+                        .requestMatchers("/api/account/login").authenticated()
+                        //--------------------------  code này dành cho mấy cái api không cần token
+                        // vu
+                        .requestMatchers(
+                                "/api/account/account-by-id/{username}",
+                                "/api/account/toggleDelete/{id}",
+                                "/api/account/get-info-staff",
+                                "/api/booking/**",
+                                "api/feedback/**",
+                                "api/service-hotel/**",
+                                "/api/status/**",
+                                "/api/image/**",
+                                "api/hotel/**"
                                 )
                                 .permitAll()
                                 // vu
@@ -109,22 +109,28 @@ public class SecurityConfig {
                                 .requestMatchers("/api/hotel/getAll").hasAnyAuthority("Staff", "HotelOwner")
 
 
-                                //--------------------------- api cần token có phân quyền HotelOwner  (chủ  khách sạn )
-                                .requestMatchers("/api/account/login").hasAuthority("HotelOwner")
-                                //vu
-                                .requestMatchers("api/overview/room-types/get-all","api/overview/room-types/get-by-id","api/overview/room-types/get-list-room").hasAuthority("HotelOwner")
-                                //vu
-                                //vu
-                                .requestMatchers(
-                                        "api/discount/**",
-                                        "api/service-package/**",
-                                        "api/room/**",
-                                        "/api/account/add-account-staff",
-                                        "/api/account/update-account-staff/{id}",
-                                        "/api/account/delete-account-staff/{id}",
-                                        "api/hotel/update-hotel/{id}")
-                                .hasAnyAuthority("HotelOwner")
+                        //--------------------------- api cần token có phân quyền Staff  ( nhân viên )
+                        .requestMatchers("/api/hotel/login").hasAnyAuthority("Staff", "HotelOwner")
+
+
+                        //--------------------------- api cần token có phân quyền HotelOwner  (chủ  khách sạn )
+                        .requestMatchers("/api/account/login").hasAuthority("HotelOwner")
                         //vu
+                        .requestMatchers(
+                                "api/discount/**",
+                                "api/service-package/**",
+                                "api/room/**",
+//                                "/api/account/add-account-staff",
+                                "/api/account/update-account-staff/{id}",
+                                "/api/account/delete-account-staff/{id}",
+                                "api/hotel/update-hotel/{id}")
+                        .hasAnyAuthority("HotelOwner")
+                        //vu
+                        
+                        //khoi
+                        .requestMatchers("/api/account/getAll").permitAll()
+                        .requestMatchers("/api/account/add-account-staff").permitAll()
+                        //khoi
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
