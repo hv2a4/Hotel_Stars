@@ -60,10 +60,10 @@ public class TypeRoomController {
     }
 
 
-    @PutMapping("update/{id}")
-    public ResponseEntity<?> updateTypeRoom(@PathVariable Integer id, @Valid @RequestBody typeRoomModel trmodel) {
+    @PutMapping("update")
+    public ResponseEntity<?> updateTypeRoom(@Valid @RequestBody typeRoomModel trmodel) {
         try {
-            TypeRoomDto updatedTypeRoom = trservice.updateTypeRoom(id, trmodel);
+            TypeRoomDto updatedTypeRoom = trservice.updateTypeRoom(trmodel);
             Map<String, Object> response = new HashMap<>();
             response.put("code", 200);
             response.put("message", "Cập nhật dịch vụ phòng thành công");

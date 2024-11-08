@@ -76,7 +76,8 @@ public class SecurityConfig {
                                         "api/service-hotel/**",
                                         "/api/status/**",
                                         "/api/image/**",
-                                        "api/hotel/**"
+                                        "api/hotel/**",
+                                        "/api/status-room/getAll"
                                 )
                                 .permitAll()
                                 // vu
@@ -94,9 +95,13 @@ public class SecurityConfig {
                                 .requestMatchers("/api/booking/confirmBooking").permitAll()
                                 // nghia
 
+                                //khoi
+                                .requestMatchers("/api/account/getAll").permitAll()
+                                .requestMatchers("/api/account/add-account-staff").permitAll()
+                                //khoi
+
                                 //son
-                                .requestMatchers("/api/amenities-type-room/**").permitAll()
-                                .requestMatchers("/api/type-room/**").permitAll()
+                                .requestMatchers("/api/amenities-type-room/getAll").permitAll()
                                 //son
 
                                 //---------------------------api cần token có phân quyền Customer  ( khách hàng )
@@ -145,10 +150,14 @@ public class SecurityConfig {
                                 ).hasAnyAuthority("HotelOwner")
                                 //vu
 
-                                //khoi
-                                .requestMatchers("/api/account/getAll").permitAll()
-                                .requestMatchers("/api/account/add-account-staff").permitAll()
-                        //khoi
+                                //son
+                                .requestMatchers("/api/amenities-type-room/add").hasAnyAuthority("HotelOwner")
+                                .requestMatchers("/api/amenities-type-room/update").hasAnyAuthority("HotelOwner")
+                                .requestMatchers("/api/amenities-type-room/delete/").hasAnyAuthority("HotelOwner")
+
+                                .requestMatchers("/api/type-room/**").permitAll()
+                        //son
+
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())

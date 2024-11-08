@@ -20,4 +20,5 @@ public class TypeRoomDto implements Serializable {
     Double acreage;
     String guestLimit;
     TypeBedDto typeBedDto;
+    String describes;
 }

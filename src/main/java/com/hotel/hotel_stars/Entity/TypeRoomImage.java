@@ -20,5 +20,4 @@ public class TypeRoomImage {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "type_room_id")
     private TypeRoom typeRoom;
-
 }

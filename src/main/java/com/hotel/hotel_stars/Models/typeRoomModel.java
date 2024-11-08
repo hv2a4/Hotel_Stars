@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 
 @Data
 @Getter
@@ -21,7 +23,6 @@ public class typeRoomModel {
     @Positive(message = "Giá phải lớn hơn 0")
     private Double price;
 
-//    @NotBlank(message = "Tên loại giường không được để trống")
     private Integer typeBedId;
 
     @NotNull(message = "Số lượng giường không được để trống")
@@ -34,4 +35,8 @@ public class typeRoomModel {
 
     @NotBlank(message = "Giới hạn khách không được để trống")
     private String guestLimit;
+
+    private String describes;
+
+    private List<String> imageNames;
 }

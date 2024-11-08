@@ -6,8 +6,10 @@ import com.hotel.hotel_stars.DTO.TypeRoomDto;
 import com.hotel.hotel_stars.DTO.selectDTO.FindTypeRoomDto;
 import com.hotel.hotel_stars.Entity.TypeBed;
 import com.hotel.hotel_stars.Entity.TypeRoom;
+import com.hotel.hotel_stars.Entity.TypeRoomImage;
 import com.hotel.hotel_stars.Models.typeRoomModel;
 import com.hotel.hotel_stars.Repository.TypeBedRepository;
+import com.hotel.hotel_stars.Repository.TypeRoomImageRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ValidationException;
@@ -27,6 +29,9 @@ public class TypeRoomService {
 
     @Autowired
     TypeBedRepository typeBedRepository;
+
+    @Autowired
+    TypeRoomImageRepository typeRoomImageRepository;
 
     // Tìm kiếm loại phòng
     public List<FindTypeRoomDto> getFindTypeRoom() {
@@ -60,7 +65,7 @@ public class TypeRoomService {
         TypeBedDto typeBedDto = new TypeBedDto();
         typeBedDto.setId(tr.getTypeBed().getId());
         typeBedDto.setBedName(tr.getTypeBed().getBedName());
-        return new TypeRoomDto(tr.getId(), tr.getTypeRoomName(), tr.getPrice(), tr.getBedCount(), tr.getAcreage(), tr.getGuestLimit(), typeBedDto);
+        return new TypeRoomDto(tr.getId(), tr.getTypeRoomName(), tr.getPrice(), tr.getBedCount(), tr.getAcreage(), tr.getGuestLimit(), typeBedDto,tr.getDescribes());
     }
 
     // Hiển thị danh sách dịch vụ phòng
@@ -107,7 +112,9 @@ public class TypeRoomService {
         if (trmodel.getTypeBedId() == null) {
             errorMessages.add("ID loại giường không được để trống");
         }
-
+        if (trmodel.getImageNames() == null || trmodel.getImageNames().isEmpty()) {
+            errorMessages.add("Danh sách hình ảnh không được để trống");
+        }
         if (!errorMessages.isEmpty()) {
             throw new ValidationException(String.join(", ", errorMessages));
         }
@@ -122,9 +129,23 @@ public class TypeRoomService {
             typeRoom.setAcreage(trmodel.getAcreage());
             Optional<TypeBed> typeBed = typeBedRepository.findById(trmodel.getTypeBedId());
             typeRoom.setTypeBed(typeBed.get());
-            typeRoom.setGuestLimit(String.valueOf(trmodel.getGuestLimit()));
-            // Lưu thông tin loại phòng vào cơ sở dữ liệu và chuyển đổi sang DTO
+            typeRoom.setGuestLimit(trmodel.getGuestLimit());
+            typeRoom.setDescribes(trmodel.getDescribes());
+
+            // Lưu thông tin loại phòng vào cơ sở dữ liệu
             TypeRoom savedTypeRoom = typeRoomRepository.save(typeRoom);
+
+            // Lưu hình ảnh vào bảng TypeRoomImage
+            if (trmodel.getImageNames() != null && !trmodel.getImageNames().isEmpty()) {
+                for (String imageName : trmodel.getImageNames()) {
+                    TypeRoomImage typeRoomImage = new TypeRoomImage();
+                    typeRoomImage.setImageName(imageName);
+                    typeRoomImage.setTypeRoom(savedTypeRoom); // Gán phòng vào hình ảnh
+                    typeRoomImageRepository.save(typeRoomImage); // Lưu hình ảnh
+                }
+            }
+
+            // Chuyển đổi và trả về DTO
             return convertTypeRoomDto(savedTypeRoom);
         } catch (DataIntegrityViolationException e) {
             throw new RuntimeException("Có lỗi xảy ra do vi phạm tính toàn vẹn dữ liệu", e);
@@ -134,13 +155,13 @@ public class TypeRoomService {
     }
 
     // cập nhật dịch vụ phòng
-    public TypeRoomDto updateTypeRoom(Integer trId, typeRoomModel trModel) {
+    public TypeRoomDto updateTypeRoom( typeRoomModel trModel) {
         List<String> errorMessages = new ArrayList<>(); // Danh sách lưu trữ các thông báo lỗi
 
         // Kiểm tra xem loại phòng có tồn tại hay không
-        Optional<TypeRoom> existingTypeRoomOpt = typeRoomRepository.findById(trId);
+        Optional<TypeRoom> existingTypeRoomOpt = typeRoomRepository.findById(trModel.getId());
         if (!existingTypeRoomOpt.isPresent()) {
-            throw new EntityNotFoundException("Loại phòng với ID " + trId + " không tồn tại.");
+            throw new EntityNotFoundException("Loại phòng với ID " + trModel.getId() + " không tồn tại.");
         }
         TypeRoom existingTypeRoom = existingTypeRoomOpt.get();
 
@@ -193,9 +214,20 @@ public class TypeRoomService {
             Optional<TypeBed> typeBed = typeBedRepository.findById(trModel.getTypeBedId());
             existingTypeRoom.setTypeBed(typeBed.get());
             existingTypeRoom.setGuestLimit(String.valueOf(trModel.getGuestLimit()));
+            existingTypeRoom.setDescribes(trModel.getDescribes());
+
 
             // Lưu loại phòng đã cập nhật vào cơ sở dữ liệu và chuyển đổi sang DTO
             TypeRoom updatedTypeRoom = typeRoomRepository.save(existingTypeRoom);
+
+            if (trModel.getImageNames() != null && !trModel.getImageNames().isEmpty()) {
+                for (String imageName : trModel.getImageNames()) {
+                    TypeRoomImage typeRoomImage = new TypeRoomImage();
+                    typeRoomImage.setImageName(imageName);
+                    typeRoomImage.setTypeRoom(updatedTypeRoom); // Gán phòng vào hình ảnh
+                    typeRoomImageRepository.save(typeRoomImage); // Lưu hình ảnh
+                }
+            }
             return convertTypeRoomDto(updatedTypeRoom); // Chuyển đổi loại phòng đã lưu sang DTO
 
         } catch (DataIntegrityViolationException e) {
