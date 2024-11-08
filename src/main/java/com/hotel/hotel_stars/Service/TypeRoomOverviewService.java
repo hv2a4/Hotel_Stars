@@ -121,22 +121,13 @@ public class TypeRoomOverviewService {
         return roomReservationDTOList;
     }
 
-    public Map<Integer, String> optionTypeBed() {
-        Map<Integer, String> map = new HashMap<>();
-        List<TypeBed> listTypeBed = typeBedRepository.findAll();
-        listTypeBed.forEach(tb -> {
-            map.put(tb.getId(), tb.getBedName());
-        });
-        return map;
-    }
-
-    public TypeBedDto convertDto(TypeBed typeBed){
+    public TypeBedDto convertDto(TypeBed typeBed) {
         TypeBedDto typeBedDto = modelMapper.map(typeBed, TypeBedDto.class);
         return typeBedDto;
     }
 
-//    public List<TypeBedDto> getTypeBedList() {
-//        List<TypeBed> listTypeBed = typeBedRepository.findAll();
-//
-//    }
+    public List<TypeBedDto> getTypeBedList() {
+        List<TypeBed> listTypeBed = typeBedRepository.findAll();
+        return listTypeBed.stream().map(this::convertDto).toList();
+    }
 }

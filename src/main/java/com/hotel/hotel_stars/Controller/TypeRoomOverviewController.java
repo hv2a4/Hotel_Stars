@@ -38,6 +38,6 @@ public class TypeRoomOverviewController {
 
     @GetMapping("bed-type-options")
     public ResponseEntity<?> getTypeRoomOverviewBedTypeOptions() {
-        return ResponseEntity.ok(typeRoomOverviewService.optionTypeBed());
+        return ResponseEntity.ok(typeRoomOverviewService.getTypeBedList());
     }
 }

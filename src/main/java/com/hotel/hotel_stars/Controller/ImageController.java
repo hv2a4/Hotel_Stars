@@ -121,4 +121,9 @@ public class ImageController {
         return ResponseEntity.ok(imageService.getTypeRoomImageModelByImageName(imgageModels));
     }
 
+    @GetMapping("get-by-id")
+    public ResponseEntity<?> getHotelImageById(@RequestParam Integer id) {
+        return ResponseEntity.ok(imageService.getTypeRoomImageModelByTypeRoomId(id));
+    }
+
 }

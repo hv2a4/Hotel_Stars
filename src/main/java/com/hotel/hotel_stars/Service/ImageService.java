@@ -155,7 +155,6 @@ public class ImageService {
         return typeBedDto;
     }
 
-
     public List<TypeRoomImageDto> getAllImageTypes() {
         List<TypeRoomImage> typeRoomImages = typeRoomImageRepository.findAll();
         return typeRoomImages.stream()
@@ -239,5 +238,10 @@ public class ImageService {
             results.add(toDto(typeRoomImage));
         });
         return results;
+    }
+
+    public TypeRoomImageDto getTypeRoomImageModelByTypeRoomId(Integer typeRoomId) {
+        TypeRoomImage room = typeRoomImageRepository.findByTypeRoomId(typeRoomId);
+        return toDto(room);
     }
 }

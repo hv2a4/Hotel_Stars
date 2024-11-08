@@ -2,6 +2,7 @@ package com.hotel.hotel_stars.Repository;
 
 import com.hotel.hotel_stars.DTO.Select.TypeRoomBookingCountDto;
 import com.hotel.hotel_stars.DTO.selectDTO.FindTypeRoomDto;
+import com.hotel.hotel_stars.Entity.Account;
 import com.hotel.hotel_stars.Entity.TypeRoom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -47,4 +48,5 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
 
     @Query("SELECT tr FROM TypeRoom tr WHERE tr.typeRoomName LIKE %:keyword%")
     List<TypeRoom> findByTypeRoomNameContaining(@Param("keyword") String keyword);
+
 }
