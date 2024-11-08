@@ -2,6 +2,7 @@ package com.hotel.hotel_stars.Controller;
 
 import com.hotel.hotel_stars.DTO.Select.TypeRoomBookingCountDto;
 import com.hotel.hotel_stars.DTO.TypeRoomDto;
+import com.hotel.hotel_stars.Entity.TypeRoom;
 import com.hotel.hotel_stars.Exception.CustomValidationException;
 import com.hotel.hotel_stars.Models.typeRoomModel;
 import com.hotel.hotel_stars.Service.TypeRoomService;
@@ -84,7 +85,8 @@ public class TypeRoomController {
     }
 
     @GetMapping("/top3")
-    public ResponseEntity<List<TypeRoomBookingCountDto>> getTop3TypeRooms() {
-        return ResponseEntity.ok(trservice.getTop3TypeRooms());
+    public ResponseEntity<List<TypeRoomDto>> getTop3TypeRooms() {
+        return ResponseEntity.ok(trservice.getTypeRooms());
     }
+    
 }

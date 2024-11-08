@@ -60,6 +60,7 @@ public class TypeRoomService {
         typeBedDto.setBedName(tr.getTypeBed().getBedName());
         return new TypeRoomDto(tr.getId(), tr.getTypeRoomName(), tr.getPrice(), tr.getBedCount(), tr.getAcreage(), tr.getGuestLimit(), typeBedDto);
     }
+    
 
     // Hiển thị danh sách dịch vụ phòng
     public List<TypeRoomDto> getAllTypeRooms() {
@@ -296,51 +297,9 @@ public class TypeRoomService {
         return true; // Nếu tất cả các kiểm tra đều hợp lệ
     }
 
-    public List<TypeRoomBookingCountDto> getTop3TypeRooms() {
-        List<Object[]> results = typeRoomRepository.findTop3TypeRooms();
-
-        return results.stream().map(result -> {
-            Long typeRoomBookingCount = (Long) result[0]; // Số lần đặt
-            Integer id = ((Number) result[1]).intValue(); // ID loại phòng
-            String typeRoomName = (String) result[2]; // Tên loại phòng
-            Double price = (Double) result[3]; // Giá
-            Integer bedCount = ((Number) result[4]).intValue(); // Số giường
-            Double acreage = (Double) result[5]; // Diện tích
-            String guestLimit = (String) result[6]; // Giới hạn khách
-            Integer typeBedId = ((Number) result[7]).intValue(); // ID loại giường
-
-            // Lấy thông tin loại giường từ repository
-            TypeBed bookingTypeBed = typeBedRepository.findById(typeBedId).orElse(null);
-            String bedName = bookingTypeBed != null ? bookingTypeBed.getBedName() : "N/A"; // Kiểm tra null
-
-            BigDecimal averageStars = (BigDecimal) result[8]; // Đánh giá trung bình
-            Double averageStarsAsDouble = averageStars != null ? averageStars.doubleValue() : 0.0; // Chuyển đổi thành Double
-
-            // Tiện nghi
-            String amenitiesString = (String) result[9]; // Tiện nghi dưới dạng chuỗi
-            String amenitiesIconString = (String) result[10]; // Biểu tượng tiện nghi dưới dạng chuỗi
-
-            // Chuyển đổi chuỗi thành mảng
-            String[] amenities = amenitiesString != null ? amenitiesString.split(",") : new String[0];
-            String[] amenitiesIcon = amenitiesIconString != null ? amenitiesIconString.split(",") : new String[0];
-
-            // Tạo DTO với tất cả thông tin
-            TypeRoomBookingCountDto dto = new TypeRoomBookingCountDto(
-                    typeRoomBookingCount.intValue(),
-                    id,
-                    typeRoomName,
-                    price,
-                    bedCount,
-                    acreage,
-                    guestLimit,
-                    bedName,
-                    averageStarsAsDouble,
-                    amenities, // Mảng tiện nghi
-                    amenitiesIcon // Mảng biểu tượng tiện nghi
-            );
-            return dto;
-        }).toList();
+    public List<TypeRoomDto> getTypeRooms() {
+        List<TypeRoom> list = typeRoomRepository.findTop3TypeRooms();
+        return list.stream().map(this::convertTypeRoomDto).toList();
     }
-
 
 }
