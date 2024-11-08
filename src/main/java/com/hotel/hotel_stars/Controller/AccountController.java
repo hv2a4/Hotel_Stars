@@ -66,6 +66,7 @@ public class AccountController {
             response.put("token", null);
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
+
         System.out.println(token + "  token22");
         String result = (token != null) ? token : null;
         response.put("token", result);

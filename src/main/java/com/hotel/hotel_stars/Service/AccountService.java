@@ -71,18 +71,7 @@ public class AccountService {
                 account.getRole().getId(),
                 account.getRole().getRoleName()
         ) : null;
-        return new AccountDto(
-                account.getId(),
-                account.getUsername(),
-                account.getFullname(),
-                account.getPhone(),
-                account.getEmail(),
-                account.getAvatar(),
-                account.getGender(),
-                account.getIsDelete(),
-                roleDto,
-                convertToBookingDtoList(account.getBookingList())// Ánh xạ RoleDto vào AccountDto
-        );
+        return null;
     }
 
     public Account convertToEntity(AccountDto accountDto) {
@@ -100,25 +89,9 @@ public class AccountService {
         return account;
     }
 
-    public List<BookingDto> convertToBookingDtoList(List<Booking> bookings) {
-        bookings.forEach(bk->{
-            System.out.println("id bk: "+bk.getId());
-        });
-        return bookings.stream()
-                .map(this::convertToBookingDto)  // Gọi hàm chuyển đổi từng Booking
-                .toList();
-    }
 
-    private BookingDto convertToBookingDto(Booking booking) {
-        System.out.println("ggg: "+booking.getId());
-        return new BookingDto(
-                booking.getId(),
-                booking.getCreateAt(),
-                booking.getStartAt(),
-                booking.getEndAt(),
-                booking.getStatusPayment()
-        );
-    }
+
+
 
     public List<AccountDto> getAllAccounts() {
         List<Account> accounts = accountRepository.findAll();
@@ -454,10 +427,9 @@ public class AccountService {
         Account accounts= new Account();
         List<Account> listAccount=accountRepository.findAll();
         accounts = paramServices.getTokenGG(email);
-        email=accounts.getEmail();
+        System.out.println(accounts.getUsername());
 
-
-        if (email == null) {
+        if (accounts.getEmail() == null) {
             System.out.println("null rôì");
             return null;
         }
@@ -472,12 +444,7 @@ public class AccountService {
                 System.out.println("có tài khoản");
                 return jwtService.generateToken(accounts.getUsername());
             } else {
-                boolean isDuplicate = listAccount.stream()
-                        .map(Account::getEmail)
-                        .anyMatch(email::equals);
-                if(isDuplicate){
-                    return null;
-                }
+
                 System.out.println("không có tài khoản: "+accounts.getUsername());
                 accountRepository.save(accounts);
                 return jwtService.generateToken(accounts.getUsername());
