@@ -3,6 +3,7 @@ package com.hotel.hotel_stars.DTO;
 import lombok.Value;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * DTO for {@link com.hotel.hotel_stars.Entity.Account}
@@ -18,4 +19,5 @@ public class AccountDto implements Serializable {
     Boolean gender;
     Boolean isDelete;
     RoleDto roleDto;
+    List<BookingDto> bookingDtoList;
 }

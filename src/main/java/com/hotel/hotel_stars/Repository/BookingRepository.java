@@ -25,4 +25,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
             "JOIN Invoice invoice ON b.id = invoice.booking.id " +
             "WHERE a.id = :accountId")
     List<Object[]> findPaymentInfoByAccountId(@Param("accountId") Integer accountId); // Thêm @Param
+
+
+
 }
