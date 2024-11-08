@@ -16,4 +16,6 @@ public class CustomerInformationDto implements Serializable {
     String phone;
     Boolean gender;
     Instant birthday;
+    String imgFirstCard;
+    String imgLastCard;
 }

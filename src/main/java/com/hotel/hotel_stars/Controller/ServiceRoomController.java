@@ -41,15 +41,21 @@ public class ServiceRoomController {
             response.put("code", 200);
             response.put("message", "Thêm dịch vụ phòng thành công");
             response.put("status", "success");
-//            response.put("data", srdto);
-            return ResponseEntity.ok(response); // Trả về phản hồi với mã 200
+            response.put("data", srdto); // Trả về đối tượng dịch vụ phòng đã thêm
+            return ResponseEntity.ok(response); // Trả về phản hồi với mã 200 và dữ liệu
         } catch (CustomValidationException ex) {
             // Trả về lỗi xác thực với danh sách thông báo lỗi
-            // Hiển thỉ lỗi 400, 500
-            return ResponseEntity.badRequest().body(ex.getErrorMessages());
+            Map<String, Object> response = new HashMap<>();
+            response.put("code", 400);
+            response.put("message", "Lỗi xác thực");
+            response.put("errors", ex.getErrorMessages()); // Các lỗi xác thực
+            return ResponseEntity.badRequest().body(response); // Mã 400
         } catch (RuntimeException ex) {
             // Trả về lỗi chung cho các lỗi không xác thực
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Có lỗi xảy ra: " + ex.getMessage());
+            Map<String, Object> response = new HashMap<>();
+            response.put("code", 500);
+            response.put("message", "Có lỗi xảy ra: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response); // Mã 500
         }
     }
 
@@ -57,35 +63,50 @@ public class ServiceRoomController {
     public ResponseEntity<?> updateServiceRoom(@PathVariable Integer id, @Valid @RequestBody serviceRoomModel srmodel) {
         try {
             ServiceRoomDto updatedServiceRoom = srservice.updateServiceRoom(id, srmodel);
-            // tạo thông báo
             Map<String, Object> response = new HashMap<>();
             response.put("code", 200);
             response.put("message", "Cập nhật dịch vụ phòng thành công");
             response.put("status", "success");
-//            response.put("data", updatedServiceRoom);
+            response.put("data", updatedServiceRoom); // Trả về dữ liệu của dịch vụ phòng đã cập nhật
             return ResponseEntity.ok(response); // Trả về phản hồi với mã 200
         } catch (CustomValidationException ex) {
-            // Trả về lỗi xác thực với danh sách thông báo lỗi
-            return ResponseEntity.badRequest().body(ex.getErrorMessages());
+            Map<String, Object> response = new HashMap<>();
+            response.put("code", 400);
+            response.put("message", "Lỗi xác thực");
+            response.put("errors", ex.getErrorMessages()); // Các lỗi xác thực
+            return ResponseEntity.badRequest().body(response); // Mã 400
+        } catch (NoSuchElementException ex) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("code", 404);
+            response.put("message", "Dịch vụ phòng không tồn tại");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response); // Mã 404
         } catch (RuntimeException ex) {
-            // Trả về lỗi chung cho các lỗi không xác thực
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Có lỗi xảy ra: " + ex.getMessage());
+            Map<String, Object> response = new HashMap<>();
+            response.put("code", 500);
+            response.put("message", "Có lỗi xảy ra: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response); // Mã 500
         }
     }
-
 
     @DeleteMapping("delete-service-room/{id}")
     public ResponseEntity<?> deleteServiceRoom(@PathVariable Integer id) {
         try {
-            // Gọi phương thức trong service để xóa tài khoản
             srservice.deleteServiceRoom(id);
-            return ResponseEntity.ok("Dịch vụ phòng này đã được xóa thành công."); // Phản hồi thành công
+            Map<String, Object> response = new HashMap<>();
+            response.put("code", 200);
+            response.put("message", "Dịch vụ phòng này đã được xóa thành công.");
+            return ResponseEntity.ok(response); // Trả về phản hồi thành công với mã 200
         } catch (NoSuchElementException ex) {
-            // Trả về lỗi nếu tài khoản không tồn tại
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Dịch vụ phòng này không tồn tại.");
+            Map<String, Object> response = new HashMap<>();
+            response.put("code", 404);
+            response.put("message", "Dịch vụ phòng này không tồn tại.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response); // Mã 404
         } catch (RuntimeException ex) {
-            // Trả về lỗi chung cho các lỗi không xác thực
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Có lỗi xảy ra: " + ex.getMessage());
+            Map<String, Object> response = new HashMap<>();
+            response.put("code", 500);
+            response.put("message", "Có lỗi xảy ra: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response); // Mã 500
         }
     }
+
 }
