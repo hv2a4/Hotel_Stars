@@ -207,6 +207,8 @@ public class TypeRoomService {
             existingTypeRoom.setPrice(trModel.getPrice());
             existingTypeRoom.setBedCount(trModel.getBedCount());
             existingTypeRoom.setAcreage(trModel.getAcreage());
+            Optional<TypeBed> typeBed = typeBedRepository.findById(trModel.getTypeBedId());
+            existingTypeRoom.setTypeBed(typeBed.get());
             existingTypeRoom.setGuestLimit(String.valueOf(trModel.getGuestLimit()));
 
             // Lưu loại phòng đã cập nhật vào cơ sở dữ liệu và chuyển đổi sang DTO
