@@ -30,8 +30,14 @@ public class TypeRoomOverviewController {
         return ResponseEntity.ok(typeRoomOverviewService.getAllListRoom());
     }
 
+    //lịch đặt phòng
     @GetMapping("booking-history")
     public ResponseEntity<?> getTypeRoomOverviewBookingHistory(@RequestParam Integer id) {
         return ResponseEntity.ok(typeRoomOverviewService.getRoomReservationList(id));
+    }
+
+    @GetMapping("bed-type-options")
+    public ResponseEntity<?> getTypeRoomOverviewBedTypeOptions() {
+        return ResponseEntity.ok(typeRoomOverviewService.optionTypeBed());
     }
 }

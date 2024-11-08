@@ -140,7 +140,8 @@ public class SecurityConfig {
                                         "api/overview/room-types/get-all",
                                         "api/overview/room-types/get-list-room",
                                         "api/overview/room-types/get-by-id",
-                                        "api/overview/room-types/booking-history"
+                                        "api/overview/room-types/booking-history",
+                                        "api/overview/room-types/bed-type-options"
                                 ).hasAnyAuthority("HotelOwner")
                                 //vu
 
