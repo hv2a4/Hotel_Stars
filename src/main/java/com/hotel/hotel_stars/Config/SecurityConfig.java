@@ -128,7 +128,6 @@ public class SecurityConfig {
                                 .requestMatchers("/api/booking/getAll").permitAll()
                                 // nghia
 
-
                                 //--------------------------- api cần token có phân quyền HotelOwner  (chủ  khách sạn )
                                 .requestMatchers("/api/account/login").hasAuthority("HotelOwner")
                                 //vu
@@ -136,7 +135,7 @@ public class SecurityConfig {
                                         "api/discount/**",
                                         "api/service-package/**",
                                         "api/room/**",
-//                                "/api/account/add-account-staff",
+                                        //"/api/account/add-account-staff",
                                         "/api/account/update-account-staff/{id}",
                                         "/api/account/delete-account-staff/{id}",
                                         "api/hotel/update-hotel/{id}")
@@ -155,9 +154,13 @@ public class SecurityConfig {
                                 .requestMatchers("/api/amenities-type-room/update").hasAnyAuthority("HotelOwner")
                                 .requestMatchers("/api/amenities-type-room/delete/").hasAnyAuthority("HotelOwner")
 
-                                .requestMatchers("/api/type-room/**").permitAll()
-                        //son
-
+                                .requestMatchers(
+                                        "/api/type-room/getAll",
+                                        "api/type-room/add",
+                                        "api/type-room/update",
+                                        "api/type-room/delete/"
+                                        ).permitAll()
+                                //son
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
