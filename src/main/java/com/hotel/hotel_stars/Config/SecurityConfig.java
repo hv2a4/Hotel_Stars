@@ -158,7 +158,8 @@ public class SecurityConfig {
                                         "/api/type-room/getAll",
                                         "api/type-room/add",
                                         "api/type-room/update",
-                                        "api/type-room/delete/"
+                                        "api/type-room/delete/",
+                                        "api/type-room/top3"
                                         ).permitAll()
                                 //son
                 )
