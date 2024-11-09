@@ -99,6 +99,7 @@ public class ServiceHotelService {
             serviceHotel.setHotel(hotel);
             serviceHotel.setServiceHotelName(hotelModel.getServiceHotelName());
             serviceHotel.setPrice(hotelModel.getPrice());
+            serviceHotel.setImageName(hotelModel.getImage());
 
             serviceHotelRepository.save(serviceHotel);
 
