@@ -154,9 +154,9 @@ public class SecurityConfig {
                                 .requestMatchers("/api/amenities-type-room/add").hasAnyAuthority("HotelOwner")
                                 .requestMatchers("/api/amenities-type-room/update").hasAnyAuthority("HotelOwner")
                                 .requestMatchers("/api/amenities-type-room/delete/").hasAnyAuthority("HotelOwner")
-
+                                .requestMatchers("api/type-room-amenities-type-room/**").permitAll()
                                 .requestMatchers("/api/type-room/**").permitAll()
-                        //son
+                                //son
 
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
