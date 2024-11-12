@@ -61,7 +61,7 @@ public class ServiceHotelService {
             serviceHotel.setHotel(hotel);
             serviceHotel.setServiceHotelName(hotelModel.getServiceHotelName());
             serviceHotel.setPrice(hotelModel.getPrice());
-
+            serviceHotel.setImageName(hotelModel.getImage());
             serviceHotelRepository.save(serviceHotel);
 
             // Cài đặt trạng thái thành công
@@ -126,13 +126,13 @@ public class ServiceHotelService {
         return statusResponseDto;
     }
 
-    public StatusResponseDto deleteById(ServiceHotelModel serviceHotelModel) {
+    public StatusResponseDto deleteById(Integer id) {
         StatusResponseDto statusResponseDto = new StatusResponseDto();
 
         try {
             // Kiểm tra xem dịch vụ có tồn tại trước khi xóa không
-            if (serviceHotelRepository.existsById(serviceHotelModel.getId())) {
-                serviceHotelRepository.deleteById(serviceHotelModel.getId());
+            if (serviceHotelRepository.existsById(id)) {
+                serviceHotelRepository.deleteById(id);
 
                 // Trả về trạng thái thành công
                 statusResponseDto.setCode("200");
@@ -142,23 +142,23 @@ public class ServiceHotelService {
                 // Trả về thông báo lỗi nếu không tìm thấy ID
                 statusResponseDto.setCode("404");
                 statusResponseDto.setStatus("NOT FOUND");
-                statusResponseDto.setMessage("Không tìm thấy dịch vụ khách sạn với ID: " + serviceHotelModel.getId());
+                statusResponseDto.setMessage("Không tìm thấy dịch vụ khách sạn với ID: " + id);
             }
         } catch (EmptyResultDataAccessException e) {
             // Lỗi khi cố xóa một ID không tồn tại
             statusResponseDto.setCode("404");
             statusResponseDto.setStatus("NOT FOUND");
-            statusResponseDto.setMessage("Không tìm thấy dịch vụ khách sạn để xóa: " + e.getMessage());
+            statusResponseDto.setMessage("Không tìm thấy dịch vụ khách sạn để xóa");
         } catch (DataIntegrityViolationException e) {
             // Lỗi về ràng buộc dữ liệu
             statusResponseDto.setCode("400");
             statusResponseDto.setStatus("BAD REQUEST");
-            statusResponseDto.setMessage("Lỗi dữ liệu: " + e.getMessage());
+            statusResponseDto.setMessage("Không thể xóa vì có dữ liệu liên quan ");
         } catch (Exception e) {
             // Lỗi không xác định
             statusResponseDto.setCode("500");
             statusResponseDto.setStatus("INTERNAL SERVER ERROR");
-            statusResponseDto.setMessage("Lỗi không xác định: " + e.getMessage());
+            statusResponseDto.setMessage("Lỗi không xác định");
         }
 
         return statusResponseDto;

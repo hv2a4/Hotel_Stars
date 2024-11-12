@@ -73,7 +73,7 @@ public class SecurityConfig {
                                         "/api/account/get-info-staff",
                                         "/api/booking/**",
                                         "api/feedback/**",
-                                        "api/service-hotel/**",
+                                        "api/service-hotel/getAll",
                                         "/api/status/**",
                                         "/api/image/**",
                                         "api/hotel/**",
@@ -113,6 +113,7 @@ public class SecurityConfig {
                                 //--------------------------- api cần token có phân quyền Staff  ( nhân viên )
                                 .requestMatchers("/api/hotel/login").hasAnyAuthority("Staff", "HotelOwner")
                                 .requestMatchers("/api/hotel/getAll").hasAnyAuthority("Staff", "HotelOwner")
+                                
 
                                 // nghia
                                 .requestMatchers("/api/account/register").permitAll()
@@ -131,11 +132,12 @@ public class SecurityConfig {
 
                                 //--------------------------- api cần token có phân quyền HotelOwner  (chủ  khách sạn )
                                 .requestMatchers("/api/account/login").hasAuthority("HotelOwner")
+                                .requestMatchers("/api/service-package/post-service-package").permitAll()
+                                .requestMatchers("/api/service-package/put-service-package").permitAll()
+                                .requestMatchers("/api/service-package/delete-service-package/**").permitAll()
                                 //vu
                                 .requestMatchers(
                                         "api/discount/**",
-                                        "api/service-package/**",
-                                        "api/room/**",
 //                                "/api/account/add-account-staff",
                                         "/api/account/update-account-staff/{id}",
                                         "/api/account/delete-account-staff/{id}",
@@ -154,9 +156,27 @@ public class SecurityConfig {
                                 .requestMatchers("/api/amenities-type-room/add").hasAnyAuthority("HotelOwner")
                                 .requestMatchers("/api/amenities-type-room/update").hasAnyAuthority("HotelOwner")
                                 .requestMatchers("/api/amenities-type-room/delete/").hasAnyAuthority("HotelOwner")
+                                .requestMatchers("/api/service-hotel/post-data-service-hotel").hasAnyAuthority("HotelOwner")
+                                .requestMatchers("/api/service-hotel/update-data-service-hotel").hasAnyAuthority("HotelOwner")
+                                .requestMatchers("/api/service-hotel/delete-data-service-hotel/**").hasAnyAuthority("HotelOwner")
+                                .requestMatchers("/api/service-room/update-service-room/**").hasAnyAuthority("HotelOwner")
+                                .requestMatchers("/api/service-room/add-service-room").hasAnyAuthority("HotelOwner")
+                                .requestMatchers("/api/service-room/delete-service-room/**").hasAnyAuthority("HotelOwner")
+                                .requestMatchers("/api/type-room-service/update/**").hasAnyAuthority("HotelOwner")
+                                .requestMatchers("/api/type-room-service/create").hasAnyAuthority("HotelOwner")
+                                .requestMatchers("/api/type-room-service/delete/**").hasAnyAuthority("HotelOwner")
+                                
 
                                 .requestMatchers("/api/type-room/**").permitAll()
+                                .requestMatchers("/api/service-package/getAll").permitAll()
+                                .requestMatchers("/api/service-room/getAll").permitAll()
+                                .requestMatchers("/api/type-room-service/getAll").permitAll()
                         //son
+                                
+                                .requestMatchers("/api/room/FloorById/{id}").permitAll()
+                                
+                                
+                                
 
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

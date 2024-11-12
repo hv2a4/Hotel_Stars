@@ -5,7 +5,9 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -13,6 +15,7 @@ import java.util.List;
 @Table(name = "type_service_room", schema = "hotel_manager")
 public class TypeServiceRoom {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 
@@ -20,6 +23,6 @@ public class TypeServiceRoom {
     @Column(name = "service_room_name")
     private String serviceRoomName;
 
-    @OneToMany(mappedBy = "typeServiceRoomId")
-    private List<ServiceRoom> serviceRooms;
+    @OneToMany(mappedBy = "typeServiceRoomId", fetch=FetchType.LAZY)
+    private Set<ServiceRoom> serviceRooms = new LinkedHashSet<>();
 }
