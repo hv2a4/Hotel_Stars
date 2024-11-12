@@ -86,6 +86,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/account/getTokenGG").permitAll()
                                 .requestMatchers("/api/account/loginToken").permitAll()
                                 .requestMatchers("/api/account/sendEmail").permitAll()
+                                .requestMatchers("/api/account/getAlls").permitAll()
                                 .requestMatchers("/api/discount/getAll").permitAll()
                                 .requestMatchers("/api/account/updateAccount").permitAll()
                                 .requestMatchers("/api/account/updatePassword").permitAll()
@@ -97,6 +98,10 @@ public class SecurityConfig {
                                 //son
                                 .requestMatchers("/api/amenities-type-room/**").permitAll()
                                 .requestMatchers("/api/type-room/**").permitAll()
+                                .requestMatchers("/api/type-room/top3").permitAll()
+                                .requestMatchers("/api/image/getAll").permitAll()
+                                .requestMatchers("/api/service-hotel/getAll").permitAll()
+                                .requestMatchers("/api/image/getAll").permitAll()
                                 //son
 
                                 //---------------------------api cần token có phân quyền Customer  ( khách hàng )
