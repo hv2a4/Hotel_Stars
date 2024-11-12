@@ -30,7 +30,7 @@ public class TypeRoom {
     private Double acreage;
 
     @Column(name = "guest_limit")
-    private String guestLimit;
+    private Integer guestLimit;
 
     @Column(name = "describes")
     private String describes;

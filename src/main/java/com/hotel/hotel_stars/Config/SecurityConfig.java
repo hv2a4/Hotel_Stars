@@ -78,7 +78,8 @@ public class SecurityConfig {
                                         "/api/image/**",
                                         "api/hotel/**",
                                         "/api/status-room/getAll",
-                                        "/api/floor/getAll"
+                                        "/api/floor/getAll",
+                                        "api/account/getAll"
                                 )
                                 .permitAll()
                                 // vu
@@ -94,6 +95,8 @@ public class SecurityConfig {
                                 .requestMatchers("/api/room/getCountRoom").permitAll()
                                 .requestMatchers("/api/booking/sendBooking").permitAll()
                                 .requestMatchers("/api/booking/confirmBooking").permitAll()
+                                .requestMatchers("/api/booking/getAll").permitAll()
+
                                 // nghia
 
                                 //khoi
@@ -125,7 +128,6 @@ public class SecurityConfig {
                                 .requestMatchers("/api/room/getCountRoom").permitAll()
                                 .requestMatchers("/api/booking/sendBooking").permitAll()
                                 .requestMatchers("/api/booking/confirmBooking").permitAll()
-                                .requestMatchers("/api/booking/getAll").permitAll()
                                 // nghia
 
                                 //--------------------------- api cần token có phân quyền HotelOwner  (chủ  khách sạn )
@@ -145,7 +147,10 @@ public class SecurityConfig {
                                         "api/overview/room-types/get-list-room",
                                         "api/overview/room-types/get-by-id",
                                         "api/overview/room-types/booking-history",
-                                        "api/overview/room-types/bed-type-options"
+                                        "api/overview/room-types/bed-type-options",
+                                        "/api/reservations/getAll",
+                                        "/api/reservations/selectBookingById",
+                                        "/api/reservations/statusBooking"
                                 ).hasAnyAuthority("HotelOwner")
                                 //vu
 
@@ -160,8 +165,8 @@ public class SecurityConfig {
                                         "api/type-room/update",
                                         "api/type-room/delete/",
                                         "api/type-room/top3"
-                                        ).permitAll()
-                                //son
+                                ).permitAll()
+                        //son
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())

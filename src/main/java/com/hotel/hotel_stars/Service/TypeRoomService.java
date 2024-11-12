@@ -130,7 +130,7 @@ public class TypeRoomService {
             typeRoom.setAcreage(trmodel.getAcreage());
             Optional<TypeBed> typeBed = typeBedRepository.findById(trmodel.getTypeBedId());
             typeRoom.setTypeBed(typeBed.get());
-            typeRoom.setGuestLimit(trmodel.getGuestLimit());
+            typeRoom.setGuestLimit(Integer.parseInt(trmodel.getGuestLimit()));
             typeRoom.setDescribes(trmodel.getDescribes());
 
             // Lưu thông tin loại phòng vào cơ sở dữ liệu
@@ -214,7 +214,7 @@ public class TypeRoomService {
             existingTypeRoom.setAcreage(trModel.getAcreage());
             Optional<TypeBed> typeBed = typeBedRepository.findById(trModel.getTypeBedId());
             existingTypeRoom.setTypeBed(typeBed.get());
-            existingTypeRoom.setGuestLimit(String.valueOf(trModel.getGuestLimit()));
+            existingTypeRoom.setGuestLimit(Integer.parseInt(trModel.getGuestLimit()));
             existingTypeRoom.setDescribes(trModel.getDescribes());
 
 
