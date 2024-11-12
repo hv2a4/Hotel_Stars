@@ -28,6 +28,33 @@ public class AmenitiesTypeRoomController {
         return ResponseEntity.ok(atrservice.getAllAmenitiesTypeRooms());
     }
 
+    @GetMapping("/getById/{id}")
+    public ResponseEntity<?> getAmenitiesTypeRoomById(@PathVariable Integer id) {
+        try {
+            AmenitiesTypeRoomDto atrDto = atrservice.getAmenitiesTypeRoomById(id);
+            Map<String, Object> response = new HashMap<>();
+//            response.put("code", 200);
+//            response.put("message", "Lấy thông tin thành công");
+//            response.put("status", "success");
+            response.put("data", atrDto);
+            return ResponseEntity.ok(response); // Trả về phản hồi với mã 200 và dữ liệu
+        } catch (NoSuchElementException ex) {
+            // Xử lý lỗi nếu không tìm thấy dịch vụ phòng
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("code", 404);
+            errorResponse.put("message", "Dịch vụ phòng không tồn tại.");
+            errorResponse.put("status", "error");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        } catch (RuntimeException ex) {
+            // Xử lý lỗi chung cho các lỗi không xác định
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("code", 500);
+            errorResponse.put("message", "Có lỗi xảy ra khi lấy dịch vụ phòng: " + ex.getMessage());
+            errorResponse.put("status", "error");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
     @PostMapping("/add")
     public ResponseEntity<?> addAmenitiesTypeRoom(@Valid @RequestBody amenitiesTypeRoomModel atrmodel) {
         try {

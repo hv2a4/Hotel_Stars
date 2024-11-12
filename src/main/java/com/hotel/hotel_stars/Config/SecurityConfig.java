@@ -100,9 +100,6 @@ public class SecurityConfig {
                                 .requestMatchers("/api/account/add-account-staff").permitAll()
                                 //khoi
 
-                                //son
-                                .requestMatchers("/api/amenities-type-room/getAll").permitAll()
-                                //son
 
                                 //---------------------------api cần token có phân quyền Customer  ( khách hàng )
                                 //vu
@@ -151,6 +148,7 @@ public class SecurityConfig {
                                 //vu
 
                                 //son
+                                .requestMatchers("/api/amenities-type-room/**").permitAll()
                                 .requestMatchers("/api/amenities-type-room/add").hasAnyAuthority("HotelOwner")
                                 .requestMatchers("/api/amenities-type-room/update").hasAnyAuthority("HotelOwner")
                                 .requestMatchers("/api/amenities-type-room/delete/").hasAnyAuthority("HotelOwner")

@@ -11,4 +11,5 @@ import java.io.Serializable;
 public class AmenitiesTypeRoomDto implements Serializable {
     Integer id;
     String amenitiesTypeRoomName;
+    String icon;
 }
