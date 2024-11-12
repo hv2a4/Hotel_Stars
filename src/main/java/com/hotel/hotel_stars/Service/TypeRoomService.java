@@ -98,7 +98,7 @@ public class TypeRoomService {
             typeRoom.setAcreage(trmodel.getAcreage());
             Optional<TypeBed> typeBed = typeBedRepository.findById(trmodel.getTypeBedId());
             typeRoom.setTypeBed(typeBed.get());
-            typeRoom.setGuestLimit(Integer.parseInt(trmodel.getGuestLimit()));
+            typeRoom.setGuestLimit(trmodel.getGuestLimit());
             typeRoom.setDescribes(trmodel.getDescribes());
             List<TypeRoomImage> typeRoomImages = new ArrayList<>();
             typeRoom.setTypeRoomImages(typeRoomImages);
