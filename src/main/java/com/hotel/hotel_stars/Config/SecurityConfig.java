@@ -184,6 +184,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/amenities-type-room/delete/").hasAnyAuthority("HotelOwner")
                         // son
 
+
+
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())

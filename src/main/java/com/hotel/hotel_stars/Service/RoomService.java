@@ -25,14 +25,36 @@ public class RoomService {
     ModelMapper modelMapper;
 
     public RoomDto convertToDto(Room room) {
-        TypeRoomDto typeRoomDto = modelMapper.map(room, TypeRoomDto.class);
-        StatusRoomDto statusRoomDto = modelMapper.map(room, StatusRoomDto.class);
-        FloorDto floorDto = modelMapper.map(room, FloorDto.class);
-        RoomDto roomDto = modelMapper.map(room, RoomDto.class);
+
+        FloorDto floorDto = new FloorDto();
+        floorDto.setId(room.getFloor().getId());
+        floorDto.setFloorName(room.getFloor().getFloorName());
+
+        StatusRoomDto statusRoomDto = new StatusRoomDto();
+        statusRoomDto.setId(room.getStatusRoom().getId());
+        statusRoomDto.setStatusRoomName(room.getStatusRoom().getStatusRoomName());
+
+        TypeBedDto typeBedDto = new TypeBedDto();
+        typeBedDto.setId(room.getTypeRoom().getTypeBed().getId());
+        typeBedDto.setBedName(room.getTypeRoom().getTypeBed().getBedName());
+
+        TypeRoomDto typeRoom = new TypeRoomDto();
+        typeRoom.setId(room.getTypeRoom().getId());
+        typeRoom.setTypeRoomName(room.getTypeRoom().getTypeRoomName());
+        typeRoom.setPrice(room.getTypeRoom().getPrice());
+        typeRoom.setBedCount(room.getTypeRoom().getBedCount());
+        typeRoom.setAcreage(room.getTypeRoom().getAcreage());
+        typeRoom.setGuestLimit(room.getTypeRoom().getGuestLimit());
+        typeRoom.setTypeBedDto(typeBedDto);
+        typeRoom.setDescribes(room.getTypeRoom().getDescribes());
+
+        RoomDto roomDto = new RoomDto();
+        roomDto.setId(room.getId());
+        roomDto.setRoomName(room.getRoomName());
         roomDto.setFloorDto(floorDto);
-        roomDto.setTypeRoomDto(typeRoomDto);
+        roomDto.setTypeRoomDto(typeRoom);
         roomDto.setStatusRoomDto(statusRoomDto);
-        return modelMapper.map(room, RoomDto.class);
+        return roomDto;
     }
 
     public List<RoomDto> getAllRooms() {
