@@ -79,7 +79,8 @@ public class SecurityConfig {
                                         "api/hotel/**",
                                         "/api/status-room/getAll",
                                         "/api/floor/getAll",
-                                        "api/account/getAll"
+                                        "api/account/getAll",
+                                        "api/booking-room/getAll"
                                 )
                                 .permitAll()
                                 // vu
