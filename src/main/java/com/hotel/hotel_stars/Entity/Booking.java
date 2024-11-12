@@ -35,10 +35,6 @@ public class Booking {
     private MethodPayment methodPayment;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "type_room_id")
-    private TypeRoom typeRoom;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id")
     private Account account;
 

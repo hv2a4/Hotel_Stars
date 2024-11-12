@@ -74,32 +74,32 @@ public class BookingService {
         return paymentInfoDTOs;
     }
 
-    public Boolean sendBookingEmail(bookingModel bookingModels) {
-        Booking booking = new Booking();
-        Optional<Account> account = accountRepository.findByUsername(bookingModels.getUsername());
-        Optional<TypeRoom> typeRoom = typeRoomRepository.findById(bookingModels.getIdTypeRoom());
-        Optional<MethodPayment> methodPayment = methodPaymentRepository.findById(1);
-        Optional<StatusBooking> statusBooking = statusBookingRepository.findById(1);
-        try {
-            booking.setAccount(account.get());
-            booking.setTypeRoom(typeRoom.get());
-            booking.setStartAt(paramServices.stringToInstant(bookingModels.getStartDate()));
-            booking.setEndAt(paramServices.stringToInstant(bookingModels.getEndDatel()));
-            booking.setCreateAt(Instant.now());
-            booking.setStatusPayment(false);
-            booking.setMethodPayment(methodPayment.get());
-            booking.setStatus(statusBooking.get());
-            bookingRepository.save(booking);
-            String emailContent = "Click vào đây: <a href=\"" + "http://localhost:8080/api/booking/confirmBooking?token=" +
-                    jwtService.generateBoking(booking.getId(), bookingModels.getQuantityRoom()) + "\">Xác Nhận Đặt phòng</a>";
-
-            paramServices.sendEmails(account.get().getEmail(), "Xác Nhận Đặt phòng", emailContent);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
+//    public Boolean sendBookingEmail(bookingModel bookingModels) {
+//        Booking booking = new Booking();
+//        Optional<Account> account = accountRepository.findByUsername(bookingModels.getUsername());
+//        Optional<TypeRoom> typeRoom = typeRoomRepository.findById(bookingModels.getIdTypeRoom());
+//        Optional<MethodPayment> methodPayment = methodPaymentRepository.findById(1);
+//        Optional<StatusBooking> statusBooking = statusBookingRepository.findById(1);
+//        try {
+//            booking.setAccount(account.get());
+//            booking.setTypeRoom(typeRoom.get());
+//            booking.setStartAt(paramServices.stringToInstant(bookingModels.getStartDate()));
+//            booking.setEndAt(paramServices.stringToInstant(bookingModels.getEndDatel()));
+//            booking.setCreateAt(Instant.now());
+//            booking.setStatusPayment(false);
+//            booking.setMethodPayment(methodPayment.get());
+//            booking.setStatus(statusBooking.get());
+//            bookingRepository.save(booking);
+//            String emailContent = "Click vào đây: <a href=\"" + "http://localhost:8080/api/booking/confirmBooking?token=" +
+//                    jwtService.generateBoking(booking.getId(), bookingModels.getQuantityRoom()) + "\">Xác Nhận Đặt phòng</a>";
+//
+//            paramServices.sendEmails(account.get().getEmail(), "Xác Nhận Đặt phòng", emailContent);
+//            return true;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return false;
+//        }
+//    }
 
     public List<ReservationInfoDTO> getAllReservationInfoDTO() {
         List<Object[]> results = bookingRepository.findAllBookingDetailsUsingSQL();

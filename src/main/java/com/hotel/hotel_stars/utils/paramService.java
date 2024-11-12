@@ -174,7 +174,7 @@ public class paramService {
                 "                    </thead>\n" +
                 "                    <tbody>\n" +
                 "                        <tr>\n" +
-                "                            <td style=\"border: 1px solid #ddd; padding: 8px;\">"+booking.getTypeRoom().getTypeRoomName()+"</td>\n" +
+                "                            <td style=\"border: 1px solid #ddd; padding: 8px;\"></td>\n" +
                 "                            <td style=\"border: 1px solid #ddd; padding: 8px;\">"+price+"</td>\n" +
                 "                            <td style=\"border: 1px solid #ddd; padding: 8px;\">"+quantityRoom+"</td>\n" +
                 "                            <td style=\"border: 1px solid #ddd; padding: 8px;\">"+totalAmount+"</td>\n" +
