@@ -36,7 +36,7 @@ public class TypeRoom {
     private String describes;
 
     @OneToMany(mappedBy = "typeRoom")
-    List<TypeRoomImage> typeRooms;
+    List<TypeRoomImage> typeRoomImages;
 
     @OneToMany(mappedBy = "typeRoom")
     List<Discount> discountList;

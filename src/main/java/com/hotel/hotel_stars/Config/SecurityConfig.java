@@ -106,15 +106,6 @@ public class SecurityConfig {
 
                         // son
                         .requestMatchers("/api/amenities-type-room/getAll").permitAll()
-                        .requestMatchers(
-                                "/api/type-room/getAll",
-                                "api/type-room/add",
-                                "api/type-room/update",
-                                "api/type-room/delete/",
-                                "api/type-room/top3",
-                                "/api/type-room-service/getAll",
-                                "/api/room/FloorById/{id}")
-                        .permitAll()
                         // son
 
                         // ---------------------------api cần token có phân quyền Customer ( khách hàng
@@ -180,6 +171,23 @@ public class SecurityConfig {
                         .requestMatchers("/api/type-room-service/update/**").hasAnyAuthority("HotelOwner")
                         .requestMatchers("/api/type-room-service/create").hasAnyAuthority("HotelOwner")
                         .requestMatchers("/api/type-room-service/delete/**").hasAnyAuthority("HotelOwner")
+
+                        .requestMatchers(
+                                "/api/type-room/getAll",
+                                "api/type-room/add",
+                                "api/type-room/update",
+                                "api/type-room/delete/",
+                                "api/type-room/top3")
+                        .permitAll()
+                        // son
+                        .requestMatchers("/api/type-room/**").permitAll()
+                        .requestMatchers("/api/service-package/getAll").permitAll()
+                        .requestMatchers("/api/service-room/getAll").permitAll()
+                        .requestMatchers("/api/type-room-service/getAll").permitAll()
+                        // son
+
+                        .requestMatchers("/api/room/FloorById/{id}").permitAll()
+
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())

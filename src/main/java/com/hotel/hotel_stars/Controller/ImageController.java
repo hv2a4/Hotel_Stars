@@ -3,7 +3,11 @@ package com.hotel.hotel_stars.Controller;
 import com.hotel.hotel_stars.DTO.HotelImageDto;
 import com.hotel.hotel_stars.DTO.StatusResponseDto;
 import com.hotel.hotel_stars.DTO.TypeRoomImageDto;
+import com.hotel.hotel_stars.Entity.TypeRoom;
+import com.hotel.hotel_stars.Entity.TypeRoomImage;
 import com.hotel.hotel_stars.Models.ImgageModel;
+import com.hotel.hotel_stars.Repository.TypeRoomImageRepository;
+import com.hotel.hotel_stars.Repository.TypeRoomRepository;
 import com.hotel.hotel_stars.Service.ImageService;
 import com.hotel.hotel_stars.Service.TypeRoomImageModel;
 import com.hotel.hotel_stars.utils.paramService;
@@ -16,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @RestController
 @CrossOrigin("*")
@@ -25,6 +30,10 @@ public class ImageController {
 	private ImageService imageService;
 	@Autowired
 	paramService paramServices;
+    @Autowired
+    private TypeRoomImageRepository typeRoomImageRepository;
+    @Autowired
+    private TypeRoomRepository typeRoomRepository;
 
 	@GetMapping("getAll")
 	public ResponseEntity<?> getResponseEntity() {
@@ -91,33 +100,50 @@ public class ImageController {
 	}
 
 	@PutMapping("putTypeImage")
-	public ResponseEntity<List<StatusResponseDto>> putHotelImages(@RequestBody List<TypeRoomImageModel> imageModels) {
+	public StatusResponseDto updateImageType(@RequestBody TypeRoomImageModel typeRoomImageModel) {
+		StatusResponseDto response;
 		try {
-			List<StatusResponseDto> responses = imageService.updateImageTypes(imageModels);
-			return ResponseEntity.ok(responses);
-		} catch (NoSuchElementException e) {
-			StatusResponseDto response = new StatusResponseDto("404", "FAILURE",
-					"Không tìm thấy hình ảnh cần cập nhật.");
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonList(response));
+			Optional<TypeRoomImage> optionalTypeRoomImage = typeRoomImageRepository
+					.findById(typeRoomImageModel.getId());
+			Optional<TypeRoom> optionalTypeRoom = typeRoomRepository.findById(typeRoomImageModel.getTypeRoom_Id());
+
+			if (optionalTypeRoomImage.isPresent() && optionalTypeRoom.isPresent()) {
+				TypeRoomImage typeRoomImage = optionalTypeRoomImage.get();
+				typeRoomImage.setTypeRoom(optionalTypeRoom.get());
+				typeRoomImage.setImageName(typeRoomImageModel.getImageName());
+				TypeRoomImage savedImage = typeRoomImageRepository.save(typeRoomImage);
+				response = new StatusResponseDto("200", "SUCCESS",
+						"Cập nhật thành công hình ảnh ID: " + savedImage.getId());
+			} else if (!optionalTypeRoomImage.isPresent()) {
+				response = new StatusResponseDto("404", "NOT_FOUND",
+						"Không tìm thấy TypeRoomImage với ID: " + typeRoomImageModel.getId());
+			} else {
+				response = new StatusResponseDto("404", "NOT_FOUND",
+						"Không tìm thấy TypeRoom với ID: " + typeRoomImageModel.getTypeRoom_Id());
+			}
 		} catch (DataIntegrityViolationException e) {
-			StatusResponseDto response = new StatusResponseDto("400", "FAILURE", "Dữ liệu không hợp lệ.");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonList(response));
+			response = new StatusResponseDto("400", "BAD_REQUEST",
+					"Dữ liệu không hợp lệ cho hình ảnh ID: " + typeRoomImageModel.getId());
 		} catch (Exception e) {
-			StatusResponseDto response = new StatusResponseDto("500", "FAILURE", "Cập nhật hình ảnh thất bại.");
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonList(response));
+			response = new StatusResponseDto("500", "INTERNAL_SERVER_ERROR",
+					"Lỗi hệ thống khi cập nhật hình ảnh ID: " + typeRoomImageModel.getId());
 		}
+
+		return response;
 	}
+
 
 	@DeleteMapping("delete-image")
-	public ResponseEntity<List<StatusResponseDto>> deleteHotelImages(@RequestBody List<ImgageModel> imageModels) {
-		if (imageModels == null || imageModels.isEmpty()) {
-			StatusResponseDto response = new StatusResponseDto("400", "FAILURE", "Danh sách hình ảnh trống.");
-			return ResponseEntity.badRequest().body(Collections.singletonList(response));
+	public ResponseEntity<StatusResponseDto> deleteHotelImage(@RequestBody TypeRoomImageModel imageModel) {
+		if (imageModel == null) {
+			StatusResponseDto response = new StatusResponseDto("400", "FAILURE", "Thông tin hình ảnh không hợp lệ.");
+			return ResponseEntity.badRequest().body(response);
 		}
 
-		List<StatusResponseDto> results = imageService.deleteByIdImages(imageModels);
-		return ResponseEntity.ok(results);
+		StatusResponseDto result = imageService.deleteByIdImage(imageModel);
+		return ResponseEntity.ok(result);
 	}
+
 
 	@GetMapping("/selectById")
 	public ResponseEntity<?> selectHotelImageById(@RequestBody List<TypeRoomImageModel> imgageModels) {

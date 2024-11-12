@@ -24,4 +24,5 @@ public class TypeRoomDto implements Serializable {
     Integer guestLimit;
     TypeBedDto typeBedDto;
     String describes;
+    List<TypeRoomImageDto> typeRoomImageDto;
 }
