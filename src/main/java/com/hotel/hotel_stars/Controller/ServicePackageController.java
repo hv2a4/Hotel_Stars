@@ -63,5 +63,22 @@ public class ServicePackageController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+    @DeleteMapping("delete-service-package/{id}")
+    public ResponseEntity<StatusResponseDto> deleteServicePackage(@Valid @PathVariable("id") Integer id) {
+        StatusResponseDto response;
+        try {
+            response = servicePackageService.deleteServicePackage(id);
+            return ResponseEntity.ok(response);
+        } catch (EntityNotFoundException e) {
+            response = new StatusResponseDto("404", "Lỗi", "Không thể xóa gói dịch vụ");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (DataIntegrityViolationException e) {
+            response = new StatusResponseDto("400", "Lỗi", "Không thể xóa gói dịch vụ");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (Exception e) {
+            response = new StatusResponseDto("500", "Lỗi", "Không thể xóa gói dịch vụ");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
 
 }

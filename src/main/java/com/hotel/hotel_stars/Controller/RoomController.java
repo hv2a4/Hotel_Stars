@@ -74,4 +74,9 @@ public class RoomController {
             return ResponseEntity.status(500).body(response);  // Trả về mã 500 cho lỗi
         }
     }
+    
+    @GetMapping("/FloorById/{id}")
+    public ResponseEntity<?> getByFloorId(@PathVariable("id") Integer id){
+    	return ResponseEntity.ok(roomService.getByFloorId(id));
+    }
 }

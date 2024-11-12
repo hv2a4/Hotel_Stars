@@ -18,6 +18,8 @@ public class serviceRoomModel {
 
     @NotBlank(message = "Vui lòng chọn hình ảnh")
     private String imageName;
+    
+    Integer typeServiceRoom;
 
 //    // Phương thức kiểm tra tính hợp lệ của giá
 //    public void validatePrice() {

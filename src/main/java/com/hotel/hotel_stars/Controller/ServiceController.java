@@ -33,9 +33,9 @@ public class ServiceController {
         return buildResponse(response);
     }
 
-    @DeleteMapping("delete-data-service-hotel")
-    public ResponseEntity<StatusResponseDto> deleteDataServiceHotel(@RequestBody ServiceHotelModel serviceHotelModel) {
-        StatusResponseDto response = serviceHotelService.deleteById(serviceHotelModel);
+    @DeleteMapping("delete-data-service-hotel/{id}")
+    public ResponseEntity<StatusResponseDto> deleteDataServiceHotel(@PathVariable("id") Integer id) {
+        StatusResponseDto response = serviceHotelService.deleteById(id);
 
         // Dựa vào mã phản hồi trong `StatusResponseDto`, trả về mã trạng thái HTTP phù hợp
         switch (response.getCode()) {

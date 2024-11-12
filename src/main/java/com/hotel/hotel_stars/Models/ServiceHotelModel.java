@@ -19,4 +19,6 @@ public class ServiceHotelModel {
     @NotNull(message = "Giá không được để trống")
     @PositiveOrZero(message = "Giá phải là số dương hoặc 0")
     Double price;
+    
+    String image;
 }
