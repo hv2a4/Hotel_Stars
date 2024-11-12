@@ -1,5 +1,6 @@
 package com.hotel.hotel_stars.DTO.Select;
 
+import com.hotel.hotel_stars.DTO.TypeBedDto;
 import com.hotel.hotel_stars.DTO.TypeRoomImageDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,12 +10,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TypeRoomOverviewDTO {
-    Integer typeId;
-    String typeName;
+    Integer id;
+    String typeRoomName;
     Integer roomCount;
     Double price;
-    Integer typeBed;
-    String guestLimit;
+    TypeBedDto typeBed;
+    Integer bedCount;
+    Integer guestLimit;
     Double acreage;
-    TypeRoomImageDto imageId;
+    TypeRoomImageDto typeRoomImage;
 }

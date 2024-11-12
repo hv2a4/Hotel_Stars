@@ -8,6 +8,7 @@ import com.hotel.hotel_stars.Models.typeRoomModel;
 import com.hotel.hotel_stars.Service.TypeRoomService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -95,13 +96,21 @@ public class TypeRoomController {
             trservice.deleteTypeRoom(id);
             Map<String, Object> response = new HashMap<>();
             response.put("code", 200);
-            response.put("message", "Dịch vụ phòng này đã được xóa thành công.");
+            response.put("message", "Loại phòng này đã được xóa thành công.");
             return ResponseEntity.ok(response); // Mã 200
+
         } catch (NoSuchElementException ex) {
             Map<String, Object> response = new HashMap<>();
             response.put("code", 404);
-            response.put("message", "Dịch vụ phòng này không tồn tại.");
+            response.put("message", "Loại phòng này không tồn tại.");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response); // Mã 404
+
+        } catch (DataIntegrityViolationException ex) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("code", 409);
+            response.put("message", "Không thể xóa loại phòng này đang được sử dụng!");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response); // Mã 409: Conflict
+
         } catch (RuntimeException ex) {
             Map<String, Object> response = new HashMap<>();
             response.put("code", 500);
@@ -111,9 +120,17 @@ public class TypeRoomController {
     }
 
 
+
     @GetMapping("/top3")
     public ResponseEntity<List<TypeRoomDto>> getTop3TypeRooms() {
         return ResponseEntity.ok(trservice.getTypeRooms());
     }
-    
+
+    @GetMapping("/find-by-id")
+    public ResponseEntity<TypeRoomDto> getTypeRoomById(@RequestParam Integer id) {
+        TypeRoomDto typeRoomDto = trservice.getTypeRoomsById(id);
+        return ResponseEntity.ok(typeRoomDto);  // Trả về ResponseEntity với dữ liệu và mã trạng thái OK (200)
+    }
+
+
 }

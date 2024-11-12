@@ -30,13 +30,13 @@ public class TypeRoom {
     private Double acreage;
 
     @Column(name = "guest_limit")
-    private String guestLimit;
+    private Integer guestLimit;
 
     @Column(name = "describes")
     private String describes;
 
     @OneToMany(mappedBy = "typeRoom")
-    List<TypeRoomImage> typeRooms;
+    List<TypeRoomImage> typeRoomImages;
 
     @OneToMany(mappedBy = "typeRoom")
     List<Discount> discountList;

@@ -225,21 +225,15 @@ public class ImageService {
 		return responses;
 	}
 
-	public List<StatusResponseDto> deleteByIdImages(List<ImgageModel> imageModels) {
-		List<StatusResponseDto> results = new ArrayList<>();
-		for (ImgageModel imageModel : imageModels) {
-			try {
-				typeRoomImageRepository.deleteById(imageModel.getId());
-				results.add(
-						new StatusResponseDto("200", "SUCCESS", "Xóa thành công hình ảnh ID: " + imageModel.getId()));
-			} catch (DataAccessException e) {
-				results.add(new StatusResponseDto("500", "FAILURE",
-						"Lỗi cơ sở dữ liệu khi xóa hình ảnh ID: " + imageModel.getId()));
-			} catch (Exception e) {
-				results.add(new StatusResponseDto("500", "FAILURE", "Xóa thất bại hình ảnh ID: " + imageModel.getId()));
-			}
+	public StatusResponseDto deleteByIdImage(TypeRoomImageModel imageModel) {
+		try {
+			typeRoomImageRepository.deleteById(imageModel.getId());
+			return new StatusResponseDto("200", "SUCCESS", "Xóa thành công hình ảnh ID: " + imageModel.getId());
+		} catch (DataAccessException e) {
+			return new StatusResponseDto("500", "FAILURE", "Lỗi cơ sở dữ liệu khi xóa hình ảnh ID: " + imageModel.getId());
+		} catch (Exception e) {
+			return new StatusResponseDto("500", "FAILURE", "Xóa thất bại hình ảnh ID: " + imageModel.getId());
 		}
-		return results;
 	}
 
 	public List<TypeRoomImageDto> getTypeRoomImageModelByImageName(List<TypeRoomImageModel> typeRoomImageModels) {

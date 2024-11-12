@@ -21,11 +21,10 @@ public class TypeRoomDto implements Serializable {
     Double price;
     Integer bedCount;
     Double acreage;
-    String guestLimit;
+    Integer guestLimit;
     TypeBedDto typeBedDto;
     String describes;
-
-//    List<TypeRoomImageDto> typeRooms;
+    List<TypeRoomImageDto> typeRoomImageDto;
 //    List<DiscountDto> discountList;
 //    List<TypeRoomAmenitiesTypeRoomDto> typeRoomAmenitiesTypeRoomList;
 //    List<TypeRoomServicePackageDto> typeRoomServicePackageList;

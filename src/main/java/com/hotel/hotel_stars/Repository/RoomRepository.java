@@ -21,6 +21,7 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
             "COUNT(room.id) AS room_count, " +
             "type_room.price, " +
             "type_bed.id AS type_bed, " +
+            "type_room.bed_count, " +
             "type_room.guest_limit, " +
             "type_room.acreage, " +
             "type_room_image.id " +
@@ -29,7 +30,7 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
             "JOIN type_bed ON type_room.type_bed_id = type_bed.id " +
             "JOIN type_room_image ON type_room.id = type_room_image.type_room_id " +
             "GROUP BY type_room.id, type_room.type_room_name, type_room.price, " +
-            "type_bed.id, type_room.guest_limit, type_room.acreage, type_room_image.id",
+            "type_bed.id, type_room.bed_count, type_room.guest_limit, type_room.acreage, type_room_image.id",
             nativeQuery = true)
     List<Object[]> getRoomTypeData();
 

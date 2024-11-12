@@ -21,10 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class TypeRoomOverviewService {
@@ -57,15 +54,17 @@ public class TypeRoomOverviewService {
         roomList.forEach(row -> {
             TypeRoomOverviewDTO typeRoomOverviewDTO = new TypeRoomOverviewDTO();
             Long roomCount = (Long) row[2];
-            Integer imageId = (Integer) row[7];
+            Integer imageId = (Integer) row[8];
 
-            typeRoomOverviewDTO.setTypeId((Integer) row[0]);
-            typeRoomOverviewDTO.setTypeName((String) row[1]);
+            typeRoomOverviewDTO.setId((Integer) row[0]);
+            typeRoomOverviewDTO.setTypeRoomName((String) row[1]);
             typeRoomOverviewDTO.setRoomCount(roomCount.intValue());
             typeRoomOverviewDTO.setPrice((Double) row[3]);
-            typeRoomOverviewDTO.setTypeBed((Integer) row[4]);
-            typeRoomOverviewDTO.setGuestLimit((String) row[5]);
-            typeRoomOverviewDTO.setAcreage((Double) row[6]);
+            Optional<TypeBed> optional = typeBedRepository.findById((Integer) row[4]);
+            typeRoomOverviewDTO.setTypeBed(convertDto(optional.get()));
+            typeRoomOverviewDTO.setBedCount((Integer) row[5]);
+            typeRoomOverviewDTO.setGuestLimit((Integer) row[6]);
+            typeRoomOverviewDTO.setAcreage((Double) row[7]);
 
             // Fetch TypeRoomImage by ID and convert to DTO
             TypeRoomImage typeRoomImage = typeRoomImageRepository.findById(imageId)
@@ -73,9 +72,8 @@ public class TypeRoomOverviewService {
 
             if (typeRoomImage != null) {
                 TypeRoomImageDto typeRoomImageDto = convertToDto(typeRoomImage);
-                typeRoomOverviewDTO.setImageId(typeRoomImageDto);
+                typeRoomOverviewDTO.setTypeRoomImage(typeRoomImageDto);
             }
-
             typeRoomOverviewDTOList.add(typeRoomOverviewDTO);
         });
 
