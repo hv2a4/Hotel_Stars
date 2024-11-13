@@ -28,6 +28,14 @@ public class AmenitiesTypeRoomController {
         return ResponseEntity.ok(atrservice.getAllAmenitiesTypeRooms());
     }
 
+    @GetMapping("/check-exist")
+    public ResponseEntity<Map<String, Object>> checkExist(@RequestParam("name") String amenitiesTypeRoomName) {
+        boolean exists = atrservice.checkIfExistsByName(amenitiesTypeRoomName);
+        Map<String, Object> response = new HashMap<>();
+        response.put("exists", exists);
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/getById/{id}")
     public ResponseEntity<?> getAmenitiesTypeRoomById(@PathVariable Integer id) {
         try {

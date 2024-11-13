@@ -1,4 +1,4 @@
-package com.hotel.hotel_stars.DTO;
+ package com.hotel.hotel_stars.DTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

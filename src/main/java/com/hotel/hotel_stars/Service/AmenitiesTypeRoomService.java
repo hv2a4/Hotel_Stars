@@ -34,6 +34,10 @@ public class AmenitiesTypeRoomService {
                 .toList();
     }
 
+    public boolean checkIfExistsByName(String name) {
+        return atrrep.existsByAmenitiesTypeRoomName(name);
+    }
+
     public AmenitiesTypeRoomDto getAmenitiesTypeRoomById(Integer id) {
         Optional<AmenitiesTypeRoom> atrOpt = atrrep.findById(id);
         if (atrOpt.isEmpty()) {

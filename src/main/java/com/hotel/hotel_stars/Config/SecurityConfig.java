@@ -154,6 +154,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/amenities-type-room/delete/").hasAnyAuthority("HotelOwner")
                                 .requestMatchers("api/type-room-amenities-type-room/**").permitAll()
                                 .requestMatchers("/api/type-room/**").permitAll()
+                                .requestMatchers("api/amenitiesHotel/**").permitAll()
                                 //son
 
                 )

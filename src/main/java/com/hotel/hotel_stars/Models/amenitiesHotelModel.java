@@ -1,4 +1,20 @@
 package com.hotel.hotel_stars.Models;
 
+import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
+@Data
+@Getter
+@Setter
 public class amenitiesHotelModel {
+    private Integer id;
+
+    @NotBlank(message = "Tên tiện nghi khách sạn không được để trống")
+    private String amenitiesHotelName;
+
+    private String icon;
+
+    private Integer hotelId;
 }
