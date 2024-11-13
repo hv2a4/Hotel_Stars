@@ -23,7 +23,7 @@ public class AmenitiesHotelController {
     AmenitiesHotelService ahservice;
 
     @GetMapping("/getAll")
-    public ResponseEntity<?> getAllAmenitiesTypeRooms() {
+    public ResponseEntity<?> getAllAmenitiesHotels() {
         return ResponseEntity.ok(ahservice.getAllAmenitiesHotels());
     }
 
@@ -36,7 +36,7 @@ public class AmenitiesHotelController {
     }
 
     @GetMapping("/getById/{id}")
-    public ResponseEntity<?> getAmenitiesTypeRoomById(@PathVariable Integer id) {
+    public ResponseEntity<?> getAmenitiesHotelById(@PathVariable Integer id) {
         try {
             AmenitiesHotelDto atrDto = ahservice.getAmenitiesHotelById(id);
             Map<String, Object> response = new HashMap<>();
@@ -63,7 +63,7 @@ public class AmenitiesHotelController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<?> addAmenitiesTypeRoom(@Valid @RequestBody amenitiesHotelModel ahmodel) {
+    public ResponseEntity<?> addAmenitiesHotel(@Valid @RequestBody amenitiesHotelModel ahmodel) {
         try {
             AmenitiesHotelDto ahdto = ahservice.addAmenitiesHotel(ahmodel);
             Map<String, Object> response = new HashMap<>();
@@ -91,7 +91,7 @@ public class AmenitiesHotelController {
     }
 
     @PutMapping("update/{id}")
-    public ResponseEntity<?> updateAmenitiesTypeRoom(@PathVariable Integer id, @Valid @RequestBody amenitiesHotelModel ahmodel) {
+    public ResponseEntity<?> updateAmenitiesHotel(@PathVariable Integer id, @Valid @RequestBody amenitiesHotelModel ahmodel) {
         try {
             AmenitiesHotelDto updatedAh = ahservice.updateAmenitiesHotel(id, ahmodel);
             // tạo thông báo
@@ -118,7 +118,7 @@ public class AmenitiesHotelController {
     }
 
     @DeleteMapping("delete/{id}")
-    public ResponseEntity<?> deleteAmenitiesTypeRoom(@PathVariable Integer id) {
+    public ResponseEntity<?> deleteAmenitiesHotel(@PathVariable Integer id) {
         try {
             // Gọi phương thức trong service để xóa tài khoản
             ahservice.deleteTypeRoom(id);

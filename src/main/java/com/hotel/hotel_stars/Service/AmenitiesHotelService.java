@@ -70,9 +70,9 @@ public class AmenitiesHotelService {
 
         // Kiểm tra tên loại phòng
         if (amenitiesHotelModel.getAmenitiesHotelName() == null || amenitiesHotelModel.getAmenitiesHotelName().isEmpty()) {
-            errorMessages.add("Tên tiện nghi khách sạn không được để trống");
+            errorMessages.add("Tên không được để trống");
         } else if (amenitiesHotelRepository.existsByAmenitiesHotelName(amenitiesHotelModel.getAmenitiesHotelName())) {
-            errorMessages.add("Tên tiện nghi khách sạn này đã tồn tại");
+            errorMessages.add("Tên này đã tồn tại");
         }
 
         if (!errorMessages.isEmpty()) {

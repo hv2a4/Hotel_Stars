@@ -22,8 +22,8 @@ public class AmenitiesTypeRoomService {
     public AmenitiesTypeRoomDto convertToDto(AmenitiesTypeRoom atr) {
         return new AmenitiesTypeRoomDto(
                 atr.getId(),
-                atr.getAmenitiesTypeRoomName(),
-                atr.getIcon()
+                atr.getAmenitiesTypeRoomName()
+//                atr.getIcon()
         );
     }
 
@@ -61,17 +61,17 @@ public class AmenitiesTypeRoomService {
             // In ra màn hình
             System.out.println("ID: " + atr.getId());
             System.out.println("Tên loại tiện phòng: " + atrmodel.getAmenitiesTypeRoomName());
-            System.out.println("Icon: " + atrmodel.getIcon());
+//            System.out.println("Icon: " + atrmodel.getIcon());
 
             atr.setAmenitiesTypeRoomName(atrmodel.getAmenitiesTypeRoomName());
-            atr.setIcon("abc");
+//            atr.setIcon("abc");
             // Lưu tài khoản vào cơ sở dữ liệu và chuyển đổi sang DTO
             AmenitiesTypeRoom savedAtr = atrrep.save(atr);
             return convertToDto(savedAtr);
         } catch (DataIntegrityViolationException e) {
             throw new RuntimeException("Có lỗi xảy ra do vi phạm tính toàn vẹn dữ liệu", e);
         } catch (Exception e) {
-            throw new RuntimeException("Có lỗi xảy ra khi thêm dịch vụ phòng!", e);
+            throw new RuntimeException("Có lỗi xảy ra khi thêm!", e);
         }
     }
 
