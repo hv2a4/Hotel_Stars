@@ -43,4 +43,8 @@ public class BookingRoom {
 
     @OneToMany(mappedBy = "bookingRoom")
     List<BookingRoomServiceRoom> serviceRoomList;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_staff")
+    private Account account;
 }

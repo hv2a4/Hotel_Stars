@@ -19,9 +19,6 @@ public class AmenitiesTypeRoom {
     @Column(name = "amenities_type_room_name")
     private String amenitiesTypeRoomName;
 
-    @Column(name = "icon")
-    private String icon;
-
     @OneToMany(mappedBy = "amenitiesTypeRoom")
     List<TypeRoomAmenitiesTypeRoom > typeRoomAmenitiesTypeRoomList;
 

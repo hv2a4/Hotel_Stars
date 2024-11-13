@@ -1,12 +1,15 @@
 package com.hotel.hotel_stars.Service;
 
-import com.hotel.hotel_stars.DTO.FloorDto;
-import com.hotel.hotel_stars.DTO.HotelDto;
+import com.hotel.hotel_stars.DTO.*;
 import com.hotel.hotel_stars.Entity.Floor;
 import com.hotel.hotel_stars.Entity.Hotel;
+import com.hotel.hotel_stars.Entity.Room;
 import com.hotel.hotel_stars.Models.floorModel;
 import com.hotel.hotel_stars.Repository.FloorRepository;
+import com.hotel.hotel_stars.Repository.HotelRepository;
+import com.hotel.hotel_stars.Repository.RoomRepository;
 import jakarta.validation.ValidationException;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -15,35 +18,64 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class FloorService {
     @Autowired
     private FloorRepository floorrep;
 
-//    public HotelDto convertHotelToHotelDto(Hotel hotel) {
-//        return new HotelDto(
-//                hotel.getId(),
-//                hotel.getHotelName(),
-//                hotel.getDescriptions(),
-//                hotel.getProvince(),
-//                hotel.getWard(),
-//                hotel.getAddress()
-//        );
+    @Autowired
+    private RoomRepository roomRepository;
+    @Autowired
+    RoomService roomService;
+    @Autowired
+    TypeRoomService typeRoomService;
+    @Autowired
+    StatusRoomService statusRoomService;
+
+    public RoomDto convertToDto(Room room) {
+        RoomDto roomDto = new RoomDto();
+        roomDto.setFloorDto(convertToDto(room.getFloor()));
+        roomDto.setTypeRoomDto(typeRoomService.convertTypeRoomDto(room.getTypeRoom()));
+        roomDto.setStatusRoomDto(statusRoomService.convertToDto(room.getStatusRoom()));
+        return roomDto;
+    }
+    public FloorDto convertToDto(Floor fl) {
+        FloorDto newFloorDto = new FloorDto();
+        newFloorDto.setId(fl.getId());
+        newFloorDto.setFloorName(fl.getFloorName());
+        return newFloorDto;
+    }
+
+    public List<RoomDto> convertRoom(Floor fl) {
+        List<Room> rooms = roomRepository.findByFloorId(fl.getId());
+        return rooms.stream()
+                .map(this::convertRoomDto)  // Map rooms without recursive floor mapping
+                .toList();
+    }
+
+    public RoomDto convertRoomDto(Room room) {
+        RoomDto roomDto = new RoomDto();
+        roomDto.setTypeRoomDto(typeRoomService.convertTypeRoomDto(room.getTypeRoom()));
+        roomDto.setStatusRoomDto(statusRoomService.convertToDto(room.getStatusRoom()));
+        //roomDto.setFloorDto(convertToDto(room.getFloor()));
+        return roomDto;
+    }
+//    public List<FloorDto> convertToDto(List<Floor> fl) {
+//        List<FloorDto> dtos = new ArrayList<>();
+//        for (Floor fld : fl) {
+//            dtos.add(convertToDto(fld));
+//        }
+//        return dtos;
 //    }
 
-    public FloorDto convertToDto(Floor fl) {
-        return new FloorDto(
-                fl.getId(),
-                fl.getFloorName()
-        );
-    }
 
     public List<FloorDto> getAllFloors() {
         List<Floor> fls = floorrep.findAll();
         return fls.stream()
                 .map(this::convertToDto)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public FloorDto addFloor(floorModel flmodel) {

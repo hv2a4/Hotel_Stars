@@ -3,6 +3,7 @@ package com.hotel.hotel_stars.Models;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,10 +34,11 @@ public class typeRoomModel {
     @Positive(message = "Diện tích loại phòng phải lớn hơn 0")
     private Double acreage;
 
-    @NotBlank(message = "Giới hạn khách không được để trống")
-    private String guestLimit;
+    @NotNull(message = "Sức chứa không được để trống")
+    @Positive(message = "Sức chứa phải lớn hơn 0")
+    private Integer guestLimit;
 
     private String describes;
 
-    private List<String> imageNames;
+    private String[] imageNames;
 }

@@ -19,7 +19,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class TypeRoomAmenitiesTypeRoomService {
+    public class TypeRoomAmenitiesTypeRoomService {
     @Autowired
     TypeRoomAmenitiesTypeRoomRepository tr_atr_rep;
 
@@ -49,7 +49,8 @@ public class TypeRoomAmenitiesTypeRoomService {
                 tr.getAcreage(),
                 tr.getGuestLimit(),
                 typeBedDto,
-                tr.getDescribes()
+                tr.getDescribes(),
+                null
         );
     }
 
