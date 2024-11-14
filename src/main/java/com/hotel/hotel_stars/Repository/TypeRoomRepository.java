@@ -1,17 +1,12 @@
 package com.hotel.hotel_stars.Repository;
 
-import com.hotel.hotel_stars.DTO.Select.TypeRoomBookingCountDto;
-import com.hotel.hotel_stars.DTO.selectDTO.FindTypeRoomDto;
-import com.hotel.hotel_stars.Entity.Account;
 import com.hotel.hotel_stars.Entity.TypeRoom;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
 
@@ -32,18 +27,30 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
     boolean existsByTypeRoomName(String typeRoomName);
 
     @Query(value = """
-            SELECT tr.*
-            FROM type_room tr
-            JOIN room r ON r.type_room_id = tr.id
-            JOIN booking_room br ON r.id = br.room_id
-            JOIN booking b ON br.booking_id = b.id
-            JOIN invoice i ON b.id = i.booking_id
-            JOIN feedback f ON i.id = f.invoice_id
-            GROUP BY tr.id
-            ORDER BY COUNT(br.booking_id) DESC
-            LIMIT 3
-            """, nativeQuery = true)
-    List<TypeRoom> findTop3TypeRooms();
+                SELECT tr.id,
+                       tr.typeRoomName,
+                       tr.price,
+                       tr.bedCount,
+                       tr.acreage,
+                       tr.guestLimit,
+                       tr.describes,
+                       ti.id,
+                       tatr.id,
+                       COUNT(f.id) AS totalReviews,
+                       AVG(f.stars) AS averageStars
+                FROM TypeRoom tr
+                JOIN tr.roomList r
+                JOIN r.bookingRooms br
+                JOIN br.booking b
+                JOIN b.invoices i
+                JOIN i.feedbackList f
+                JOIN tr.typeRoomImages ti
+                JOIN tr.typeRoomAmenitiesTypeRoomList tatr
+                WHERE f.stars >= 4
+                GROUP BY tr.id
+                ORDER BY totalReviews DESC, averageStars DESC
+            """, nativeQuery = false)
+    List<Object[]> findTop3TypeRoomsWithGoodReviews();
 
 
     @Query("SELECT tr FROM TypeRoom tr WHERE tr.typeRoomName LIKE %:keyword%")

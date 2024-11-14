@@ -1,11 +1,11 @@
 package com.hotel.hotel_stars.Service;
 
 import com.hotel.hotel_stars.Config.JwtService;
-import com.hotel.hotel_stars.DTO.Select.BookingDetailDTO;
-import com.hotel.hotel_stars.DTO.Select.CustomerReservation;
-import com.hotel.hotel_stars.DTO.Select.PaymentInfoDTO;
-import com.hotel.hotel_stars.DTO.Select.ReservationInfoDTO;
+import com.hotel.hotel_stars.DTO.AmenitiesTypeRoomDto;
+import com.hotel.hotel_stars.DTO.Select.*;
 import com.hotel.hotel_stars.DTO.StatusResponseDto;
+import com.hotel.hotel_stars.DTO.TypeRoomAmenitiesTypeRoomDto;
+import com.hotel.hotel_stars.DTO.TypeRoomImageDto;
 import com.hotel.hotel_stars.Entity.*;
 import com.hotel.hotel_stars.Exception.CustomValidationException;
 import com.hotel.hotel_stars.Exception.ErrorsService;
@@ -37,6 +37,15 @@ public class BookingService {
 
     @Autowired
     private StatusBookingRepository statusBookingRepository;
+
+    @Autowired
+    TypeRoomImageRepository typeRoomImageRepository;
+
+    @Autowired
+    TypeRoomAmenitiesTypeRoomRepository typeRoomAmenitiesTypeRoomRepository;
+
+    @Autowired
+    AmenitiesTypeRoomRepository amenitiesTypeRoomRepository;
     @Autowired
     JwtService jwtService;
     @Autowired
@@ -74,32 +83,6 @@ public class BookingService {
         return paymentInfoDTOs;
     }
 
-//    public Boolean sendBookingEmail(bookingModel bookingModels) {
-//        Booking booking = new Booking();
-//        Optional<Account> account = accountRepository.findByUsername(bookingModels.getUsername());
-//        Optional<TypeRoom> typeRoom = typeRoomRepository.findById(bookingModels.getIdTypeRoom());
-//        Optional<MethodPayment> methodPayment = methodPaymentRepository.findById(1);
-//        Optional<StatusBooking> statusBooking = statusBookingRepository.findById(1);
-//        try {
-//            booking.setAccount(account.get());
-//            booking.setTypeRoom(typeRoom.get());
-//            booking.setStartAt(paramServices.stringToInstant(bookingModels.getStartDate()));
-//            booking.setEndAt(paramServices.stringToInstant(bookingModels.getEndDatel()));
-//            booking.setCreateAt(Instant.now());
-//            booking.setStatusPayment(false);
-//            booking.setMethodPayment(methodPayment.get());
-//            booking.setStatus(statusBooking.get());
-//            bookingRepository.save(booking);
-//            String emailContent = "Click vào đây: <a href=\"" + "http://localhost:8080/api/booking/confirmBooking?token=" +
-//                    jwtService.generateBoking(booking.getId(), bookingModels.getQuantityRoom()) + "\">Xác Nhận Đặt phòng</a>";
-//
-//            paramServices.sendEmails(account.get().getEmail(), "Xác Nhận Đặt phòng", emailContent);
-//            return true;
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return false;
-//        }
-//    }
 
     public List<ReservationInfoDTO> getAllReservationInfoDTO() {
         List<Object[]> results = bookingRepository.findAllBookingDetailsUsingSQL();
@@ -180,5 +163,66 @@ public class BookingService {
             // Bắt lỗi không xác định khác
             return new StatusResponseDto("500", "error", "Đã xảy ra lỗi không xác định: " + e.getMessage());
         }
+    }
+
+    public List<AvailableRoomDTO> getAvailableRoomDTO() {
+        List<Object[]> result = bookingRepository.findAvailableRooms();
+        List<AvailableRoomDTO> dtos = new ArrayList<>();
+        result.forEach(row -> {
+            Integer roomId = (Integer) row[0];
+            String roomName = (String) row[1];
+            String typeRoomName = (String) row[2];
+            Integer guestLimit = (Integer) row[3];
+            Integer bedCount = (Integer) row[4];
+            Double acreage = (Double) row[5];
+            String describes = (String) row[6];
+            Integer imageId = (Integer) row[7];
+            String statusRoomName = (String) row[8];
+            Integer typeRoomId = (Integer) row[9];
+            Double price = (Double) row[10];
+            Integer amenitiesId = (Integer) row[11];
+
+            List<TypeRoomImage> typeRoomImage = typeRoomImageRepository.findByTypeRoomId(typeRoomId);
+            List<TypeRoomImageDto> typeRoomImageDtos = new ArrayList<>();
+            typeRoomImage.forEach(typeImage -> {
+                TypeRoomImageDto typeRoomDto = new TypeRoomImageDto();
+                typeRoomDto.setImageName(typeImage.getImageName());
+                typeRoomImageDtos.add(typeRoomDto);
+            });
+
+            List<TypeRoomAmenitiesTypeRoom> amenitiesTypeRoom = typeRoomAmenitiesTypeRoomRepository.findByTypeRoom_Id(typeRoomId);
+            // Create a list to hold the amenities DTOs
+            List<TypeRoomAmenitiesTypeRoomDto> amenitiesDtos = new ArrayList<>();
+
+            amenitiesTypeRoom.forEach(amenities -> {
+                AmenitiesTypeRoom amenitiesTypeRoomDto = amenitiesTypeRoomRepository.findById(amenities.getAmenitiesTypeRoom().getId()).get();
+                AmenitiesTypeRoomDto roomDto = new AmenitiesTypeRoomDto();
+                roomDto.setId(amenitiesTypeRoomDto.getId());
+                roomDto.setAmenitiesTypeRoomName(amenitiesTypeRoomDto.getAmenitiesTypeRoomName());
+
+                TypeRoomAmenitiesTypeRoomDto typeRoomAmenitiesTypeRoomDto = new TypeRoomAmenitiesTypeRoomDto();
+                typeRoomAmenitiesTypeRoomDto.setId(amenities.getId());
+                typeRoomAmenitiesTypeRoomDto.setAmenitiesTypeRoomDto(roomDto);
+
+                // Add the created DTO to the list
+                amenitiesDtos.add(typeRoomAmenitiesTypeRoomDto);
+            });
+
+            AvailableRoomDTO availableRoomDTO = new AvailableRoomDTO();
+            availableRoomDTO.setRoomId(roomId);
+            availableRoomDTO.setRoomName(roomName);
+            availableRoomDTO.setTypeRoomName(typeRoomName);
+            availableRoomDTO.setRoomTypeId(typeRoomId);
+            availableRoomDTO.setGuestLimit(guestLimit);
+            availableRoomDTO.setBedCount(bedCount);
+            availableRoomDTO.setArea(acreage);
+            availableRoomDTO.setDescription(describes);
+            availableRoomDTO.setImages(typeRoomImageDtos);
+            availableRoomDTO.setRoomStatus(statusRoomName);
+            availableRoomDTO.setPrice(price);
+            availableRoomDTO.setAmenities(amenitiesDtos);
+            dtos.add(availableRoomDTO);
+        });
+        return dtos;
     }
 }

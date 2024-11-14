@@ -5,6 +5,8 @@ import com.hotel.hotel_stars.DTO.TypeRoomDto;
 import com.hotel.hotel_stars.Entity.TypeRoom;
 import com.hotel.hotel_stars.Exception.CustomValidationException;
 import com.hotel.hotel_stars.Models.typeRoomModel;
+import com.hotel.hotel_stars.Service.AccountService;
+import com.hotel.hotel_stars.Service.BookingService;
 import com.hotel.hotel_stars.Service.TypeRoomService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,11 @@ import java.util.NoSuchElementException;
 public class TypeRoomController {
     @Autowired
     TypeRoomService trservice;
+    @Autowired
+    private AccountService accountService;
+
+    @Autowired
+    BookingService bookingService;
 
     @GetMapping("/getAll")
     public ResponseEntity<?> getAllTypeRooms() {
@@ -119,10 +126,8 @@ public class TypeRoomController {
         }
     }
 
-
-
     @GetMapping("/top3")
-    public ResponseEntity<List<TypeRoomDto>> getTop3TypeRooms() {
+    public ResponseEntity<?> getTop3TypeRooms() {
         return ResponseEntity.ok(trservice.getTypeRooms());
     }
 
@@ -132,5 +137,8 @@ public class TypeRoomController {
         return ResponseEntity.ok(typeRoomDto);  // Trả về ResponseEntity với dữ liệu và mã trạng thái OK (200)
     }
 
-
+    @GetMapping("/get-list-room")
+    public ResponseEntity<?> getListRoom() {
+        return ResponseEntity.ok(bookingService.getAvailableRoomDTO());
+    }
 }

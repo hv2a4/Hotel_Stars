@@ -80,4 +80,33 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
     Optional<CustomerReservation> findBookingDetailsById(@Param("bookingId") Integer bookingId);
 
 
+    @Query(value = """
+            SELECT
+                room.id AS roomId,
+                room.room_name AS roomName,
+                type_room.type_room_name AS typeRoomName,
+                type_room.guest_limit AS guestLimit,
+                type_room.bed_count AS bedCount,
+                type_room.acreage AS acreage,
+                type_room.describes AS describes,
+                type_room_image.id AS imageId,
+                status_room.status_room_name AS statusRoomName,
+                type_room.id AS typeRoomId,
+                type_room.price AS price,
+                type_room_amenities_type_room.id AS amenitiesId
+            FROM
+                room
+                JOIN type_room ON room.type_room_id = type_room.id
+                JOIN type_room_image ON type_room.id = type_room_image.type_room_id
+                JOIN status_room ON room.status_room_id = status_room.id
+                JOIN type_room_amenities_type_room ON type_room.id = type_room_amenities_type_room.type_room_id
+                JOIN booking_room ON room.id = booking_room.room_id
+                JOIN booking ON booking_room.booking_id = booking.id
+            WHERE
+                status_room.status_room_name = 'phòng trống'
+            ORDER BY
+                room.room_name
+            """, nativeQuery = true)
+    List<Object[]> findAvailableRooms();
+
 }

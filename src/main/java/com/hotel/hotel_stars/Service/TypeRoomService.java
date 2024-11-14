@@ -1,16 +1,10 @@
 package com.hotel.hotel_stars.Service;
 
-import com.hotel.hotel_stars.DTO.TypeBedDto;
-import com.hotel.hotel_stars.DTO.TypeRoomDto;
-import com.hotel.hotel_stars.DTO.TypeRoomImageDto;
+import com.hotel.hotel_stars.DTO.*;
 import com.hotel.hotel_stars.DTO.selectDTO.FindTypeRoomDto;
-import com.hotel.hotel_stars.Entity.TypeBed;
-import com.hotel.hotel_stars.Entity.TypeRoom;
-import com.hotel.hotel_stars.Entity.TypeRoomImage;
+import com.hotel.hotel_stars.Entity.*;
 import com.hotel.hotel_stars.Models.typeRoomModel;
-import com.hotel.hotel_stars.Repository.TypeBedRepository;
-import com.hotel.hotel_stars.Repository.TypeRoomImageRepository;
-import com.hotel.hotel_stars.Repository.TypeRoomRepository;
+import com.hotel.hotel_stars.Repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +23,12 @@ public class TypeRoomService {
 
     @Autowired
     TypeRoomImageRepository typeRoomImageRepository;
+
+    @Autowired
+    TypeRoomAmenitiesTypeRoomRepository typeRoomAmenitiesTypeRoomRepository;
+
+    @Autowired
+    AmenitiesTypeRoomRepository amenitiesTypeRoomRepository;
 
     // Tìm kiếm loại phòng
     public List<FindTypeRoomDto> getFindTypeRoom() {
@@ -74,9 +74,9 @@ public class TypeRoomService {
         }
 
         return new TypeRoomDto(tr.getId(), tr.getTypeRoomName(), tr.getPrice(), tr.getBedCount(),
-                tr.getAcreage(), tr.getGuestLimit(), typeBedDto,tr.getDescribes(), typeRoomImageDtos);
+                tr.getAcreage(), tr.getGuestLimit(), typeBedDto, tr.getDescribes(), typeRoomImageDtos);
     }
-    
+
 
     // Hiển thị danh sách dịch vụ phòng
     public List<TypeRoomDto> getAllTypeRooms() {
@@ -89,40 +89,40 @@ public class TypeRoomService {
     public TypeRoomDto addTypeRoom(typeRoomModel trmodel) {
         List<String> errorMessages = new ArrayList<>(); // Danh sách lưu trữ các thông báo lỗi
 
-            TypeRoom typeRoom = new TypeRoom();
+        TypeRoom typeRoom = new TypeRoom();
 
-            // Đặt thông tin loại phòng
-            typeRoom.setTypeRoomName(trmodel.getTypeRoomName());
-            typeRoom.setPrice(trmodel.getPrice());
-            typeRoom.setBedCount(trmodel.getBedCount());
-            typeRoom.setAcreage(trmodel.getAcreage());
-            Optional<TypeBed> typeBed = typeBedRepository.findById(trmodel.getTypeBedId());
-            typeRoom.setTypeBed(typeBed.get());
-            typeRoom.setGuestLimit(trmodel.getGuestLimit());
-            typeRoom.setDescribes(trmodel.getDescribes());
-            List<TypeRoomImage> typeRoomImages = new ArrayList<>();
-            typeRoom.setTypeRoomImages(typeRoomImages);
+        // Đặt thông tin loại phòng
+        typeRoom.setTypeRoomName(trmodel.getTypeRoomName());
+        typeRoom.setPrice(trmodel.getPrice());
+        typeRoom.setBedCount(trmodel.getBedCount());
+        typeRoom.setAcreage(trmodel.getAcreage());
+        Optional<TypeBed> typeBed = typeBedRepository.findById(trmodel.getTypeBedId());
+        typeRoom.setTypeBed(typeBed.get());
+        typeRoom.setGuestLimit(trmodel.getGuestLimit());
+        typeRoom.setDescribes(trmodel.getDescribes());
+        List<TypeRoomImage> typeRoomImages = new ArrayList<>();
+        typeRoom.setTypeRoomImages(typeRoomImages);
 
-            // Lưu thông tin loại phòng vào cơ sở dữ liệu
-            TypeRoom savedTypeRoom = typeRoomRepository.save(typeRoom);
+        // Lưu thông tin loại phòng vào cơ sở dữ liệu
+        TypeRoom savedTypeRoom = typeRoomRepository.save(typeRoom);
 
 //             Lưu hình ảnh vào bảng TypeRoomImage
 
-            if (trmodel.getImageNames() != null) {
-                for (String imageName : trmodel.getImageNames()) {
-                    TypeRoomImage typeRoomImage = new TypeRoomImage();
-                    typeRoomImage.setImageName(imageName);
-                    typeRoomImage.setTypeRoom(savedTypeRoom); // Gán phòng vào hình ảnh
-                    typeRoomImageRepository.save(typeRoomImage); // Lưu hình ảnh
-                }
+        if (trmodel.getImageNames() != null) {
+            for (String imageName : trmodel.getImageNames()) {
+                TypeRoomImage typeRoomImage = new TypeRoomImage();
+                typeRoomImage.setImageName(imageName);
+                typeRoomImage.setTypeRoom(savedTypeRoom); // Gán phòng vào hình ảnh
+                typeRoomImageRepository.save(typeRoomImage); // Lưu hình ảnh
             }
+        }
 
-            // Chuyển đổi và trả về DTO
-            return convertTypeRoomDto(savedTypeRoom);
+        // Chuyển đổi và trả về DTO
+        return convertTypeRoomDto(savedTypeRoom);
     }
 
     // cập nhật dịch vụ phòng
-    public TypeRoomDto updateTypeRoom( typeRoomModel trModel) {
+    public TypeRoomDto updateTypeRoom(typeRoomModel trModel) {
         List<String> errorMessages = new ArrayList<>(); // Danh sách lưu trữ các thông báo lỗi
 
         // Kiểm tra xem loại phòng có tồn tại hay không
@@ -131,21 +131,21 @@ public class TypeRoomService {
             throw new EntityNotFoundException("Loại phòng với ID " + trModel.getId() + " không tồn tại.");
         }
         TypeRoom existingTypeRoom = existingTypeRoomOpt.get();
-            // Cập nhật các thuộc tính cho loại phòng
-            existingTypeRoom.setTypeRoomName(trModel.getTypeRoomName());
-            existingTypeRoom.setPrice(trModel.getPrice());
-            existingTypeRoom.setBedCount(trModel.getBedCount());
-            existingTypeRoom.setAcreage(trModel.getAcreage());
-            Optional<TypeBed> typeBed = typeBedRepository.findById(trModel.getTypeBedId());
-            existingTypeRoom.setTypeBed(typeBed.get());
-            existingTypeRoom.setGuestLimit(trModel.getGuestLimit());
-            existingTypeRoom.setDescribes(trModel.getDescribes());
-            List<TypeRoomImage> typeRoomImages = new ArrayList<>();
-            existingTypeRoom.setTypeRoomImages(typeRoomImages);
+        // Cập nhật các thuộc tính cho loại phòng
+        existingTypeRoom.setTypeRoomName(trModel.getTypeRoomName());
+        existingTypeRoom.setPrice(trModel.getPrice());
+        existingTypeRoom.setBedCount(trModel.getBedCount());
+        existingTypeRoom.setAcreage(trModel.getAcreage());
+        Optional<TypeBed> typeBed = typeBedRepository.findById(trModel.getTypeBedId());
+        existingTypeRoom.setTypeBed(typeBed.get());
+        existingTypeRoom.setGuestLimit(trModel.getGuestLimit());
+        existingTypeRoom.setDescribes(trModel.getDescribes());
+        List<TypeRoomImage> typeRoomImages = new ArrayList<>();
+        existingTypeRoom.setTypeRoomImages(typeRoomImages);
 
-            // Lưu loại phòng đã cập nhật vào cơ sở dữ liệu và chuyển đổi sang DTO
-            TypeRoom updatedTypeRoom = typeRoomRepository.save(existingTypeRoom);
-            return convertTypeRoomDto(updatedTypeRoom); // Chuyển đổi loại phòng đã lưu sang DTO
+        // Lưu loại phòng đã cập nhật vào cơ sở dữ liệu và chuyển đổi sang DTO
+        TypeRoom updatedTypeRoom = typeRoomRepository.save(existingTypeRoom);
+        return convertTypeRoomDto(updatedTypeRoom); // Chuyển đổi loại phòng đã lưu sang DTO
     }
 
     // xóa dịch vụ phòng
@@ -171,10 +171,69 @@ public class TypeRoomService {
     }
 
 
-    public List<TypeRoomDto> getTypeRooms() {
-        List<TypeRoom> list = typeRoomRepository.findTop3TypeRooms();
-        return list.stream().map(this::convertTypeRoomDto).toList();
+    public List<TypeRoomWithReviewsDTO> getTypeRooms() {
+        List<Object[]> result = typeRoomRepository.findTop3TypeRoomsWithGoodReviews();
+        List<TypeRoomWithReviewsDTO> dtos = new ArrayList<>();
+        result.forEach(row -> {
+            Integer id = (Integer) row[0];
+            String typeRoomName = (String) row[1];
+            Double price = (Double) row[2];
+            Integer bedCount = (Integer) row[3];
+            Double acreage = (Double) row[4];
+            Integer guestLimit = (Integer) row[5];
+            String describes = (String) row[6];
+
+            Integer imageId = (Integer) row[7];
+
+            List<TypeRoomImage> typeRoomImage = typeRoomImageRepository.findByTypeRoomId(id);
+            List<TypeRoomImageDto> typeRoomImageDtos = new ArrayList<>();
+            typeRoomImage.forEach(typeImage ->{
+                TypeRoomImageDto typeRoomDto = new TypeRoomImageDto();
+                typeRoomDto.setId(typeImage.getId());
+                typeRoomDto.setImageName(typeImage.getImageName());
+                typeRoomImageDtos.add(typeRoomDto);
+            } );
+
+            List<TypeRoomAmenitiesTypeRoom> amenitiesTypeRoom = typeRoomAmenitiesTypeRoomRepository.findByTypeRoom_Id(id);
+            // Create a list to hold the amenities DTOs
+            List<TypeRoomAmenitiesTypeRoomDto> amenitiesDtos = new ArrayList<>();
+
+            amenitiesTypeRoom.forEach(amenities -> {
+                AmenitiesTypeRoom amenitiesTypeRoomDto = amenitiesTypeRoomRepository.findById(amenities.getAmenitiesTypeRoom().getId()).get();
+                AmenitiesTypeRoomDto roomDto = new AmenitiesTypeRoomDto();
+                roomDto.setId(amenitiesTypeRoomDto.getId());
+                roomDto.setAmenitiesTypeRoomName(amenitiesTypeRoomDto.getAmenitiesTypeRoomName());
+
+                TypeRoomAmenitiesTypeRoomDto typeRoomAmenitiesTypeRoomDto = new TypeRoomAmenitiesTypeRoomDto();
+                typeRoomAmenitiesTypeRoomDto.setId(amenities.getId());
+                typeRoomAmenitiesTypeRoomDto.setAmenitiesTypeRoomDto(roomDto);
+
+                // Add the created DTO to the list
+                amenitiesDtos.add(typeRoomAmenitiesTypeRoomDto);
+            });
+
+            Long totalReviews = (Long) row[9];
+            Double averageStars = (Double) row[10];
+
+            TypeRoomWithReviewsDTO typeRoomWithReviewsDTO = new TypeRoomWithReviewsDTO(
+                    id,
+                    typeRoomName,
+                    price,
+                    bedCount,
+                    acreage,
+                    guestLimit,
+                    describes,
+                    typeRoomImageDtos,
+                    amenitiesDtos,  // Set the list of amenities
+                    totalReviews,
+                    averageStars
+            );
+            dtos.add(typeRoomWithReviewsDTO);
+        });
+
+        return dtos;
     }
+
 
     public TypeRoomDto getTypeRoomsById(Integer id) {
         Optional<TypeRoom> optional = typeRoomRepository.findById(id);

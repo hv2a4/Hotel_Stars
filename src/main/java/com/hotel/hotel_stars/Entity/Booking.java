@@ -43,8 +43,10 @@ public class Booking {
     private StatusBooking status;
 
     @OneToMany(mappedBy = "booking")
-    @JsonManagedReference
     List<BookingRoom> bookingRooms;
+
+    @OneToMany(mappedBy = "booking")
+    List<Invoice> invoices;
 
     @Override
     public String toString() {
