@@ -1,7 +1,9 @@
 package com.hotel.hotel_stars.Controller;
 
 import com.hotel.hotel_stars.DTO.Select.RoomAvailabilityInfo;
+import com.hotel.hotel_stars.DTO.RoomDto;
 import com.hotel.hotel_stars.DTO.StatusResponseDto;
+import com.hotel.hotel_stars.DTO.Select.PaginatedResponseDto;
 import com.hotel.hotel_stars.Entity.Room;
 import com.hotel.hotel_stars.Models.RoomModel;
 import com.hotel.hotel_stars.Service.RoomService;
@@ -11,9 +13,19 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import java.util.List;
+
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/room")
@@ -21,6 +33,14 @@ import java.util.Map;
 public class RoomController {
     @Autowired
     private RoomService roomService;
+
+    @GetMapping
+    public PaginatedResponseDto<RoomDto> getAllRooms(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy) {
+        return roomService.getAll(page, size, sortBy);
+    }
 
     @GetMapping("/getCountRoom")
     public ResponseEntity<?> getAll() {
@@ -74,11 +94,11 @@ public class RoomController {
         StatusResponseDto response = roomService.deleteById(id);
 
         if ("200".equals(response.getCode())) {
-            return ResponseEntity.ok(response);  // Trả về mã 200 nếu xóa thành công
+            return ResponseEntity.ok(response); // Trả về mã 200 nếu xóa thành công
         } else if ("404".equals(response.getCode())) {
-            return ResponseEntity.status(404).body(response);  // Trả về mã 404 nếu không tìm thấy phòng
+            return ResponseEntity.status(404).body(response); // Trả về mã 404 nếu không tìm thấy phòng
         } else {
-            return ResponseEntity.status(500).body(response);  // Trả về mã 500 cho lỗi
+            return ResponseEntity.status(500).body(response); // Trả về mã 500 cho lỗi
         }
     }
 
@@ -108,4 +128,18 @@ public class RoomController {
         return ResponseEntity.ok(roomService.getRoomDetailsByRoomId(roomId));
     }
 
+    @PutMapping("/update-active")
+    public ResponseEntity<StatusResponseDto> updateActiveRoom(@RequestBody RoomModel model) {
+        StatusResponseDto response = roomService.updateActiveRoom(model);
+        HttpStatus status = HttpStatus.OK; // Default to 200 OK
+        switch (response.getCode()) {
+            case "400":
+                status = HttpStatus.BAD_REQUEST; // 400 Bad Request
+                break;
+            case "500":
+                status = HttpStatus.INTERNAL_SERVER_ERROR; // 500 Internal Server Error
+                break;
+        }
+        return ResponseEntity.status(status).body(response);
+    }
 }

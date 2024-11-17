@@ -120,4 +120,9 @@ public class StatusRoomController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
+    
+    @GetMapping("get-status-excluding/{id}")
+    public ResponseEntity<?> getExcludingId(@PathVariable("id") Integer id){
+    	return ResponseEntity.ok(strservice.getByExcludingId(id));
+    }
 }

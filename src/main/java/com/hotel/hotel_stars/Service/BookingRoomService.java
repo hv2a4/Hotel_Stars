@@ -72,8 +72,19 @@ public class BookingRoomService {
         return bookingRoomDto;
     }
 
+    public List<BookingRoomDto> convertListDto(List<BookingRoom> bookingRoom){
+    	return bookingRoom.stream().map(this::toDTO).toList();
+    }
     public List<BookingRoomDto> getAllBookingRooms() {
         List<BookingRoom> list = bookingRoomRepository.findAll();
         return list.stream().map(this::toDTO).toList();
+    }
+    public List<BookingRoomDto> getBookingRoomAccount(Integer id) {
+    	List<BookingRoom> list = bookingRoomRepository.findBookingRoomByAccountId(id);
+    	return list.stream().map(this::toDTO).toList();
+    }
+    public List<BookingRoomDto> getByRoom(Integer roomId, Integer statusId){
+    	List<BookingRoom> bookingRoom = bookingRoomRepository.findByRoom_IdAndRoom_StatusRoom_Id(roomId, statusId);
+    	return bookingRoom.stream().map(this::toDTO).toList();
     }
 }

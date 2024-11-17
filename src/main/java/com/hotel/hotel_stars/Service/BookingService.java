@@ -6,12 +6,25 @@ import com.hotel.hotel_stars.DTO.Select.*;
 import com.hotel.hotel_stars.DTO.StatusResponseDto;
 import com.hotel.hotel_stars.DTO.TypeRoomAmenitiesTypeRoomDto;
 import com.hotel.hotel_stars.DTO.TypeRoomImageDto;
+import com.hotel.hotel_stars.DTO.Select.AccountInfo;
+import com.hotel.hotel_stars.DTO.Select.BookingDetailDTO;
+import com.hotel.hotel_stars.DTO.Select.CustomerReservation;
+import com.hotel.hotel_stars.DTO.Select.PaymentInfoDTO;
+import com.hotel.hotel_stars.DTO.Select.ReservationInfoDTO;
+import com.hotel.hotel_stars.DTO.AccountDto;
+import com.hotel.hotel_stars.DTO.BookingDto;
+import com.hotel.hotel_stars.DTO.MethodPaymentDto;
+import com.hotel.hotel_stars.DTO.RoleDto;
+import com.hotel.hotel_stars.DTO.StatusResponseDto;
+import com.hotel.hotel_stars.DTO.accountHistoryDto;
 import com.hotel.hotel_stars.Entity.*;
 import com.hotel.hotel_stars.Exception.CustomValidationException;
 import com.hotel.hotel_stars.Exception.ErrorsService;
 import com.hotel.hotel_stars.Models.bookingModel;
 import com.hotel.hotel_stars.Repository.*;
 import com.hotel.hotel_stars.utils.paramService;
+
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -23,6 +36,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class BookingService {
@@ -40,7 +55,10 @@ public class BookingService {
     private BookingRoomRepository bookingRoomRepository;
     @Autowired
     private MethodPaymentRepository methodPaymentRepository;
-
+    @Autowired
+    InvoiceService invoiceService;
+    @Autowired
+    BookingRoomService bookingRoomService;
     @Autowired
     private StatusBookingRepository statusBookingRepository;
 
@@ -56,6 +74,8 @@ public class BookingService {
     JwtService jwtService;
     @Autowired
     private paramService paramServices;
+    @Autowired
+    private ModelMapper modelMapper;
 
     public List<BookingDetailDTO> getBookingDetailsByAccountId(Integer accountId) {
         List<Object[]> results = bookingRepository.findBookingDetailsByAccountId(accountId);
@@ -279,5 +299,67 @@ public class BookingService {
             dtos.add(availableRoomDTO);
         });
         return dtos;
+    }
+
+    public AccountDto convertToDtoAccount(Account account) {
+        // Chuyển đổi Role sang RoleDto
+        RoleDto roleDto = new RoleDto(account.getRole().getId(), account.getRole().getRoleName());
+        // Chuyển đổi danh sách Booking sang BookingDto
+        List<BookingDto> bookingDtoList = account.getBookingList().stream()
+                .map(booking -> new BookingDto(booking.getId(), booking.getCreateAt(), booking.getStartAt(),
+                        booking.getEndAt(), booking.getStatusPayment(), new AccountDto(),
+                        new MethodPaymentDto(booking.getMethodPayment().getId(),
+                                booking.getMethodPayment().getMethodPaymentName()))) // Cần xử lý accountDto trong
+                                                                                     // BookingDto
+                .collect(Collectors.toList());
+
+        // Trả về AccountDto
+        return new AccountDto(
+                account.getId(),
+                account.getUsername(),
+                account.getFullname(),
+                account.getPhone(),
+                account.getEmail(),
+                account.getAvatar(),
+                account.getGender(),
+                account.getIsDelete(),
+                roleDto,
+                bookingDtoList);
+    }
+
+    public AccountInfo convertDT(Account account) {
+        if (account == null) {
+            return null; // Hoặc xử lý theo cách bạn muốn
+        }
+        AccountInfo accountInfo = new AccountInfo();
+        accountInfo.setId(account.getId());
+        accountInfo.setUsername(account.getUsername());
+        accountInfo.setFullname(account.getFullname());
+        accountInfo.setPasswords(account.getPasswords());
+        accountInfo.setGender(account.getGender());
+        accountInfo.setEmail(account.getEmail());
+        accountInfo.setAvatar(account.getAvatar());
+        accountInfo.setPhone(account.getPhone());
+        return accountInfo;
+    }
+
+    public accountHistoryDto convertToDto(Booking booking) {
+        accountHistoryDto dto = new accountHistoryDto();
+        dto.setAccountDto(convertDT(booking.getAccount()));
+        dto.setCreateAt(booking.getCreateAt());
+        dto.setEndAt(booking.getEndAt());
+        dto.setId(booking.getId());
+        dto.setStartAt(booking.getStartAt());
+        dto.setStatusPayment(booking.getStatusPayment());
+        dto.setBookingRooms(bookingRoomService.convertListDto(booking.getBookingRooms()));
+        dto.setInvoiceDtos(invoiceService.convertListDtos(booking.getInvoice()));
+        dto.setMethodPaymentDto(new MethodPaymentDto(booking.getMethodPayment().getId(),
+                booking.getMethodPayment().getMethodPaymentName()));
+        return dto;
+    }
+
+    public List<accountHistoryDto> getListByAccountId(Integer id) {
+        List<Booking> bookings = bookingRepository.findByAccount_Id(id);
+        return bookings.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 }

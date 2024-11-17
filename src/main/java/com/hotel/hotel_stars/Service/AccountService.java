@@ -3,6 +3,7 @@ package com.hotel.hotel_stars.Service;
 import com.hotel.hotel_stars.Config.UserInfoService;
 import com.hotel.hotel_stars.DTO.AccountDto;
 import com.hotel.hotel_stars.DTO.BookingDto;
+import com.hotel.hotel_stars.DTO.MethodPaymentDto;
 import com.hotel.hotel_stars.DTO.RoleDto;
 import com.hotel.hotel_stars.DTO.Select.AccountBookingDTO;
 import com.hotel.hotel_stars.Config.JwtService;
@@ -73,7 +74,7 @@ public class AccountService {
         // Chuyển đổi danh sách Booking sang BookingDto
         List<BookingDto> bookingDtoList = account.getBookingList().stream()
                 .map(booking -> new BookingDto(booking.getId(), booking.getCreateAt(), booking.getStartAt(),
-                        booking.getEndAt(), booking.getStatusPayment(), new AccountDto())) // Cần xử lý accountDto trong BookingDto
+                        booking.getEndAt(), booking.getStatusPayment(), new AccountDto(),new MethodPaymentDto(booking.getMethodPayment().getId(),booking.getMethodPayment().getMethodPaymentName()))) // Cần xử lý accountDto trong BookingDto
                 .collect(Collectors.toList());
 
         // Trả về AccountDto
@@ -421,6 +422,10 @@ public class AccountService {
         return accountRepository.findByUsername(username)
                 .map(this::convertDT)
                 .orElse(null);
+    }
+    public AccountDto getAccountId(Integer id) {
+    	Account ac = accountRepository.findById(id).get();
+    	return convertToDto(ac);
     }
 
     public AccountInfo convertDT(Account account) {

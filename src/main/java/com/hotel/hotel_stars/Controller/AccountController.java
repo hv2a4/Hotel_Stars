@@ -60,7 +60,14 @@ public class AccountController {
         return ResponseEntity.ok("ạksfasj");
     }
 
-
+    @GetMapping("/getAlls")
+    public ResponseEntity<?> getAllss() {
+        return ResponseEntity.ok(typeRoomService.getFindTypeRoom());
+    }
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getById(@PathVariable("id") Integer id) {
+    	return ResponseEntity.ok(accountService.getAccountId(id));
+    }
 
     @PostMapping("/getTokenGG")
     public ResponseEntity<?> getToken(@RequestBody accountModel accountModels) {

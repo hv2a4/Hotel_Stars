@@ -45,8 +45,8 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
             "booking.start_at, " +
             "booking.end_at, " +
             "accounts.fullname, " +
-            "roles.role_name, " +  // Sửa lỗi ở đây: thêm dấu phẩy
-            "type_room.type_room_name, " +  // Không cần dấu phẩy ở cuối dòng này
+            "roles.role_name, " + // Sửa lỗi ở đây: thêm dấu phẩy
+            "type_room.type_room_name, " + // Không cần dấu phẩy ở cuối dòng này
             "invoice.total_amount, " +
             "type_room.guest_limit AS max_guests " +
             "FROM accounts " +
@@ -79,7 +79,6 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
             "WHERE b.id = :bookingId")
     Optional<CustomerReservation> findBookingDetailsById(@Param("bookingId") Integer bookingId);
 
-
     @Query(value = """
             SELECT
                 room.id AS roomId,
@@ -109,4 +108,5 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
             """, nativeQuery = true)
     List<Object[]> findAvailableRooms();
 
+    List<Booking> findByAccount_Id(Integer accountId);
 }

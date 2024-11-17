@@ -99,4 +99,9 @@ public class BookingController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Đã có lỗi xảy ra.");
         }
     }
+
+    @GetMapping("/accountId/{id}")
+    public ResponseEntity<?> getBookingByAccount(@PathVariable("id") Integer id) {
+        return ResponseEntity.ok(bookingService.getListByAccountId(id));
+    }
 }
