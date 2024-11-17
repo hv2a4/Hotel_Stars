@@ -18,4 +18,5 @@ import java.util.List;
 public class AmenitiesTypeRoomDto implements Serializable {
     Integer id;
     String amenitiesTypeRoomName;
+//    String icon;
 }

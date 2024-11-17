@@ -58,6 +58,7 @@ import java.util.stream.Collectors;
         return new AmenitiesTypeRoomDto(
                 atr.getId(),
                 atr.getAmenitiesTypeRoomName()
+//                atr.getIcon()
         );
     }
 
