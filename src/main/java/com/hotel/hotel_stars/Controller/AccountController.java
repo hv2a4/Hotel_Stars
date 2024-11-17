@@ -56,17 +56,13 @@ public class AccountController {
         System.out.println("Thời gian hiện tại ở Việt Nam: " + vietnamTime);
         LocalDateTime localDateTime = LocalDateTime.now();
         System.out.println("Thời gian hiện tại (LocalDateTime): " + localDateTime);
-        System.out.println(    paramServices.localDateToInstant(localDateTime));
+        System.out.println(paramServices.localDateToInstant(localDateTime));
         return ResponseEntity.ok("ạksfasj");
     }
 
-    @GetMapping("/getAlls")
-    public ResponseEntity<?> getAllss() {
-        return ResponseEntity.ok(typeRoomService.getFindTypeRoom());
-    }
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable("id") Integer id) {
-    	return ResponseEntity.ok(accountService.getAccountId(id));
+        return ResponseEntity.ok(accountService.getAccountId(id));
     }
 
     @PostMapping("/getTokenGG")
@@ -142,7 +138,7 @@ public class AccountController {
 
     @PutMapping("update-account-staff/{id}")
     public ResponseEntity<?> updateAccountStaff(@PathVariable Integer id,
-            @Valid @RequestBody accountModel accountModel) {
+                                                @Valid @RequestBody accountModel accountModel) {
         try {
             // Gọi phương thức trong service để cập nhật tài khoản
             AccountDto updatedAccount = accountService.UpdateAccountStaff(id, accountModel);

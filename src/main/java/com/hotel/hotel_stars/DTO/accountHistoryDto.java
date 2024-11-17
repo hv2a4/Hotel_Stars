@@ -1,6 +1,7 @@
 package com.hotel.hotel_stars.DTO;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.hotel.hotel_stars.DTO.Select.AccountInfo;
@@ -10,7 +11,7 @@ import lombok.Data;
 @Data
 public class accountHistoryDto {
 	Integer id;
-    Instant createAt;
+    LocalDateTime createAt;
     Instant startAt;
     Instant endAt;
     Boolean statusPayment;

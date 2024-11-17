@@ -36,6 +36,9 @@ public class RoomService {
 	@Autowired
 	StatusRoomRepository statusRoomRepository;
 
+	@Autowired
+	TypeRoomImageRepository typeRoomImageRepository;
+
 	public RoomDto convertToDto(Room room) {
 
 		FloorDto floorDto = new FloorDto();
