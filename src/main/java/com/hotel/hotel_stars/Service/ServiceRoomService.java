@@ -3,9 +3,12 @@ package com.hotel.hotel_stars.Service;
 import com.hotel.hotel_stars.DTO.ServiceRoomDto;
 import com.hotel.hotel_stars.DTO.TypeServiceRoomDto;
 import com.hotel.hotel_stars.Entity.ServiceRoom;
+import com.hotel.hotel_stars.Entity.TypeServiceRoom;
 import com.hotel.hotel_stars.Exception.CustomValidationException;
 import com.hotel.hotel_stars.Models.serviceRoomModel;
 import com.hotel.hotel_stars.Repository.ServiceRoomRepository;
+import com.hotel.hotel_stars.Repository.TypeRoomServiceRepository;
+
 import jakarta.validation.ValidationException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +24,12 @@ public class ServiceRoomService {
     private ModelMapper modelMapper;
     @Autowired
     private ServiceRoomRepository srrep;
+    @Autowired
+    TypeRoomServiceRepository typeRoomServiceRepository;
 
     // chuyển đổi entity sang dto (đổ dữ liệu lên web)
     public ServiceRoomDto convertToDto(ServiceRoom sr) {
-        TypeServiceRoomDto typeServiceRoomDto = new TypeServiceRoomDto(sr.getId(), sr.getServiceRoomName());
+//        TypeServiceRoomDto typeServiceRoomDto = new TypeServiceRoomDto(sr.getId(), sr.getServiceRoomName());
         ServiceRoomDto serviceRoomDto = modelMapper.map(sr, ServiceRoomDto.class);
         return serviceRoomDto;
     }
@@ -62,14 +67,12 @@ public class ServiceRoomService {
 
         try {
             ServiceRoom sr = new ServiceRoom();
-            // In ra màn hình
-            System.out.println("Tên dịch vụ phòng: " + srmodel.getServiceRoomName());
-            System.out.println("Giá phòng: " + srmodel.getPrice());
-            System.out.println("Hình ảnh: " + srmodel.getImageName());
+            TypeServiceRoom typeServiceRoom = typeRoomServiceRepository.findById(srmodel.getTypeServiceRoom()).get();
 
             sr.setServiceRoomName(srmodel.getServiceRoomName());
             sr.setPrice(srmodel.getPrice());
-            sr.setImageName("https://firebasestorage.googleapis.com/v0/b/myprojectimg-164dd.appspot.com/o/files%2F3c7db4be-6f94-4c19-837e-fbfe8848546f?alt=media&token=2aed7a07-6850-4c82-ae7a-5ee1ba606979");
+            sr.setImageName(srmodel.getImageName());
+            sr.setTypeServiceRoomId(typeServiceRoom);
 
             // Lưu tài khoản vào cơ sở dữ liệu và chuyển đổi sang DTO
             ServiceRoom savedServiceRoom = srrep.save(sr);
@@ -116,9 +119,11 @@ public class ServiceRoomService {
 
         try {
             //Cập nhật các thuộc tính cho tài khoản
+        	TypeServiceRoom typeServiceRoom = typeRoomServiceRepository.findById(srmodel.getTypeServiceRoom()).get();
             existingServiceRoom.setServiceRoomName(srmodel.getServiceRoomName());
             existingServiceRoom.setPrice(srmodel.getPrice());
-            existingServiceRoom.setImageName("https://firebasestorage.googleapis.com/v0/b/myprojectimg-164dd.appspot.com/o/files%2F3c7db4be-6f94-4c19-837e-fbfe8848546f?alt=media&token=2aed7a07-6850-4c82-ae7a-5ee1ba606979");
+            existingServiceRoom.setImageName(srmodel.getImageName());
+            existingServiceRoom.setTypeServiceRoomId(typeServiceRoom);
             // Lưu tài khoản đã cập nhật vào cơ sở dữ liệu và chuyển đổi sang DTO
             ServiceRoom updatedServiceRoom = srrep.save(existingServiceRoom);
             return convertToDto(updatedServiceRoom); // Chuyển đổi tài khoản đã lưu sang DTO
@@ -161,6 +166,5 @@ public class ServiceRoomService {
 
         return true; // Nếu tất cả các kiểm tra đều hợp lệ
     }
-
 
 }

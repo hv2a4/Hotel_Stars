@@ -30,13 +30,13 @@ public class TypeRoom {
     private Double acreage;
 
     @Column(name = "guest_limit")
-    private String guestLimit;
+    private Integer guestLimit;
 
     @Column(name = "describes")
     private String describes;
 
     @OneToMany(mappedBy = "typeRoom")
-    List<TypeRoomImage> typeRooms;
+    List<TypeRoomImage> typeRoomImages;
 
     @OneToMany(mappedBy = "typeRoom")
     List<Discount> discountList;
@@ -50,8 +50,6 @@ public class TypeRoom {
     @OneToMany(mappedBy = "typeRoom")
     List<Room> roomList;
 
-    @OneToMany(mappedBy = "typeRoom")
-    List<Booking> bookingList;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "type_bed_id")

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -19,10 +20,11 @@ public class Booking {
     private Integer id;
 
     @Column(name = "create_at")
-    private Instant createAt;
+    private LocalDateTime createAt;
 
     @Column(name = "start_at")
     private Instant startAt;
+    
 
     @Column(name = "end_at")
     private Instant endAt;
@@ -34,9 +36,6 @@ public class Booking {
     @JoinColumn(name = "method_payment_id")
     private MethodPayment methodPayment;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "type_room_id")
-    private TypeRoom typeRoom;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id")

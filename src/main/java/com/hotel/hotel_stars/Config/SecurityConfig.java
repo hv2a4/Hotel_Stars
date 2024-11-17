@@ -65,7 +65,13 @@ public class SecurityConfig {
                 }))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/account/login").authenticated()
-                        //--------------------------  code này dành cho mấy cái api không cần token
+                        // -------------------------- code này dành cho mấy cái api không cần token
+
+                        // All
+                        .requestMatchers("/api/service-package/post-service-package").permitAll()
+                        .requestMatchers("/api/service-package/put-service-package").permitAll()
+                        .requestMatchers("/api/service-package/delete-service-package/**").permitAll()
+                        // All
                         // vu
                         .requestMatchers(
                                 "/api/account/account-by-id/{username}",
@@ -86,22 +92,19 @@ public class SecurityConfig {
                                 .requestMatchers("/api/account/getTokenGG").permitAll()
                                 .requestMatchers("/api/account/loginToken").permitAll()
                                 .requestMatchers("/api/account/sendEmail").permitAll()
-                                .requestMatchers("/api/account/getAlls").permitAll()
                                 .requestMatchers("/api/discount/getAll").permitAll()
+                                .requestMatchers("/api/account/getAll").permitAll()
                                 .requestMatchers("/api/account/updateAccount").permitAll()
                                 .requestMatchers("/api/account/updatePassword").permitAll()
                                 .requestMatchers("/api/room/getCountRoom").permitAll()
                                 .requestMatchers("/api/booking/sendBooking").permitAll()
                                 .requestMatchers("/api/booking/confirmBooking").permitAll()
+                                .requestMatchers("/api/type-room/find-type-room").permitAll()
                                 // nghia
 
                                 //son
                                 .requestMatchers("/api/amenities-type-room/**").permitAll()
                                 .requestMatchers("/api/type-room/**").permitAll()
-                                .requestMatchers("/api/type-room/top3").permitAll()
-                                .requestMatchers("/api/image/getAll").permitAll()
-                                .requestMatchers("/api/service-hotel/getAll").permitAll()
-                                .requestMatchers("/api/image/getAll").permitAll()
                                 //son
 
                                 //---------------------------api cần token có phân quyền Customer  ( khách hàng )

@@ -33,9 +33,6 @@ public class Hotel {
     @Column(name = "address")
     private String address;
 
-    @Column(name = "describes")
-    private String describes;
-
     @OneToMany(mappedBy = "hotel")
     private List<HotelImage> hotelImageList;
 

@@ -1,22 +1,26 @@
 package com.hotel.hotel_stars.Service;
 
-import com.hotel.hotel_stars.DTO.Select.TypeRoomBookingCountDto;
 import com.hotel.hotel_stars.DTO.TypeBedDto;
 import com.hotel.hotel_stars.DTO.TypeRoomDto;
+import com.hotel.hotel_stars.DTO.TypeRoomImageDto;
 import com.hotel.hotel_stars.DTO.selectDTO.FindTypeRoomDto;
 import com.hotel.hotel_stars.Entity.TypeBed;
 import com.hotel.hotel_stars.Entity.TypeRoom;
+import com.hotel.hotel_stars.Entity.TypeRoomImage;
 import com.hotel.hotel_stars.Models.typeRoomModel;
 import com.hotel.hotel_stars.Repository.TypeBedRepository;
+import com.hotel.hotel_stars.Repository.TypeRoomImageRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomRepository;
-import jakarta.validation.ValidationException;
+import com.hotel.hotel_stars.utils.paramService;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class TypeRoomService {
@@ -25,91 +29,47 @@ public class TypeRoomService {
 
     @Autowired
     TypeBedRepository typeBedRepository;
+    @Autowired
+    paramService paramServices;
 
-    // Tìm kiếm loại phòng
-    public List<FindTypeRoomDto> getFindTypeRoom() {
-        LocalDate startDate = LocalDate.parse("2023-10-29");
-        LocalDate endDate = LocalDate.parse("2023-10-31");
-        List<Object[]> results = typeRoomRepository.findAllTypeRoomDetailsWithCost(startDate, endDate);
-        List<FindTypeRoomDto> dtoList = new ArrayList<>();
-        results.stream().forEach(row -> {
-            String typeRoomName = (String) row[0];
-            Double price = (Double) row[1];
-            Double acreage = (Double) row[2];
-            Integer guestLimit = (Integer) row[3];
-            String amenitiesTypeRoomName = (String) row[4];
-            Double estCost = (Double) row[5];
-            String image = (String) row[6];
-            // Kiểm tra xem DTO đã tồn tại trong danh sách chưa bằng Stream API
-            FindTypeRoomDto existingDto = dtoList.stream().filter(dto -> dto.getTypeRoomName().equals(typeRoomName)).findFirst().orElse(null);
+    @Autowired
+    TypeRoomImageRepository typeRoomImageRepository;
 
-            if (existingDto == null) {
-                // Nếu chưa có DTO cho loại phòng này, tạo mới
-                existingDto = new FindTypeRoomDto(typeRoomName, price, acreage, guestLimit, new ArrayList<>(), estCost, image);
-                dtoList.add(existingDto);
-            }
-            existingDto.getAmenitiesTypeRoomNames().add(amenitiesTypeRoomName);
-        });
-        return dtoList; // Trả về danh sách DTO
-    }
+
+
 
     // chuyển đổi entity sang dto (đổ dữ liệu lên web)
     public TypeRoomDto convertTypeRoomDto(TypeRoom tr) {
         TypeBedDto typeBedDto = new TypeBedDto();
         typeBedDto.setId(tr.getTypeBed().getId());
         typeBedDto.setBedName(tr.getTypeBed().getBedName());
-        return new TypeRoomDto(tr.getId(), tr.getTypeRoomName(), tr.getPrice(), tr.getBedCount(), tr.getAcreage(), tr.getGuestLimit(), typeBedDto);
+        List<TypeRoomImage> typeRoomImages = tr.getTypeRoomImages();
+        List<TypeRoomImageDto> typeRoomImageDtos = new ArrayList<>();
+
+        for (TypeRoomImage typeRoomImage : typeRoomImages) {
+            TypeRoomImageDto typeRoomImageDto = new TypeRoomImageDto();
+            typeRoomImageDto.setId(typeRoomImage.getId());  // Lấy ID của từng ảnh
+            typeRoomImageDto.setImageName(typeRoomImage.getImageName());  // Lấy tên ảnh từ từng ảnh
+
+            typeRoomImageDtos.add(typeRoomImageDto);  // Thêm vào danh sách DTO
+        }
+
+        return new TypeRoomDto(tr.getId(), tr.getTypeRoomName(), tr.getPrice(), tr.getBedCount(),
+                tr.getAcreage(), tr.getGuestLimit(), typeBedDto,tr.getDescribes(), typeRoomImageDtos);
     }
+    
 
     // Hiển thị danh sách dịch vụ phòng
     public List<TypeRoomDto> getAllTypeRooms() {
         List<TypeRoom> trs = typeRoomRepository.findAll();
+
         return trs.stream().map(this::convertTypeRoomDto).toList();
     }
 
-    // thêm dịch vụ phòng
+    // thêm loại phòng
     public TypeRoomDto addTypeRoom(typeRoomModel trmodel) {
         List<String> errorMessages = new ArrayList<>(); // Danh sách lưu trữ các thông báo lỗi
 
-        // Kiểm tra tên loại phòng
-        if (trmodel.getTypeRoomName() == null || trmodel.getTypeRoomName().isEmpty()) {
-            errorMessages.add("Tên dịch vụ phòng không được để trống");
-        } else if (typeRoomRepository.existsByTypeRoomName(trmodel.getTypeRoomName())) {
-            errorMessages.add("Dịch vụ phòng này đã tồn tại");
-        }
-
-        // Kiểm tra giá
-        if (trmodel.getPrice() == null) {
-            errorMessages.add("Giá không được để trống");
-        } else if (!isValidPrice(trmodel.getPrice())) {
-            errorMessages.add("Giá bạn nhập không hợp lệ");
-        }
-
-        // Kiểm tra loại giường
-        if (trmodel.getBedType() == null || trmodel.getBedType().isEmpty()) {
-            errorMessages.add("Loại giường không được để trống");
-        }
-
-        // Kiểm tra số lượng giường
-        if (trmodel.getBedCount() == null) {
-            errorMessages.add("Số lượng giường không được để trống");
-        } else if (!isValidBedCount(trmodel.getBedCount())) {
-            errorMessages.add("Số lượng giường bạn nhập không hợp lệ");
-        }
-
-        // Kiểm tra diện tích
-        if (trmodel.getAcreage() == null) {
-            errorMessages.add("Diện tích không được để trống");
-        } else if (!isValidAcreage(trmodel.getAcreage())) {
-            errorMessages.add("Diện tích bạn nhập không hợp lệ");
-        }
-
-        // Kiểm tra giới hạn số lượng khách
-        if (trmodel.getGuestLimit() == null) {
-            errorMessages.add("Giới hạn số lượng khách không được để trống");
-        }
-
-        try {
             TypeRoom typeRoom = new TypeRoom();
 
             // Đặt thông tin loại phòng
@@ -117,230 +77,137 @@ public class TypeRoomService {
             typeRoom.setPrice(trmodel.getPrice());
             typeRoom.setBedCount(trmodel.getBedCount());
             typeRoom.setAcreage(trmodel.getAcreage());
-            typeRoom.setGuestLimit(String.valueOf(trmodel.getGuestLimit()));
-            // Lưu thông tin loại phòng vào cơ sở dữ liệu và chuyển đổi sang DTO
+            Optional<TypeBed> typeBed = typeBedRepository.findById(trmodel.getTypeBedId());
+            typeRoom.setTypeBed(typeBed.get());
+            typeRoom.setGuestLimit(trmodel.getGuestLimit());
+            typeRoom.setDescribes(trmodel.getDescribes());
+            List<TypeRoomImage> typeRoomImages = new ArrayList<>();
+            typeRoom.setTypeRoomImages(typeRoomImages);
+
+            // Lưu thông tin loại phòng vào cơ sở dữ liệu
             TypeRoom savedTypeRoom = typeRoomRepository.save(typeRoom);
+
+//             Lưu hình ảnh vào bảng TypeRoomImage
+
+            if (trmodel.getImageNames() != null) {
+                for (String imageName : trmodel.getImageNames()) {
+                    TypeRoomImage typeRoomImage = new TypeRoomImage();
+                    typeRoomImage.setImageName(imageName);
+                    typeRoomImage.setTypeRoom(savedTypeRoom); // Gán phòng vào hình ảnh
+                    typeRoomImageRepository.save(typeRoomImage); // Lưu hình ảnh
+                }
+            }
+
+            // Chuyển đổi và trả về DTO
             return convertTypeRoomDto(savedTypeRoom);
-        } catch (DataIntegrityViolationException e) {
-            throw new RuntimeException("Có lỗi xảy ra do vi phạm tính toàn vẹn dữ liệu", e);
-        } catch (Exception e) {
-            throw new RuntimeException("Có lỗi xảy ra khi thêm loại phòng!", e);
-        }
     }
 
-
     // cập nhật dịch vụ phòng
-    public TypeRoomDto updateTypeRoom(Integer trId, typeRoomModel trModel) {
+    public TypeRoomDto updateTypeRoom( typeRoomModel trModel) {
         List<String> errorMessages = new ArrayList<>(); // Danh sách lưu trữ các thông báo lỗi
 
         // Kiểm tra xem loại phòng có tồn tại hay không
-        Optional<TypeRoom> existingTypeRoomOpt = typeRoomRepository.findById(trId);
-
+        Optional<TypeRoom> existingTypeRoomOpt = typeRoomRepository.findById(trModel.getId());
+        if (!existingTypeRoomOpt.isPresent()) {
+            throw new EntityNotFoundException("Loại phòng với ID " + trModel.getId() + " không tồn tại.");
+        }
         TypeRoom existingTypeRoom = existingTypeRoomOpt.get();
-
-        // Kiểm tra tên loại phòng
-        if (trModel.getTypeRoomName() == null || trModel.getTypeRoomName().isEmpty()) {
-            errorMessages.add("Tên loại phòng không được để trống");
-        } else if (!existingTypeRoom.getTypeRoomName().equals(trModel.getTypeRoomName()) && typeRoomRepository.existsByTypeRoomName(trModel.getTypeRoomName())) {
-            errorMessages.add("Tên loại phòng này đã tồn tại");
-        }
-
-        // Kiểm tra giá
-        if (trModel.getPrice() == null) {
-            errorMessages.add("Giá không được để trống");
-        } else if (!isValidPrice(trModel.getPrice())) {
-            errorMessages.add("Giá bạn nhập không hợp lệ");
-        }
-
-        // Kiểm tra loại giường
-        if (trModel.getBedType() == null || trModel.getBedType().isEmpty()) {
-            errorMessages.add("Loại giường không được để trống");
-        }
-
-        // Kiểm tra số lượng giường
-        if (trModel.getBedCount() == null) {
-            errorMessages.add("Số lượng giường không được để trống");
-        } else if (!isValidBedCount(trModel.getBedCount())) {
-            errorMessages.add("Số lượng giường không hợp lệ");
-        }
-
-        // Kiểm tra diện tích
-        if (trModel.getAcreage() == null) {
-            errorMessages.add("Diện tích không được để trống");
-        } else if (!isValidAcreage(trModel.getAcreage())) {
-            errorMessages.add("Diện tích không hợp lệ");
-        }
-
-        // Kiểm tra giới hạn khách
-        if (trModel.getGuestLimit() == null) {
-            errorMessages.add("Giới hạn số khách không được để trống");
-        }
-
-        // Nếu có lỗi, ném ngoại lệ với thông báo lỗi
-        if (!errorMessages.isEmpty()) {
-            throw new ValidationException(String.join(", ", errorMessages));
-        }
-
-        try {
             // Cập nhật các thuộc tính cho loại phòng
             existingTypeRoom.setTypeRoomName(trModel.getTypeRoomName());
             existingTypeRoom.setPrice(trModel.getPrice());
             existingTypeRoom.setBedCount(trModel.getBedCount());
             existingTypeRoom.setAcreage(trModel.getAcreage());
-            existingTypeRoom.setGuestLimit(String.valueOf(trModel.getGuestLimit()));
+            Optional<TypeBed> typeBed = typeBedRepository.findById(trModel.getTypeBedId());
+            existingTypeRoom.setTypeBed(typeBed.get());
+            existingTypeRoom.setGuestLimit(trModel.getGuestLimit());
+            existingTypeRoom.setDescribes(trModel.getDescribes());
+            List<TypeRoomImage> typeRoomImages = new ArrayList<>();
+            existingTypeRoom.setTypeRoomImages(typeRoomImages);
 
             // Lưu loại phòng đã cập nhật vào cơ sở dữ liệu và chuyển đổi sang DTO
             TypeRoom updatedTypeRoom = typeRoomRepository.save(existingTypeRoom);
             return convertTypeRoomDto(updatedTypeRoom); // Chuyển đổi loại phòng đã lưu sang DTO
-
-        } catch (DataIntegrityViolationException e) {
-            // Xử lý lỗi vi phạm tính toàn vẹn dữ liệu
-            throw new RuntimeException("Có lỗi xảy ra do vi phạm tính toàn vẹn dữ liệu", e);
-        } catch (Exception e) {
-            // Xử lý lỗi chung
-            throw new RuntimeException("Có lỗi xảy ra khi cập nhật loại phòng", e);
-        }
     }
-
 
     // xóa dịch vụ phòng
-    public void deleteServiceRoom(Integer id) {
+    @Transactional
+    public void deleteTypeRoom(Integer id) {
         if (!typeRoomRepository.existsById(id)) {
-            throw new NoSuchElementException("Loại phòng phòng này không tồn tại"); // Ném ngoại lệ nếu không tồn tại
+            throw new NoSuchElementException("Loại phòng này không tồn tại"); // Ném ngoại lệ nếu không tồn tại
         }
-        typeRoomRepository.deleteById(id);
+
+        Optional<TypeRoom> optionalTypeRoomOpt = typeRoomRepository.findById(id);
+        if (optionalTypeRoomOpt.isPresent()) {
+            TypeRoom typeRoom = optionalTypeRoomOpt.get();
+            List<TypeRoomImage> typeRoomImages = typeRoom.getTypeRoomImages();
+
+            // Xóa ảnh trước khi xóa loại phòng
+            for (TypeRoomImage typeRoomImage : typeRoomImages) {
+                typeRoomImageRepository.delete(typeRoomImage);
+            }
+
+            // Sau khi xóa ảnh thành công, xóa loại phòng
+            typeRoomRepository.delete(typeRoom);
+        }
     }
 
-    // checkValidation cho các trường dữ liệu
-    private boolean isValidPrice(Double price) {
-        // Kiểm tra xem giá có null hay không
-        if (price == null) {
-            return false; // không được để trống
-        }
 
-        // Kiểm tra xem giá có lớn hơn 0 hay không
-        if (price <= 0) {
-            return false; // Giá phải lớn hơn 0
-        }
-
-        // Kiểm tra xem số có hợp lệ hay không
-        String priceStr = price.toString();
-        // Nếu giá không phải là một số hợp lệ (chỉ chứa số và có thể có dấu phẩy)
-        if (!priceStr.matches("^[0-9]+(\\.[0-9]{1,2})?$")) {
-            return false; // số không hợp lệ
-        }
-
-        return true; // Nếu tất cả các kiểm tra đều hợp lệ
+    public List<TypeRoomDto> getTypeRooms() {
+        List<TypeRoom> list = typeRoomRepository.findTop3TypeRooms();
+        return list.stream().map(this::convertTypeRoomDto).toList();
     }
 
-    private boolean isValidBedCount(Integer bedCount) {
-        // Kiểm tra xem giá có null hay không
-        if (bedCount == null) {
-            return false; // không được để trống
+    public TypeRoomDto getTypeRoomsById(Integer id) {
+        Optional<TypeRoom> optional = typeRoomRepository.findById(id);
+        if (optional.isPresent()) {
+            TypeRoom typeRoom = optional.get();
+            // Chuyển đổi TypeRoom thành TypeRoomDto
+            return convertTypeRoomDto(typeRoom);
+        } else {
+            // Trả về null hoặc có thể ném exception nếu phòng không tồn tại
+            throw new RuntimeException("TypeRoom not found for id: " + id);
         }
-
-        // Kiểm tra xem giá có lớn hơn 0 hay không
-        if (bedCount <= 0) {
-            return false; // Giá phải lớn hơn 0
-        }
-
-        // Kiểm tra xem số có hợp lệ hay không
-        String bedCountStr = bedCount.toString();
-        // Nếu giá không phải là một số hợp lệ (chỉ chứa số và có thể có dấu phẩy)
-        if (!bedCountStr.matches("^[0-9]+(\\.[0-9]{1,2})?$")) {
-            return false; // số không hợp lệ
-        }
-
-        return true; // Nếu tất cả các kiểm tra đều hợp lệ
     }
 
-    private boolean isValidAcreage(Double acreage) {
-        // Kiểm tra xem giá có null hay không
-        if (acreage == null) {
-            return false; // không được để trống
-        }
-
-        // Kiểm tra xem giá có lớn hơn 0 hay không
-        if (acreage <= 0) {
-            return false; // Giá phải lớn hơn 0
-        }
-
-        // Kiểm tra xem số có hợp lệ hay không
-        String acreageStr = acreage.toString();
-        // Nếu giá không phải là một số hợp lệ (chỉ chứa số và có thể có dấu phẩy)
-        if (!acreageStr.matches("^[0-9]+(\\.[0-9]{1,2})?$")) {
-            return false; // số không hợp lệ
-        }
-
-        return true; // Nếu tất cả các kiểm tra đều hợp lệ
-    }
-
-    private boolean isValidGuestLimit(Integer guestLimit) {
-        // Kiểm tra xem giá có null hay không
-        if (guestLimit == null) {
-            return false; // không được để trống
-        }
-
-        // Kiểm tra xem giá có lớn hơn 0 hay không
-        if (guestLimit <= 0) {
-            return false; // Giá phải lớn hơn 0
-        }
-
-        // Kiểm tra xem số có hợp lệ hay không
-        String guestLimitStr = guestLimit.toString();
-        // Nếu giá không phải là một số hợp lệ (chỉ chứa số và có thể có dấu phẩy)
-        if (!guestLimitStr.matches("^[0-9]+(\\.[0-9]{1,2})?$")) {
-            return false; // số không hợp lệ
-        }
-
-        return true; // Nếu tất cả các kiểm tra đều hợp lệ
-    }
-
-    public List<TypeRoomBookingCountDto> getTop3TypeRooms() {
-        List<Object[]> results = typeRoomRepository.findTop3TypeRooms();
-
-        return results.stream().map(result -> {
-            Long typeRoomBookingCount = (Long) result[0]; // Số lần đặt
-            Integer id = ((Number) result[1]).intValue(); // ID loại phòng
-            String typeRoomName = (String) result[2]; // Tên loại phòng
-            Double price = (Double) result[3]; // Giá
-            Integer bedCount = ((Number) result[4]).intValue(); // Số giường
-            Double acreage = (Double) result[5]; // Diện tích
-            String guestLimit = (String) result[6]; // Giới hạn khách
-            Integer typeBedId = ((Number) result[7]).intValue(); // ID loại giường
-
-            // Lấy thông tin loại giường từ repository
-            TypeBed bookingTypeBed = typeBedRepository.findById(typeBedId).orElse(null);
-            String bedName = bookingTypeBed != null ? bookingTypeBed.getBedName() : "N/A"; // Kiểm tra null
-
-            BigDecimal averageStars = (BigDecimal) result[8]; // Đánh giá trung bình
-            Double averageStarsAsDouble = averageStars != null ? averageStars.doubleValue() : 0.0; // Chuyển đổi thành Double
-
-            // Tiện nghi
-            String amenitiesString = (String) result[9]; // Tiện nghi dưới dạng chuỗi
-            String amenitiesIconString = (String) result[10]; // Biểu tượng tiện nghi dưới dạng chuỗi
-
-            // Chuyển đổi chuỗi thành mảng
-            String[] amenities = amenitiesString != null ? amenitiesString.split(",") : new String[0];
-            String[] amenitiesIcon = amenitiesIconString != null ? amenitiesIconString.split(",") : new String[0];
-
-            // Tạo DTO với tất cả thông tin
-            TypeRoomBookingCountDto dto = new TypeRoomBookingCountDto(
-                    typeRoomBookingCount.intValue(),
-                    id,
-                    typeRoomName,
-                    price,
-                    bedCount,
+    public List<FindTypeRoomDto> getRoom(String startDates, String endDates, Integer guestLimit) {
+        List<FindTypeRoomDto> dtoList =new ArrayList<>();
+        Instant starDate = paramServices.stringToInstant(startDates);
+        Instant endDate = paramServices.stringToInstant(endDates);
+        List<Object[]> result = typeRoomRepository.findAvailableRooms(starDate,endDate,guestLimit);
+        for (Object[] results : result) {
+            // Assuming the results array contains data in the correct order:
+            // Adjust the indices to match the actual data order returned by your query.
+            Integer roomId = (Integer) results[0];
+            String roomName = (String) results[1];
+            Integer roomTypeId = (Integer) results[2];
+            String roomTypeName = (String) results[3];
+            Double priceTypeRoom = (Double) results[4];
+            Double acreage = (Double) results[5];
+            Integer guestLimits = (Integer) results[6];
+            String amenitiesTypeRoomDetails = (String) results[7];
+            Double estCost = (Double) results[8];
+            String imagesString = (String) results[9];
+            List<String> listImages = Arrays.stream(imagesString.split(","))
+                    .map(String::trim)
+                    .collect(Collectors.toList());
+            String describe=(String) results[10];
+            // Create a new DTO object and add it to the list
+            FindTypeRoomDto dto = new FindTypeRoomDto(
+                    roomId,
+                    roomName,
+                    roomTypeId,
+                    roomTypeName,
+                    priceTypeRoom,
                     acreage,
-                    guestLimit,
-                    bedName,
-                    averageStarsAsDouble,
-                    amenities, // Mảng tiện nghi
-                    amenitiesIcon // Mảng biểu tượng tiện nghi
+                    guestLimits,
+                    amenitiesTypeRoomDetails,
+                    estCost,
+                    listImages,
+                    describe
             );
-            return dto;
-        }).toList();
+            dtoList.add(dto);
+        }
+        return dtoList;
     }
-
 
 }

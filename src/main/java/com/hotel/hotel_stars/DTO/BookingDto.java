@@ -14,6 +14,7 @@ import lombok.Value;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -24,9 +25,10 @@ import java.util.List;
 @AllArgsConstructor
 public class BookingDto implements Serializable {
     Integer id;
-    Instant createAt;
+    LocalDateTime createAt;
     Instant startAt;
     Instant endAt;
     Boolean statusPayment;
     AccountDto accountDto;
+    //List<BookingRoomDto> bookingRooms;
 }

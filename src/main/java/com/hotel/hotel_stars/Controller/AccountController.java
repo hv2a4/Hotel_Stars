@@ -18,6 +18,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -48,13 +51,16 @@ public class AccountController {
 
     @GetMapping("/getAll")
     public ResponseEntity<?> getAllAccounts() {
-        return ResponseEntity.ok(accountService.getAllAccounts());
+        System.out.println("Múi giờ hệ thống: " + ZoneId.systemDefault());
+        ZonedDateTime vietnamTime = ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+        System.out.println("Thời gian hiện tại ở Việt Nam: " + vietnamTime);
+        LocalDateTime localDateTime = LocalDateTime.now();
+        System.out.println("Thời gian hiện tại (LocalDateTime): " + localDateTime);
+        System.out.println(    paramServices.localDateToInstant(localDateTime));
+        return ResponseEntity.ok("ạksfasj");
     }
 
-    @GetMapping("/getAlls")
-    public ResponseEntity<?> getAllss() {
-        return ResponseEntity.ok(typeRoomService.getFindTypeRoom());
-    }
+
 
     @PostMapping("/getTokenGG")
     public ResponseEntity<?> getToken(@RequestBody accountModel accountModels) {

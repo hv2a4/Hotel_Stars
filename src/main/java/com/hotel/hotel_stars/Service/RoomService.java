@@ -144,5 +144,10 @@ public class RoomService {
         }
         return statusResponseDto;
     }
+    
+    public List<RoomDto> getByFloorId(Integer id) {
+    	List<Room> rooms = roomRepository.findByFloorId(id);
+    	return rooms.stream().map(this::convertToDto).toList();
+    }
 
 }

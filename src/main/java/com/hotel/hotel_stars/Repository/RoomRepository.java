@@ -21,6 +21,7 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
             "COUNT(room.id) AS room_count, " +
             "type_room.price, " +
             "type_bed.id AS type_bed, " +
+            "type_room.bed_count, " +
             "type_room.guest_limit, " +
             "type_room.acreage, " +
             "type_room_image.id " +
@@ -29,7 +30,7 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
             "JOIN type_bed ON type_room.type_bed_id = type_bed.id " +
             "JOIN type_room_image ON type_room.id = type_room_image.type_room_id " +
             "GROUP BY type_room.id, type_room.type_room_name, type_room.price, " +
-            "type_bed.id, type_room.guest_limit, type_room.acreage, type_room_image.id",
+            "type_bed.id, type_room.bed_count, type_room.guest_limit, type_room.acreage, type_room_image.id",
             nativeQuery = true)
     List<Object[]> getRoomTypeData();
 
@@ -51,5 +52,29 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
             """)
     List<Object[]> findAllRoomInfo();
 
+    @Query(value = """
+        SELECT 
+            room.room_name, 
+            type_room.type_room_name, 
+            booking_room.check_in, 
+            booking_room.check_out, 
+            accounts.username AS guest_name, 
+            status_room.status_room_name 
+        FROM 
+            type_room 
+            JOIN type_room_image ON type_room.id = type_room_image.type_room_id 
+            JOIN room ON type_room.id = room.type_room_id 
+            JOIN status_room ON room.status_room_id = status_room.id 
+            JOIN booking_room ON room.id = booking_room.room_id 
+            JOIN booking ON booking_room.booking_id = booking.id 
+            JOIN accounts ON booking.account_id = accounts.id 
+        WHERE 
+            type_room.id = ?1 
+        ORDER BY 
+            booking_room.check_in ASC
+        """, nativeQuery = true)
+    List<Object[]> findBookingsByTypeRoomIdOrderedByCheckIn(int typeRoomId);
+    @Query("select r from Room r where r.floor.id = ?1")
+    List<Room> findByFloorId(Integer floorId);
 
 }
