@@ -3,7 +3,9 @@ package com.hotel.hotel_stars.Controller;
 import com.hotel.hotel_stars.DTO.Select.TypeRoomBookingCountDto;
 import com.hotel.hotel_stars.DTO.TypeRoomDto;
 import com.hotel.hotel_stars.Entity.TypeRoom;
+import com.hotel.hotel_stars.Entity.TypeRoomAmenitiesTypeRoom;
 import com.hotel.hotel_stars.Exception.CustomValidationException;
+import com.hotel.hotel_stars.Models.TypeRoomAmenitiesTypeRoomModel;
 import com.hotel.hotel_stars.Models.typeRoomModel;
 import com.hotel.hotel_stars.Service.TypeRoomService;
 import jakarta.validation.Valid;
@@ -47,11 +49,17 @@ public class TypeRoomController {
             response.put("errors", ex.getErrorMessages());
             return ResponseEntity.badRequest().body(response); // Mã 400
         } catch (RuntimeException ex) {
-            if (ex.getMessage().contains("Tên loại phòng này đã tồn tại")) {
+            if (ex.getMessage().contains("409")) {
                 Map<String, Object> response = new HashMap<>();
                 response.put("code", 409);
                 response.put("message", "Tên loại phòng này đã tồn tại.");
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(response); // Mã 409
+            }
+            if (ex.getMessage().contains("422")) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("code", 422);
+                response.put("message", "Vui lòng chọn ít nhất một hình ảnh!");
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(response); // Mã 422
             }
             Map<String, Object> response = new HashMap<>();
             response.put("code", 500);
@@ -124,6 +132,11 @@ public class TypeRoomController {
     @GetMapping("/top3")
     public ResponseEntity<List<TypeRoomDto>> getTop3TypeRooms() {
         return ResponseEntity.ok(trservice.getTypeRooms());
+    }
+
+    @GetMapping("/find-amenities-type-rom/{idTypeRoom}")
+    public ResponseEntity<List<TypeRoomAmenitiesTypeRoomModel>> getTypeRoomAmenitiesTypeRoom(@PathVariable Integer idTypeRoom) {
+        return ResponseEntity.ok(trservice.getTypeRoomAmenitiesTypeRoom(idTypeRoom));
     }
 
     @GetMapping("/find-by-id")

@@ -26,7 +26,7 @@ public class TypeRoomDto implements Serializable {
     String describes;
     List<TypeRoomImageDto> typeRoomImageDto;
 //    List<DiscountDto> discountList;
-//    List<TypeRoomAmenitiesTypeRoomDto> typeRoomAmenitiesTypeRoomList;
+//    List<TypeRoomAmenitiesTypeRoom> typeRoomAmenitiesTypeRoomList;
 //    List<TypeRoomServicePackageDto> typeRoomServicePackageList;
 //    List<RoomDto> roomList;
 //    List<BookingDto> bookingList;

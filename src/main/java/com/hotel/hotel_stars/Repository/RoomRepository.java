@@ -77,4 +77,6 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
     @Query("select r from Room r where r.floor.id = ?1")
     List<Room> findByFloorId(Integer floorId);
 
+    boolean existsByRoomName(String roomName);
+    boolean existsByRoomNameAndIdNot(String roomName, Integer id);
 }

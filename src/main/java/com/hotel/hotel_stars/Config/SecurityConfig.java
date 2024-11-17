@@ -160,7 +160,8 @@ public class SecurityConfig {
                                         "api/type-room/update",
                                         "api/type-room/delete/**",
                                         "api/type-room/top3",
-                                        "/api/type-room/find-by-id"
+                                        "/api/type-room/find-by-id",
+                                        "/api/type-room/find-amenities-type-rom/**"
                                         ).permitAll()
                                 //son
                 )

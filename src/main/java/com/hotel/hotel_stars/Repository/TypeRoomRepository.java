@@ -49,4 +49,6 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
     @Query("SELECT tr FROM TypeRoom tr WHERE tr.typeRoomName LIKE %:keyword%")
     List<TypeRoom> findByTypeRoomNameContaining(@Param("keyword") String keyword);
 
+    Optional<TypeRoom> findByTypeRoomName(String typeRoomName);
+
 }

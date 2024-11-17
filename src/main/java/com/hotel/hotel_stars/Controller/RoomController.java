@@ -21,6 +21,11 @@ public class RoomController {
         return ResponseEntity.ok(roomService.displayCounts());
     }
 
+    @GetMapping("/getAll")
+    public ResponseEntity<?> getAllRooms() {
+        return ResponseEntity.ok(roomService.getAllRooms());
+    }
+
     @GetMapping("getById/{id}")
     public ResponseEntity<?> getById(@PathVariable Integer id) {
         return ResponseEntity.ok(roomService.getById(id));
@@ -30,20 +35,25 @@ public class RoomController {
     public ResponseEntity<StatusResponseDto> postRoom(@RequestBody RoomModel roomModel) {
         StatusResponseDto response = roomService.PostRoom(roomModel);
 
-        // Set response status based on the response code
-        HttpStatus status = HttpStatus.OK; // Default to 200 OK
+        // Thiết lập HTTP status dựa trên mã phản hồi
+        HttpStatus status;
         switch (response.getCode()) {
             case "400":
-                status = HttpStatus.BAD_REQUEST; // 400 Bad Request
+                status = HttpStatus.BAD_REQUEST;
+                break;
+            case "409":
+                status = HttpStatus.CONFLICT; // 409 Conflict
                 break;
             case "500":
-                status = HttpStatus.INTERNAL_SERVER_ERROR; // 500 Internal Server Error
+                status = HttpStatus.INTERNAL_SERVER_ERROR;
                 break;
-            // Add more cases if needed
+            default:
+                status = HttpStatus.OK;
         }
 
-        return ResponseEntity.status(status).body(response); // Return response with appropriate status
+        return ResponseEntity.status(status).body(response);
     }
+
 
     @PutMapping("put-room")
     public ResponseEntity<StatusResponseDto> putRoom(@RequestBody RoomModel roomModel) {
@@ -54,6 +64,9 @@ public class RoomController {
         switch (response.getCode()) {
             case "400":
                 status = HttpStatus.BAD_REQUEST; // 400 Bad Request
+                break;
+            case "409":
+                status = HttpStatus.CONFLICT; // 409 Conflict
                 break;
             case "500":
                 status = HttpStatus.INTERNAL_SERVER_ERROR; // 500 Internal Server Error
@@ -70,8 +83,11 @@ public class RoomController {
             return ResponseEntity.ok(response);  // Trả về mã 200 nếu xóa thành công
         } else if ("404".equals(response.getCode())) {
             return ResponseEntity.status(404).body(response);  // Trả về mã 404 nếu không tìm thấy phòng
+        } else if ("409".equals(response.getCode())) {
+            return ResponseEntity.status(409).body(response);  // Trả về mã 409 nếu có lỗi khóa ngoại
         } else {
-            return ResponseEntity.status(500).body(response);  // Trả về mã 500 cho lỗi
+            return ResponseEntity.status(500).body(response);  // Trả về mã 500 cho lỗi khác
         }
     }
+
 }
