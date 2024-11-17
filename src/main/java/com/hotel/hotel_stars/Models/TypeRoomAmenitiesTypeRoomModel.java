@@ -8,4 +8,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TypeRoomAmenitiesTypeRoomModel {
+    String value;
+    String label;
 }
