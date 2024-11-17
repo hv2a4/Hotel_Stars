@@ -77,7 +77,6 @@ public class SecurityConfig {
                                 "/api/account/account-by-id/{username}",
                                 "/api/account/toggleDelete/{id}",
                                 "/api/account/get-info-staff",
-                                "/api/booking/**",
                                 "api/feedback/**",
                                 "api/service-hotel/getAll",
                                 "/api/status/**",
@@ -102,6 +101,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/booking/sendBooking").permitAll()
                         .requestMatchers("/api/booking/confirmBooking").permitAll()
                         .requestMatchers("/api/booking/getAll").permitAll()
+                        .requestMatchers("/api/invoice/booking/{id}").permitAll()
+                        
 
                         // nghia
 
@@ -126,6 +127,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/room/FloorById/{id}").permitAll()
                         .requestMatchers("api/type-room-amenities-type-room/**").permitAll()
                         .requestMatchers("/api/type-room/**").permitAll()
+                        .requestMatchers("/api/booking/accountId/{id}").permitAll()
+                        .requestMatchers("/api/account/{id}").permitAll()
                         // son
 
                         // ---------------------------api cần token có phân quyền Customer ( khách hàng
@@ -167,22 +170,30 @@ public class SecurityConfig {
                         .requestMatchers("/api/amenities-type-room/add").hasAnyAuthority("HotelOwner")
                         .requestMatchers("/api/amenities-type-room/update").hasAnyAuthority("HotelOwner")
                         .requestMatchers("/api/amenities-type-room/delete/").hasAnyAuthority("HotelOwner")
-                        .requestMatchers("/api/service-hotel/post-data-service-hotel").hasAnyAuthority("HotelOwner")
-                        .requestMatchers("/api/service-hotel/update-data-service-hotel").hasAnyAuthority("HotelOwner")
-                        .requestMatchers("/api/service-hotel/delete-data-service-hotel/**")
-                        .hasAnyAuthority("HotelOwner")
+                        // son
+                        .requestMatchers("/api/amenities-type-room/add").hasAnyAuthority("HotelOwner")
+                        .requestMatchers("/api/amenities-type-room/update").hasAnyAuthority("HotelOwner")
+                        .requestMatchers("/api/amenities-type-room/delete/").hasAnyAuthority("HotelOwner")
+                        // son
+                        
+                        //khoi
                         .requestMatchers("/api/service-room/update-service-room/**").hasAnyAuthority("HotelOwner")
                         .requestMatchers("/api/service-room/add-service-room").hasAnyAuthority("HotelOwner")
                         .requestMatchers("/api/service-room/delete-service-room/**").hasAnyAuthority("HotelOwner")
                         .requestMatchers("/api/type-room-service/update/**").hasAnyAuthority("HotelOwner")
                         .requestMatchers("/api/type-room-service/create").hasAnyAuthority("HotelOwner")
                         .requestMatchers("/api/type-room-service/delete/**").hasAnyAuthority("HotelOwner")
-
-                        // son
-                        .requestMatchers("/api/amenities-type-room/add").hasAnyAuthority("HotelOwner")
-                        .requestMatchers("/api/amenities-type-room/update").hasAnyAuthority("HotelOwner")
-                        .requestMatchers("/api/amenities-type-room/delete/").hasAnyAuthority("HotelOwner")
-                        // son
+                        .requestMatchers("/api/booking-room/account/{id}").hasAnyAuthority("HotelOwner")
+                        .requestMatchers("/api/service-hotel/post-data-service-hotel").hasAnyAuthority("HotelOwner")
+                        .requestMatchers("/api/service-hotel/update-data-service-hotel").hasAnyAuthority("HotelOwner")
+                        .requestMatchers("/api/service-hotel/delete-data-service-hotel/**").hasAnyAuthority("HotelOwner")
+                        .requestMatchers("/api/booking-infomation/booking-room").hasAnyAuthority("HotelOwner")
+                        .requestMatchers("/api/booking-room-service-room/service").hasAnyAuthority("HotelOwner")
+                        .requestMatchers("/api/booking-room/room").hasAnyAuthority("Staff", "HotelOwner")
+                        .requestMatchers("/api/status-room/get-status-excluding/**").permitAll()
+                        .requestMatchers("/api/room/update-active").hasAnyAuthority("Staff", "HotelOwner")
+                        .requestMatchers("/api/room").permitAll()
+                        //khoi
 
 
 

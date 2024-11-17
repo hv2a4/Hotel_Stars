@@ -106,4 +106,9 @@ public class StatusRoomService {
         }
         strrep.deleteById(id);
     }
+    
+    public List<StatusRoomDto> getByExcludingId(Integer id){
+    	List<StatusRoom> statusRooms = strrep.findAllExcludingId(id);
+    	return statusRooms.stream().map(this::convertToDto).toList();
+    }
 }

@@ -45,6 +45,10 @@ public class Booking {
     @OneToMany(mappedBy = "booking")
     @JsonManagedReference
     List<BookingRoom> bookingRooms;
+    
+    @OneToMany(mappedBy = "booking")
+    @JsonManagedReference
+    List<Invoice> invoice;
 
     @Override
     public String toString() {

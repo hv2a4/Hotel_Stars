@@ -1,6 +1,8 @@
 package com.hotel.hotel_stars.Controller;
 
+import com.hotel.hotel_stars.DTO.RoomDto;
 import com.hotel.hotel_stars.DTO.StatusResponseDto;
+import com.hotel.hotel_stars.DTO.Select.PaginatedResponseDto;
 import com.hotel.hotel_stars.Entity.Room;
 import com.hotel.hotel_stars.Models.RoomModel;
 import com.hotel.hotel_stars.Service.RoomService;
@@ -8,7 +10,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import java.util.List;
+
+import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("api/room")
 @CrossOrigin("*")
@@ -16,6 +27,14 @@ public class RoomController {
     @Autowired
     private RoomService roomService;
 
+    @GetMapping
+    public PaginatedResponseDto<RoomDto> getAllRooms(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy
+    ) {
+        return roomService.getAll(page, size, sortBy);
+    }
     @GetMapping("/getCountRoom")
     public ResponseEntity<?> getAll() {
         return ResponseEntity.ok(roomService.displayCounts());
@@ -78,5 +97,19 @@ public class RoomController {
     @GetMapping("/FloorById/{id}")
     public ResponseEntity<?> getByFloorId(@PathVariable("id") Integer id){
     	return ResponseEntity.ok(roomService.getByFloorId(id));
+    }
+    @PutMapping("/update-active")
+    public ResponseEntity<StatusResponseDto> updateActiveRoom(@RequestBody RoomModel model){
+    	StatusResponseDto response = roomService.updateActiveRoom(model);
+    	HttpStatus status = HttpStatus.OK; // Default to 200 OK
+        switch (response.getCode()) {
+            case "400":
+                status = HttpStatus.BAD_REQUEST; // 400 Bad Request
+                break;
+            case "500":
+                status = HttpStatus.INTERNAL_SERVER_ERROR; // 500 Internal Server Error
+                break;
+        }
+        return ResponseEntity.status(status).body(response);
     }
 }

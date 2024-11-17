@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -20,5 +22,13 @@ public class BookingRoomController {
     @GetMapping("getAll")
     public ResponseEntity<?> getAllBookingRoom() {
         return ResponseEntity.ok(bookingRoomService.getAllBookingRooms());
+    }
+    @GetMapping("/account/{id}")
+    public ResponseEntity<?> getBookingRoomAccount(@PathVariable("id") Integer id) {
+    	return ResponseEntity.ok(bookingRoomService.getBookingRoomAccount(id));
+    }
+    @GetMapping("/room")
+    public ResponseEntity<?> getBookingRoomByRoom(@RequestParam("roomId") Integer roomId, @RequestParam("statusId") Integer statusId){
+    	return ResponseEntity.ok(bookingRoomService.getByRoom(roomId, statusId));
     }
 }

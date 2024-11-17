@@ -6,7 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 public interface RoomRepository extends JpaRepository<Room, Integer> {
     @Query(value = "SELECT " +
             "(SELECT COUNT(*) FROM accounts WHERE role_id = 2) AS count_employees, " +
@@ -76,5 +77,8 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
     List<Object[]> findBookingsByTypeRoomIdOrderedByCheckIn(int typeRoomId);
     @Query("select r from Room r where r.floor.id = ?1")
     List<Room> findByFloorId(Integer floorId);
+    
+    
+    Page<Room> findAll(Pageable pageable);
 
 }

@@ -79,5 +79,5 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
             "WHERE b.id = :bookingId")
     Optional<CustomerReservation> findBookingDetailsById(@Param("bookingId") Integer bookingId);
 
-
+    List<Booking> findByAccount_Id(Integer accountId);
 }

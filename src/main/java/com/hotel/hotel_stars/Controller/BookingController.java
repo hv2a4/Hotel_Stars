@@ -51,4 +51,9 @@ public class BookingController {
     public ResponseEntity<List<PaymentInfoDTO>> getBookingPaymentInfo(@PathVariable Integer id) {
         return ResponseEntity.ok(bookingService.getPaymentInfoByAccountId(id));
     }
+    
+    @GetMapping("/accountId/{id}")
+    public ResponseEntity<?> getBookingByAccount(@PathVariable("id") Integer id){
+    	return ResponseEntity.ok(bookingService.getListByAccountId(id));
+    }
 }
