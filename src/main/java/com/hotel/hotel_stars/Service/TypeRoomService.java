@@ -1,18 +1,21 @@
 package com.hotel.hotel_stars.Service;
 
 import com.hotel.hotel_stars.DTO.*;
-import com.hotel.hotel_stars.DTO.Select.RoomTypeDetail;
 import com.hotel.hotel_stars.DTO.selectDTO.FindTypeRoomDto;
 import com.hotel.hotel_stars.Entity.*;
 import com.hotel.hotel_stars.Models.typeRoomModel;
 import com.hotel.hotel_stars.Repository.*;
+import com.hotel.hotel_stars.Repository.TypeBedRepository;
+import com.hotel.hotel_stars.Repository.TypeRoomImageRepository;
+import com.hotel.hotel_stars.Repository.TypeRoomRepository;
+import com.hotel.hotel_stars.utils.paramService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,45 +26,17 @@ public class TypeRoomService {
 
     @Autowired
     TypeBedRepository typeBedRepository;
+    @Autowired
+    paramService paramServices;
 
     @Autowired
     TypeRoomImageRepository typeRoomImageRepository;
 
     @Autowired
-    TypeRoomAmenitiesTypeRoomRepository typeRoomAmenitiesTypeRoomRepository;
-
-    @Autowired
     AmenitiesTypeRoomRepository amenitiesTypeRoomRepository;
 
     @Autowired
-    FeedBackRepository feedBackRepository;
-
-    // Tìm kiếm loại phòng
-    public List<FindTypeRoomDto> getFindTypeRoom() {
-        LocalDate startDate = LocalDate.parse("2023-10-29");
-        LocalDate endDate = LocalDate.parse("2023-10-31");
-        List<Object[]> results = typeRoomRepository.findAllTypeRoomDetailsWithCost(startDate, endDate);
-        List<FindTypeRoomDto> dtoList = new ArrayList<>();
-        results.stream().forEach(row -> {
-            String typeRoomName = (String) row[0];
-            Double price = (Double) row[1];
-            Double acreage = (Double) row[2];
-            Integer guestLimit = (Integer) row[3];
-            String amenitiesTypeRoomName = (String) row[4];
-            Double estCost = (Double) row[5];
-            String image = (String) row[6];
-            // Kiểm tra xem DTO đã tồn tại trong danh sách chưa bằng Stream API
-            FindTypeRoomDto existingDto = dtoList.stream().filter(dto -> dto.getTypeRoomName().equals(typeRoomName)).findFirst().orElse(null);
-
-            if (existingDto == null) {
-                // Nếu chưa có DTO cho loại phòng này, tạo mới
-                existingDto = new FindTypeRoomDto(typeRoomName, price, acreage, guestLimit, new ArrayList<>(), estCost, image);
-                dtoList.add(existingDto);
-            }
-            existingDto.getAmenitiesTypeRoomNames().add(amenitiesTypeRoomName);
-        });
-        return dtoList; // Trả về danh sách DTO
-    }
+    TypeRoomAmenitiesTypeRoomRepository typeRoomAmenitiesTypeRoomRepository;
 
     // chuyển đổi entity sang dto (đổ dữ liệu lên web)
     public TypeRoomDto convertTypeRoomDto(TypeRoom tr) {
@@ -256,82 +231,45 @@ public class TypeRoomService {
         }
     }
 
-    public List<RoomTypeDetail> getRoomTypeDetailById(Integer roomId) {
-        List<Object[]> results = typeRoomRepository.findTypeRoomDetailsById(roomId); // Adjust the method call if needed
-        List<RoomTypeDetail> dtos = new ArrayList<>();
-
-        results.forEach(row -> {
-            Integer typeRoomId = (Integer) row[0];
-            String typeRoomName = (String) row[1];
-            Double price = (Double) row[2];           // Changed from Integer to Double
-            Integer bedCount = (Integer) row[3];
-            Double acreage = (Double) row[4];
-            Integer guestLimit = (Integer) row[5];
-            String describes = (String) row[6];
-            String bedName = (String) row[7];
-
-            // Split imageList (comma-separated string of image URLs) into a List of Strings
-            List<String> imageList = new ArrayList<>();
-            if (row[8] != null) {
-                imageList = Arrays.asList(((String) row[8]).split(","));
-            }
-
-            // Split amenitiesList (comma-separated string of IDs) into a List of Integers
-            List<Integer> amenitiesList = new ArrayList<>();
-            if (row[9] != null) {
-                amenitiesList = Arrays.stream(((String) row[9]).split(","))
-                        .map(Integer::parseInt)  // Convert each string to Integer
-                        .toList();
-            }
-            List<AmenitiesTypeRoom> amenitiesTypeRooms = amenitiesTypeRoomRepository.findAllById(amenitiesList);
-            List<AmenitiesTypeRoomDto> amenitiesTypeRoomDtos = amenitiesTypeRooms.stream()
-                    .map(amenitiesTypeRoom -> new AmenitiesTypeRoomDto(
-                            amenitiesTypeRoom.getId(),  // Hoặc các trường khác cần thiết
-                            amenitiesTypeRoom.getAmenitiesTypeRoomName() // Chuyển các trường khác nếu cần
-                    ))
-                    .toList();
-
-            List<Integer> feedBack = new ArrayList<>();
-            if (row[10] != null) {
-                feedBack = Arrays.stream(((String) row[10]).split(","))
-                        .map(Integer::parseInt)
-                        .toList();
-            }
-
-            List<Feedback> feedbacks = feedBackRepository.findAllById(feedBack);
-            List<FeedbackDto> feedbackDtos = feedbacks.stream().map(feedback -> new FeedbackDto(
-                    feedback.getId(),
-                    feedback.getContent(),
-                    feedback.getStars(),
-                    feedback.getCreateAt(),
-                    feedback.getRatingStatus(),
-                    null
-            )).toList();
-
-            BigDecimal averageFeedBackBigDecimal = (BigDecimal) row[11];
-            Double averageFeedBack = averageFeedBackBigDecimal.doubleValue();
-            String accountName = (String) row[12];
-            String imageName = (String) row[13];
-            // Create and populate RoomTypeDetail object
-            RoomTypeDetail detail = new RoomTypeDetail();
-            detail.setTypeRoomId(typeRoomId);
-            detail.setTypeRoomName(typeRoomName);
-            detail.setPrice(price);
-            detail.setBedCount(bedCount);
-            detail.setAcreage(acreage);
-            detail.setGuestLimit(guestLimit);
-            detail.setDescribes(describes);
-            detail.setBedName(bedName);
-            detail.setImageList(imageList);
-            detail.setAmenitiesList(amenitiesTypeRoomDtos);
-            detail.setFeedBack(feedbackDtos);
-            detail.setAverageFeedBack(averageFeedBack);
-            detail.setAccountName(accountName);
-            detail.setImage(imageName);
-            dtos.add(detail);
-        });
-
-        return dtos;
+    public List<FindTypeRoomDto> getRoom(String startDates, String endDates, Integer guestLimit) {
+        List<FindTypeRoomDto> dtoList =new ArrayList<>();
+        Instant starDate = paramServices.stringToInstant(startDates);
+        Instant endDate = paramServices.stringToInstant(endDates);
+        List<Object[]> result = typeRoomRepository.findAvailableRooms(starDate,endDate,guestLimit);
+        for (Object[] results : result) {
+            // Assuming the results array contains data in the correct order:
+            // Adjust the indices to match the actual data order returned by your query.
+            Integer roomId = (Integer) results[0];
+            String roomName = (String) results[1];
+            Integer roomTypeId = (Integer) results[2];
+            String roomTypeName = (String) results[3];
+            Double priceTypeRoom = (Double) results[4];
+            Double acreage = (Double) results[5];
+            Integer guestLimits = (Integer) results[6];
+            String amenitiesTypeRoomDetails = (String) results[7];
+            Double estCost = (Double) results[8];
+            String imagesString = (String) results[9];
+            List<String> listImages = Arrays.stream(imagesString.split(","))
+                    .map(String::trim)
+                    .collect(Collectors.toList());
+            String describe=(String) results[10];
+            // Create a new DTO object and add it to the list
+            FindTypeRoomDto dto = new FindTypeRoomDto(
+                    roomId,
+                    roomName,
+                    roomTypeId,
+                    roomTypeName,
+                    priceTypeRoom,
+                    acreage,
+                    guestLimits,
+                    amenitiesTypeRoomDetails,
+                    estCost,
+                    listImages,
+                    describe
+            );
+            dtoList.add(dto);
+        }
+        return dtoList;
     }
 
 }

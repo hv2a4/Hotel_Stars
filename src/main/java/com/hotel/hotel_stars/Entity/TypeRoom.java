@@ -50,6 +50,7 @@ public class TypeRoom {
     @OneToMany(mappedBy = "typeRoom")
     List<Room> roomList;
 
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "type_bed_id")
     private TypeBed typeBed;

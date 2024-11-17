@@ -14,15 +14,16 @@ import com.hotel.hotel_stars.Repository.BookingRoomRepository;
 import com.hotel.hotel_stars.Repository.StatusBookingRepository;
 import com.hotel.hotel_stars.Service.BookingService;
 import com.hotel.hotel_stars.utils.paramService;
+import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.validation.Valid;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.text.NumberFormat;
+import java.util.*;
 
 @RestController
 @CrossOrigin("*")
@@ -30,6 +31,7 @@ import java.util.Optional;
 public class BookingController {
     @Autowired
     private BookingService bookingService;
+    @Lazy
     @Autowired
     private ErrorsService errorsServices;
     @Autowired
@@ -42,13 +44,59 @@ public class BookingController {
     private JwtService jwtService;
     @Autowired
     private BookingRepository bookingRepository;
+
     @GetMapping("/account/{accountId}")
     public ResponseEntity<List<BookingDetailDTO>> getBookingDetails(@PathVariable Integer accountId) {
-        return ResponseEntity.ok(bookingService.getBookingDetailsByAccountId(accountId)) ;
+        return ResponseEntity.ok(bookingService.getBookingDetailsByAccountId(accountId));
     }
 
     @GetMapping("/account/payment-info/{id}")
     public ResponseEntity<List<PaymentInfoDTO>> getBookingPaymentInfo(@PathVariable Integer id) {
         return ResponseEntity.ok(bookingService.getPaymentInfoByAccountId(id));
+    }
+
+    @PostMapping("/sendBooking")
+    public ResponseEntity<?> postBooking(@Valid @RequestBody bookingModel bookingModels) {
+        Map<String, String> response = new HashMap<String, String>();
+        System.out.println(bookingModels.getRoomId().size());
+        Boolean flag = bookingService.sendBookingEmail(bookingModels);
+        if (flag == true) {
+            response = paramServices.messageSuccessApi(201, "success",
+                    "Đặt phòng thành công, vui lòng vào email để xác nhận");
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } else {
+            response = paramServices.messageSuccessApi(400, "error", "Đặt phòng thất bại");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+    @GetMapping("/confirmBooking")
+    public ResponseEntity<?> updateBooking(@RequestParam("token") String token) {
+        try {
+            Integer id = jwtService.extractBookingId(token);
+            Optional<StatusBooking> statusBooking = statusBookingRepository.findById(2);
+            Booking booking = bookingRepository.findById(id).get();
+            List<BookingRoom> bookingRoomList = booking.getBookingRooms();
+            double total = bookingRoomList.stream()
+                    .mapToDouble(BookingRoom::getPrice)
+                    .sum();
+            String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
+            booking.setStatus(statusBooking.get());
+
+            try {
+                bookingRepository.save(booking);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return ResponseEntity.ok(paramServices.confirmBookings(booking, formattedAmount));
+        } catch (ExpiredJwtException e) {
+            // Xử lý token hết hạn tại đây
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Token đã hết hạn. Vui lòng liên lạc qua số điện thoại 1900 6522");
+        } catch (Exception e) {
+            // Xử lý các ngoại lệ khác nếu cần
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Đã có lỗi xảy ra.");
+        }
     }
 }

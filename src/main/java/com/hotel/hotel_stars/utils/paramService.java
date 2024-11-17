@@ -25,9 +25,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.security.GeneralSecurityException;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -87,7 +86,7 @@ public class paramService {
 
         return password.toString();
     }
-    public void sendEmails(String to, String subject, String body) {
+    public Boolean sendEmails(String to, String subject, String body) {
         MimeMessage message = emailSender.createMimeMessage();
 
         try {
@@ -96,15 +95,25 @@ public class paramService {
             helper.setSubject(subject);
             helper.setText(body, true); // true để chỉ định rằng nội dung là HTML
             emailSender.send(message);
-            System.out.println("Email đã được gửi thành công!");
+            return true;
         } catch (MessagingException e) {
             e.printStackTrace();
+            return false;
         }
     }
 
-    public Instant stringToInstant(String dateString){
-        LocalDate localDate = LocalDate.parse(dateString);
-        return localDate.atStartOfDay(ZoneId.of("UTC")).toInstant();
+    public Instant stringToInstant(String dateString) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime localDateTime = LocalDateTime.parse(dateString, formatter);
+        return localDateTime.atZone(ZoneId.of("UTC")).toInstant();
+    }
+
+    public Instant localDateToInstant(LocalDateTime localDateTime ) {
+        ZonedDateTime vietnamTime = LocalDateTime.now().atZone(ZoneId.of("Asia/Saigon"));
+        System.out.println("thời gian2: "+ LocalDateTime.now());
+        Instant instantNow = vietnamTime.toInstant();
+        System.out.println("thời gian1: "+instantNow);
+        return instantNow;
     }
 
     public String generateHtml(String title, String message,String content) {
@@ -122,7 +131,7 @@ public class paramService {
                 "<h1 class=\"text-9xl font-black text-gray-200\">" + title + "</h1>" +
                 "<p class=\"text-2xl font-bold tracking-tight text-gray-900 sm:text-4xl\">" + message + "</p>" +
                 "<p class=\"mt-4 text-gray-500\">" + content + "</p>" +
-                "<a href=\"http://localhost:3000/login\" class=\"mt-6 inline-block rounded bg-indigo-600 px-5 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring\">" +
+                "<a href=\"http://localhost:8080?token=\" class=\"mt-6 inline-block rounded bg-indigo-600 px-5 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring\">" +
                 "Đi đến trang đăng nhập" +
                 "</a>" +
                 "</div>" +
@@ -130,79 +139,203 @@ public class paramService {
                 "</body>" +
                 "</html>";
     }
-    public String generateInvoice(Booking booking, Integer quantityRoom, Double totalAmount,Double price){
-        return "<!doctype html>\n" +
-                "<html lang=\"en\">\n" +
-                "    <head>\n" +
-                "        <title>Title</title>\n" +
-                "        <meta charset=\"utf-8\" />\n" +
-                "        <meta\n" +
-                "            name=\"viewport\"\n" +
-                "            content=\"width=device-width, initial-scale=1, shrink-to-fit=no\"\n" +
-                "        />\n" +
-                "        <link\n" +
-                "            href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css\"\n" +
-                "            rel=\"stylesheet\"\n" +
-                "            integrity=\"sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN\"\n" +
-                "            crossorigin=\"anonymous\"\n" +
-                "        />\n" +
-                "    </head>\n" +
-                "    <body>\n" +
-                "        <div class=\"mt-3\" style=\"max-width: 800px; margin: 0 auto; padding: 10px; font-family: Arial, sans-serif; border: 1px solid #ddd;\">\n" +
-                "            <div class=\"invoice-content\">\n" +
-                "                <header style=\"text-align: center; margin-bottom: 20px;\">\n" +
-                "                    <p>Khách sạn Stars</p>\n" +
-                "                    <p>Điện thoại: 1900 6522</p>\n" +
-                "                </header>\n" +
-                "                <section style=\"border-bottom: 1px solid #ddd; padding-bottom: 20px; margin-bottom: 20px;\">\n" +
-                "                    <h2 style=\"text-align: center;\">Phiếu đặt phòng</h2>\n" +
-                "                    <p style=\"text-align: center;\">Booking_Id: BK0000"+booking.getId()+" </p>\n" +
-                "                </section>\n" +
-                "                <section style=\"margin-bottom: 20px;\">\n" +
-                "                    <p><strong>Tên khách hàng:</strong> "+booking.getAccount().getFullname()+" </p>\n" +
-                "                    <p><strong>username:</strong> "+booking.getAccount().getUsername()+" </p>\n" +
-                "                    <p><strong>Số điện thoại:</strong>"+booking.getAccount().getPhone()+"</p>\n" +
-                "                </section>\n" +
-                "                <table style=\"width: 100%; border-collapse: collapse; margin-bottom: 20px;\">\n" +
-                "                    <thead>\n" +
-                "                        <tr>\n" +
-                "                            <th style=\"border: 1px solid #ddd; padding: 8px;\">Nội dung</th>\n" +
-                "                            <th style=\"border: 1px solid #ddd; padding: 8px;\">Đơn giá</th>\n" +
-                "                            <th style=\"border: 1px solid #ddd; padding: 8px;\">SL</th>\n" +
-                "                            <th style=\"border: 1px solid #ddd; padding: 8px;\">Thành tiền</th>\n" +
-                "                        </tr>\n" +
-                "                    </thead>\n" +
-                "                    <tbody>\n" +
-                "                        <tr>\n" +
-                "                            <td style=\"border: 1px solid #ddd; padding: 8px;\"></td>\n" +
-                "                            <td style=\"border: 1px solid #ddd; padding: 8px;\">"+price+"</td>\n" +
-                "                            <td style=\"border: 1px solid #ddd; padding: 8px;\">"+quantityRoom+"</td>\n" +
-                "                            <td style=\"border: 1px solid #ddd; padding: 8px;\">"+totalAmount+"</td>\n" +
-                "                        </tr>\n" +
-                "                    </tbody>\n" +
-                "                </table>\n" +
-                "                <section style=\"margin-bottom: 20px; text-align: right;\">\n" +
-                "                    <p><strong>Tổng tiền hàng:</strong> "+totalAmount+" </p>\n" +
-                "                    <p><strong>Chiết khấu:</strong> 0</p>\n" +
-                "                    <p><strong>Tổng cộng:</strong> "+totalAmount+"</p>\n" +
-                "                </section>\n" +
-                "                <footer style=\"text-align: center; border-top: 1px solid #ddd; padding-top: 20px;\">\n" +
-                "                    <p>Cảm ơn và hẹn gặp lại</p>\n" +
-                "                </footer>\n" +
-                "            </div>\n" +
-                "        </div>\n" +
-                "        <script\n" +
-                "            src=\"https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js\"\n" +
-                "            integrity=\"sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r\"\n" +
-                "            crossorigin=\"anonymous\"\n" +
-                "        ></script>\n" +
-                "        <script\n" +
-                "            src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js\"\n" +
-                "            integrity=\"sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+\"\n" +
-                "            crossorigin=\"anonymous\"\n" +
-                "        ></script>\n" +
-                "    </body>\n" +
-                "</html>\n";
+    public String generateBooking(String fullName,String token){
+        return "<!DOCTYPE html>\n"
+                + "<html lang=\"vi\">\n"
+                + "<head>\n"
+                + "    <meta charset=\"UTF-8\">\n"
+                + "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
+                + "    <title>Xác Nhận Nhận Phòng</title>\n"
+                + "    <style>\n"
+                + "        .button {\n"
+                + "            background-color: #4CAF50;\n"
+                + "            color: white;\n"
+                + "            padding: 10px 15px;\n"
+                + "            text-decoration: none;\n"
+                + "            border-radius: 5px;\n"
+                + "            display: inline-block;\n" // Để nút có thể được căn giữa
+                + "            margin-top: 10px;\n" // Khoảng cách trên nút
+                + "        }\n"
+                + "        p {\n"
+                + "            color: #000; /* Màu chữ cho các đoạn văn */\n"
+                + "        }\n"
+                + "    </style>\n"
+                + "</head>\n"
+                + "<body>\n"
+                + "<div class=\"container\">\n"
+                + "    <h2 style=\"color: #000;\">Xác Nhận Nhận Phòng</h2>\n" // Màu chữ cho tiêu đề
+                + "    <p>Xin chào <strong>"+fullName+"</strong>,</p>\n"
+                + "    <p>Cảm ơn bạn đã đặt phòng tại Hotel Start. Chúng tôi rất vui được chào đón bạn!</p>\n"
+                + "    <p>Để xác nhận rằng bạn đã đặt phòng, hãy nhấp vào liên kết bên dưới:</p>\n"
+                + "    <p><a href=\"http://localhost:8080/api/booking/confirmBooking?token="+token+"\" class=\"button\" style=\"color: white;\">Xác Nhận Nhận Phòng</a></p>\n"
+                + "    <p>Nếu bạn có bất kỳ câu hỏi nào, đừng ngần ngại liên hệ với chúng tôi.</p>\n"
+                + "    <p>Trân trọng,<br>Hotel Start</p>\n"
+                + "</div>\n"
+                + "</body>\n"
+                + "</html>";
     }
 
+
+    public String confirmBookings(Booking booking,String total){
+
+          return   "<!DOCTYPE html>\n" +
+            "<html>\n" +
+            "<head>\n" +
+            "<title></title>\n" +
+            "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n" +
+            "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n" +
+            "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n" +
+            "</head>\n" +
+            "<body style=\"margin: 0 !important; padding: 0 !important; background-color: #eeeeee;\" bgcolor=\"#eeeeee\">\n" +
+            "\n" +
+            "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n" +
+            "    <tr>\n" +
+            "        <td align=\"center\" style=\"background-color: #eeeeee;\" bgcolor=\"#eeeeee\">\n" +
+            "        \n" +
+            "        <table align=\"center\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"max-width:600px;\">\n" +
+            "            <tr>\n" +
+            "                <td align=\"center\" valign=\"top\" style=\"font-size:0; padding: 28px;\" bgcolor=\"#F44336\">\n" +
+            "                \n" +
+            "                <div style=\"display:inline-block; max-width:50%; min-width:100px; vertical-align:top; width:100%;\">\n" +
+            "                    <table align=\"left\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"max-width:300px;\">\n" +
+            "                        <tr>\n" +
+            "                            <td align=\"left\" valign=\"top\" style=\"font-family: Open Sans, Helvetica, Arial, sans-serif; font-size: 36px; font-weight: 800; line-height: 48px;\" class=\"mobile-center\">\n" +
+            "                                <h1 style=\"font-size: 36px; font-weight: 800; margin: 0; color: #ffffff;\">Hotel Start</h1>\n" +
+            "                            </td>\n" +
+            "                        </tr>\n" +
+            "                    </table>\n" +
+            "                </div>\n" +
+            "                \n" +
+            "                <div style=\"display:inline-block; max-width:50%; min-width:100px; vertical-align:top; width:100%;\" class=\"mobile-hide\">\n" +
+            "                    <table align=\"left\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"max-width:300px;\">\n" +
+            "                        <tr>\n" +
+            "                            <td align=\"right\" valign=\"top\" style=\"font-family: Open Sans, Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; line-height: 48px;\">\n" +
+            "                                <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" align=\"right\">\n" +
+            "                                    <tr>\n" +
+            "                                    </tr>\n" +
+            "                                </table>\n" +
+            "                            </td>\n" +
+            "                        </tr>\n" +
+            "                    </table>\n" +
+            "                </div>\n" +
+            "                </td>\n" +
+            "            </tr>\n" +
+            "            <tr>\n" +
+            "                <td align=\"center\" style=\"padding: 9px 35px 20px 35px; background-color: #ffffff;\" bgcolor=\"#ffffff\">\n" +
+            "                <table align=\"center\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"max-width:600px;\">\n" +
+            "                    <tr>\n" +
+            "                        <td align=\"center\" style=\"font-family: Verdana, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; padding-top: 25px;\">\n" +
+            "                            <h2 style=\"font-size: 30px; font-weight: 800; line-height: 36px; color: #333333; margin: 0;\">\n" +
+            "                                Đơn Đặt Phòng\n" +
+            "                            </h2>\n" +
+            "                        </td>\n" +
+            "                    </tr>\n" +
+            "                    \n" +
+            "                    <tr>\n" +
+            "                        <td align=\"left\" style=\"padding-top: 30px;\">\n" +
+            "                            <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\">\n" +
+            "                                <tr>\n" +
+            "                                    <td width=\"75%\" align=\"left\" bgcolor=\"#eeeeee\" style=\"font-family: Verdana, sans-serif;; font-size: 16px; font-weight: 800; line-height: 24px; padding: 10px;\">\n" +
+            "                                       Mã đặt phòng\n" +
+            "                                    </td>\n" +
+            "                                    <td width=\"25%\" align=\"left\" bgcolor=\"#eeeeee\" style=\"font-family: Open Sans, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 800; line-height: 24px; padding: 10px;\">\n" +
+            "                                       "+booking.getId()+"\n" +
+            "                                    </td>\n" +
+            "                                </tr>\n" +
+            "                                <tr>\n" +
+            "                                    <td width=\"75%\" align=\"left\" style=\"font-family: Open Sans, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; padding: 15px 10px 5px 10px;\">\n" +
+            "                                        Tên khách hàng\n" +
+            "                                    </td>\n" +
+            "                                    <td width=\"25%\" align=\"left\" style=\"font-family: Open Sans, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; padding: 15px 10px 5px 10px;\">\n" +
+            "                                        "+booking.getAccount().getFullname()+"\n" +
+            "                                    </td>\n" +
+            "                                </tr>\n" +
+            "                                <tr>\n" +
+            "                                    <td width=\"75%\" align=\"left\" style=\"font-family: Open Sans, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; padding: 5px 10px;\">\n" +
+            "                                        Tên tài khoản\n" +
+            "                                    </td>\n" +
+            "                                    <td width=\"25%\" align=\"left\" style=\"font-family: Open Sans, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; padding: 5px 10px;\">\n" +
+            "                                        "+booking.getAccount().getUsername()+"\n" +
+            "                                    </td>\n" +
+            "                                </tr>\n" +
+            "                                <tr>\n" +
+            "                                    <td width=\"75%\" align=\"left\" style=\"font-family: Open Sans, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; padding: 5px 10px;\">\n" +
+            "                                       Số điện thoại\n" +
+            "                                    </td>\n" +
+            "                                    <td width=\"25%\" align=\"left\" style=\"font-family: Open Sans, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; padding: 5px 10px;\">\n" +
+            "                                        "+booking.getAccount().getPhone()+"\n" +
+            "                                    </td>\n" +
+            "                                </tr>\n" +
+            "                                <tr>\n" +
+            "                                    <td width=\"75%\" align=\"left\" style=\"font-family: Open Sans, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; padding: 5px 10px;\">\n" +
+            "                                        Ngày nhận\n" +
+            "                                    </td>\n" +
+            "                                    <td width=\"25%\" align=\"left\" style=\"font-family: Open Sans, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; padding: 5px 10px;\">\n" +
+            "                                        "+booking.getStartAt()+"\n" +
+            "                                    </td>\n" +
+            "                                </tr>\n" +
+            "                                <tr>\n" +
+            "                                    <td width=\"75%\" align=\"left\" style=\"font-family: Open Sans, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; padding: 5px 10px;\">\n" +
+            "                                        Ngày trả\n" +
+            "                                    </td>\n" +
+            "                                    <td width=\"25%\" align=\"left\" style=\"font-family: Open Sans, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; padding: 5px 10px;\">\n" +
+            "                                        "+booking.getEndAt()+"\n" +
+            "                                    </td>\n" +
+            "                                </tr>\n" +
+            "                                <tr>\n" +
+            "                                    <td width=\"75%\" align=\"left\" style=\"font-family: Open Sans, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; padding: 5px 10px;\">\n" +
+            "                                        Số Lượng Phòng\n" +
+            "                                    </td>\n" +
+            "                                    <td width=\"25%\" align=\"left\" style=\"font-family: Open Sans, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; padding: 5px 10px;\">\n" +
+            "                                        "+booking.getBookingRooms().size()+"\n" +
+            "                                    </td>\n" +
+            "                                </tr>\n"+
+            "                            </table>\n" +
+            "                        </td>\n" +
+            "                    </tr>\n" +
+            "                    <tr>\n" +
+            "                        <td align=\"left\" style=\"padding-top: 20px;\">\n" +
+            "                            <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\">\n" +
+            "                                <tr>\n" +
+            "                                    <td width=\"75%\" align=\"left\" style=\"font-family: Verdana, sans-serif; font-size: 17px; font-weight: 800; line-height: 24px; padding: 10px; border-top: 3px solid #eeeeee; border-bottom: 3px solid #eeeeee;\">\n" +
+            "                                        Tổng tiền\n" +
+            "                                    </td>\n" +
+            "                                    <td width=\"25%\" align=\"left\" style=\"font-family: Open Sans, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 800; line-height: 24px; padding: 10px; border-top: 3px solid #eeeeee; border-bottom: 3px solid #eeeeee;\">\n" +
+            "                                       "+total+"\n" +
+            "                                    </td>\n" +
+            "                                </tr>\n" +
+            "                            </table>\n" +
+            "                        </td>\n" +
+            "                    </tr>\n" +
+            "                </table>\n" +
+            "                </td>\n" +
+            "            </tr>\n" +
+            "             <tr>\n" +
+            "                <td align=\"center\" height=\"100%\" valign=\"top\" width=\"100%\" style=\"padding: 0 35px 10px 35px; background-color: #ffffff;\" bgcolor=\"#ffffff\">\n" +
+            "                <table align=\"center\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"max-width:660px;\">\n" +
+            "                    <tr>\n" +
+            "                        <td align=\"center\" valign=\"top\" style=\"font-size:0;\">\n" +
+            "                           \n" +
+            "                            <div style=\"display:inline-block; max-width:50%; min-width:240px; vertical-align:top; width:100%;\">\n" +
+            "                                <table align=\"left\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"max-width:300px;\">\n" +
+            "                                    <tr>\n" +
+            "                                        <td align=\"left\" valign=\"top\" style=\"font-family: Open Sans, Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 400; line-height: 24px;\">\n" +
+            "                                            <p style=\"font-weight: 200; text-align: center;\">Cảm ơn quý khách đã sử dụng dịch vụ của chúng tôi</p>\n" +
+            "                                        </td>\n" +
+            "                                    </tr>\n" +
+            "                                </table>\n" +
+            "                            </div>\n" +
+            "                        </td>\n" +
+            "                    </tr>\n" +
+            "                </table>\n" +
+            "                </td>\n" +
+            "            </tr>\n" +
+            "        </table>\n" +
+            "        </td>\n" +
+            "    </tr>\n" +
+            "</table>\n" +
+            "    \n" +
+            "</body>\n" +
+            "</html>";
+    }
 }

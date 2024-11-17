@@ -68,7 +68,6 @@ public class TypeRoomController {
         }
     }
 
-
     @PutMapping("update")
     public ResponseEntity<?> updateTypeRoom(@Valid @RequestBody typeRoomModel trmodel) {
         try {
@@ -96,7 +95,6 @@ public class TypeRoomController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response); // Mã 500
         }
     }
-
 
     @DeleteMapping("delete/{id}")
     public ResponseEntity<?> deleteTypeRoom(@PathVariable Integer id) {
@@ -135,12 +133,17 @@ public class TypeRoomController {
     @GetMapping("/find-by-id")
     public ResponseEntity<TypeRoomDto> getTypeRoomById(@RequestParam Integer id) {
         TypeRoomDto typeRoomDto = trservice.getTypeRoomsById(id);
-        return ResponseEntity.ok(typeRoomDto);  // Trả về ResponseEntity với dữ liệu và mã trạng thái OK (200)
+        return ResponseEntity.ok(typeRoomDto); // Trả về ResponseEntity với dữ liệu và mã trạng thái OK (200)
     }
 
-    @GetMapping("/get-list-room")
-    public ResponseEntity<?> getListRoom() {
-        return ResponseEntity.ok(bookingService.getAvailableRoomDTO());
+    @GetMapping("/find-type-room")
+    public ResponseEntity<?> findTypeRoom(
+            @RequestParam String startDate,
+            @RequestParam String endDate,
+            @RequestParam Integer guestLimit) {
+
+        return ResponseEntity.ok(trservice.getRoom(startDate, endDate, guestLimit)); // Trả về ResponseEntity với dữ
+                                                                                     // liệu và mã trạng thái OK (200)
     }
 
     @GetMapping("/detail-type-room")

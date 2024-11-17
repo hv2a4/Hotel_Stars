@@ -13,14 +13,16 @@ import com.hotel.hotel_stars.Models.bookingModel;
 import com.hotel.hotel_stars.Repository.*;
 import com.hotel.hotel_stars.utils.paramService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class BookingService {
@@ -32,6 +34,10 @@ public class BookingService {
     private ErrorsService errorsService;
     @Autowired
     private TypeRoomRepository typeRoomRepository;
+    @Autowired
+    private RoomRepository roomRepository;
+    @Autowired
+    private BookingRoomRepository bookingRoomRepository;
     @Autowired
     private MethodPaymentRepository methodPaymentRepository;
 
@@ -63,7 +69,8 @@ public class BookingService {
             Instant checkOut = (Instant) result[4];
             Integer numberOfDays = (Integer) result[5];
 
-            BookingDetailDTO dto = new BookingDetailDTO(bookingId, typeRoomName, roomName, checkIn, checkOut, numberOfDays);
+            BookingDetailDTO dto = new BookingDetailDTO(bookingId, typeRoomName, roomName, checkIn, checkOut,
+                    numberOfDays);
             bookingDetails.add(dto);
         }
         return bookingDetails;
@@ -83,6 +90,53 @@ public class BookingService {
         return paymentInfoDTOs;
     }
 
+    public Boolean checkCreatbkRoom(Integer bookingId, List<Integer> roomId) {
+        Optional<Booking> booking = bookingRepository.findById(bookingId);
+        for (int i = 0; i < roomId.size(); i++) {
+            Room room = roomRepository.findById(roomId.get(i)).get();
+            BookingRoom bookingRoom = new BookingRoom();
+            bookingRoom.setBooking(booking.get());
+            bookingRoom.setRoom(room);
+            bookingRoom.setPrice(room.getTypeRoom().getPrice());
+            try {
+                bookingRoomRepository.save(bookingRoom);
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
+        }
+        return true;
+    }
+
+    public Boolean sendBookingEmail(bookingModel bookingModels) {
+        Booking booking = new Booking();
+        Optional<Account> accounts = accountRepository.findByUsername(bookingModels.getUserName());
+        Optional<MethodPayment> payment = methodPaymentRepository.findById(1);
+        Optional<StatusBooking> statusBooking = statusBookingRepository.findById(1);
+        Instant starDateIns = paramServices.stringToInstant(bookingModels.getStartDate());
+        Instant endDateIns = paramServices.stringToInstant(bookingModels.getEndDate());
+        booking.setAccount(accounts.get());
+        booking.setStartAt(starDateIns);
+        booking.setEndAt(endDateIns);
+        booking.setStatus(statusBooking.get());
+        booking.setStatusPayment(false);
+        System.out.println(LocalDateTime.now());
+        booking.setCreateAt(LocalDateTime.now());
+        try {
+            bookingRepository.save(booking);
+            if (checkCreatbkRoom(booking.getId(), bookingModels.getRoomId())) {
+                System.out.println(jwtService.generateBoking(booking.getId()));
+                Boolean flag = paramServices.sendEmails(booking.getAccount().getEmail(), "Xác nhận đặt phòng",
+                        paramServices.generateBooking(booking.getAccount().getFullname(),
+                                jwtService.generateBoking(booking.getId())));
+                return (flag == true) ? true : false;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+        return false;
+    }
 
     public List<ReservationInfoDTO> getAllReservationInfoDTO() {
         List<Object[]> results = bookingRepository.findAllBookingDetailsUsingSQL();
@@ -118,8 +172,7 @@ public class BookingService {
                     bookingRoomId, roomId, typeRoomId, invoiceId, roomName,
                     methodPaymentName, statusRoomName, statusBookingName,
                     createAt, startAt, endAt, accountFullname, roleName,
-                    typeRoomName, total_amount, max_guests
-            ));
+                    typeRoomName, total_amount, max_guests));
         }
         return dtos;
     }
@@ -190,12 +243,14 @@ public class BookingService {
                 typeRoomImageDtos.add(typeRoomDto);
             });
 
-            List<TypeRoomAmenitiesTypeRoom> amenitiesTypeRoom = typeRoomAmenitiesTypeRoomRepository.findByTypeRoom_Id(typeRoomId);
+            List<TypeRoomAmenitiesTypeRoom> amenitiesTypeRoom = typeRoomAmenitiesTypeRoomRepository
+                    .findByTypeRoom_Id(typeRoomId);
             // Create a list to hold the amenities DTOs
             List<TypeRoomAmenitiesTypeRoomDto> amenitiesDtos = new ArrayList<>();
 
             amenitiesTypeRoom.forEach(amenities -> {
-                AmenitiesTypeRoom amenitiesTypeRoomDto = amenitiesTypeRoomRepository.findById(amenities.getAmenitiesTypeRoom().getId()).get();
+                AmenitiesTypeRoom amenitiesTypeRoomDto = amenitiesTypeRoomRepository
+                        .findById(amenities.getAmenitiesTypeRoom().getId()).get();
                 AmenitiesTypeRoomDto roomDto = new AmenitiesTypeRoomDto();
                 roomDto.setId(amenitiesTypeRoomDto.getId());
                 roomDto.setAmenitiesTypeRoomName(amenitiesTypeRoomDto.getAmenitiesTypeRoomName());

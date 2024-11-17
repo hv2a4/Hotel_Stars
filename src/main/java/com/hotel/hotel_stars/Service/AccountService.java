@@ -129,7 +129,7 @@ public class AccountService {
             accounts.setFullname(accountModels.getFullname());
             accounts.setEmail(accountModels.getEmail());
             accounts.setPhone(accountModels.getPhone());
-            accounts.setAvatar("https://firebasestorage.googleapis.com/v0/b/myprojectimg-164dd.appspot.com/o/files%2F3c7db4be-6f94-4c19-837e-fbfe8848546f?alt=media&token=2aed7a07-6850-4c82-ae7a-5ee1ba606979");
+            accounts.setAvatar("https://firebasestorage.googleapis.com/v0/b/myprojectimg-164dd.appspot.com/o/files%2F140aa596-c596-49d4-b679-f2df70845b8d?alt=media&token=54bedd2b-f56f-4b23-8820-cb7e04d43c92");
             accounts.setRole(roles.get());
             accounts.setIsDelete(true);
             accounts.setGender(true);

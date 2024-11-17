@@ -126,7 +126,7 @@ public class JwtService {
                     .compact();
 
     }
-    public String generateBoking(Integer id,Integer quantityRooms) {
+    public String generateBoking(Integer id) {
         Map<String, Object> claims = new HashMap<>();
         Optional<Booking> booking = bookingRepository.findById(id);
         if(!booking.isPresent()){
@@ -134,13 +134,12 @@ public class JwtService {
         }
         booking.ifPresent(u -> {
             claims.put("id", u.getId());
-            claims.put("quantityRoom", quantityRooms);
         });
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(booking.get().getAccount().getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 2))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 3))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
