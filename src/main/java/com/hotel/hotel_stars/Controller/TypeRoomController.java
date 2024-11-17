@@ -1,5 +1,6 @@
 package com.hotel.hotel_stars.Controller;
 
+import com.hotel.hotel_stars.DTO.Select.RoomTypeDetail;
 import com.hotel.hotel_stars.DTO.Select.TypeRoomBookingCountDto;
 import com.hotel.hotel_stars.DTO.TypeRoomDto;
 import com.hotel.hotel_stars.Entity.TypeRoom;
@@ -140,5 +141,11 @@ public class TypeRoomController {
     @GetMapping("/get-list-room")
     public ResponseEntity<?> getListRoom() {
         return ResponseEntity.ok(bookingService.getAvailableRoomDTO());
+    }
+
+    @GetMapping("/detail-type-room")
+    public ResponseEntity<?> getTypeRoomDetail(@RequestParam Integer id) {
+        List<RoomTypeDetail> typeRoomDto = trservice.getRoomTypeDetailById(id);
+        return ResponseEntity.ok(typeRoomDto);
     }
 }

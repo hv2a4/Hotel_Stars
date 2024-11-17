@@ -1,6 +1,7 @@
 package com.hotel.hotel_stars.Service;
 
 import com.hotel.hotel_stars.DTO.*;
+import com.hotel.hotel_stars.DTO.Select.RoomTypeDetail;
 import com.hotel.hotel_stars.DTO.selectDTO.FindTypeRoomDto;
 import com.hotel.hotel_stars.Entity.*;
 import com.hotel.hotel_stars.Models.typeRoomModel;
@@ -10,8 +11,10 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class TypeRoomService {
@@ -29,6 +32,9 @@ public class TypeRoomService {
 
     @Autowired
     AmenitiesTypeRoomRepository amenitiesTypeRoomRepository;
+
+    @Autowired
+    FeedBackRepository feedBackRepository;
 
     // Tìm kiếm loại phòng
     public List<FindTypeRoomDto> getFindTypeRoom() {
@@ -174,9 +180,12 @@ public class TypeRoomService {
     public List<TypeRoomWithReviewsDTO> getTypeRooms() {
         List<Object[]> result = typeRoomRepository.findTop3TypeRoomsWithGoodReviews();
         List<TypeRoomWithReviewsDTO> dtos = new ArrayList<>();
+
         result.forEach(row -> {
             Integer id = (Integer) row[0];
             String typeRoomName = (String) row[1];
+
+            // Sử dụng BigDecimal cho giá trị price và acreage thay vì Double
             Double price = (Double) row[2];
             Integer bedCount = (Integer) row[3];
             Double acreage = (Double) row[4];
@@ -185,19 +194,19 @@ public class TypeRoomService {
 
             Integer imageId = (Integer) row[7];
 
+            // Lấy danh sách hình ảnh và chuyển đổi thành DTO
             List<TypeRoomImage> typeRoomImage = typeRoomImageRepository.findByTypeRoomId(id);
             List<TypeRoomImageDto> typeRoomImageDtos = new ArrayList<>();
-            typeRoomImage.forEach(typeImage ->{
+            typeRoomImage.forEach(typeImage -> {
                 TypeRoomImageDto typeRoomDto = new TypeRoomImageDto();
                 typeRoomDto.setId(typeImage.getId());
                 typeRoomDto.setImageName(typeImage.getImageName());
                 typeRoomImageDtos.add(typeRoomDto);
-            } );
+            });
 
+            // Lấy danh sách tiện nghi và chuyển đổi thành DTO
             List<TypeRoomAmenitiesTypeRoom> amenitiesTypeRoom = typeRoomAmenitiesTypeRoomRepository.findByTypeRoom_Id(id);
-            // Create a list to hold the amenities DTOs
             List<TypeRoomAmenitiesTypeRoomDto> amenitiesDtos = new ArrayList<>();
-
             amenitiesTypeRoom.forEach(amenities -> {
                 AmenitiesTypeRoom amenitiesTypeRoomDto = amenitiesTypeRoomRepository.findById(amenities.getAmenitiesTypeRoom().getId()).get();
                 AmenitiesTypeRoomDto roomDto = new AmenitiesTypeRoomDto();
@@ -208,23 +217,24 @@ public class TypeRoomService {
                 typeRoomAmenitiesTypeRoomDto.setId(amenities.getId());
                 typeRoomAmenitiesTypeRoomDto.setAmenitiesTypeRoomDto(roomDto);
 
-                // Add the created DTO to the list
                 amenitiesDtos.add(typeRoomAmenitiesTypeRoomDto);
             });
 
             Long totalReviews = (Long) row[9];
-            Double averageStars = (Double) row[10];
+            BigDecimal averageStarsConvert = (BigDecimal) row[10];
+            Double averageStars = averageStarsConvert.doubleValue();
 
+            // Tạo DTO cho TypeRoomWithReviewsDTO
             TypeRoomWithReviewsDTO typeRoomWithReviewsDTO = new TypeRoomWithReviewsDTO(
                     id,
                     typeRoomName,
-                    price,
+                    price,         // Trả về BigDecimal
                     bedCount,
-                    acreage,
+                    acreage,       // Trả về BigDecimal
                     guestLimit,
                     describes,
                     typeRoomImageDtos,
-                    amenitiesDtos,  // Set the list of amenities
+                    amenitiesDtos,
                     totalReviews,
                     averageStars
             );
@@ -233,7 +243,6 @@ public class TypeRoomService {
 
         return dtos;
     }
-
 
     public TypeRoomDto getTypeRoomsById(Integer id) {
         Optional<TypeRoom> optional = typeRoomRepository.findById(id);
@@ -245,6 +254,84 @@ public class TypeRoomService {
             // Trả về null hoặc có thể ném exception nếu phòng không tồn tại
             throw new RuntimeException("TypeRoom not found for id: " + id);
         }
+    }
+
+    public List<RoomTypeDetail> getRoomTypeDetailById(Integer roomId) {
+        List<Object[]> results = typeRoomRepository.findTypeRoomDetailsById(roomId); // Adjust the method call if needed
+        List<RoomTypeDetail> dtos = new ArrayList<>();
+
+        results.forEach(row -> {
+            Integer typeRoomId = (Integer) row[0];
+            String typeRoomName = (String) row[1];
+            Double price = (Double) row[2];           // Changed from Integer to Double
+            Integer bedCount = (Integer) row[3];
+            Double acreage = (Double) row[4];
+            Integer guestLimit = (Integer) row[5];
+            String describes = (String) row[6];
+            String bedName = (String) row[7];
+
+            // Split imageList (comma-separated string of image URLs) into a List of Strings
+            List<String> imageList = new ArrayList<>();
+            if (row[8] != null) {
+                imageList = Arrays.asList(((String) row[8]).split(","));
+            }
+
+            // Split amenitiesList (comma-separated string of IDs) into a List of Integers
+            List<Integer> amenitiesList = new ArrayList<>();
+            if (row[9] != null) {
+                amenitiesList = Arrays.stream(((String) row[9]).split(","))
+                        .map(Integer::parseInt)  // Convert each string to Integer
+                        .toList();
+            }
+            List<AmenitiesTypeRoom> amenitiesTypeRooms = amenitiesTypeRoomRepository.findAllById(amenitiesList);
+            List<AmenitiesTypeRoomDto> amenitiesTypeRoomDtos = amenitiesTypeRooms.stream()
+                    .map(amenitiesTypeRoom -> new AmenitiesTypeRoomDto(
+                            amenitiesTypeRoom.getId(),  // Hoặc các trường khác cần thiết
+                            amenitiesTypeRoom.getAmenitiesTypeRoomName() // Chuyển các trường khác nếu cần
+                    ))
+                    .toList();
+
+            List<Integer> feedBack = new ArrayList<>();
+            if (row[10] != null) {
+                feedBack = Arrays.stream(((String) row[10]).split(","))
+                        .map(Integer::parseInt)
+                        .toList();
+            }
+
+            List<Feedback> feedbacks = feedBackRepository.findAllById(feedBack);
+            List<FeedbackDto> feedbackDtos = feedbacks.stream().map(feedback -> new FeedbackDto(
+                    feedback.getId(),
+                    feedback.getContent(),
+                    feedback.getStars(),
+                    feedback.getCreateAt(),
+                    feedback.getRatingStatus(),
+                    null
+            )).toList();
+
+            BigDecimal averageFeedBackBigDecimal = (BigDecimal) row[11];
+            Double averageFeedBack = averageFeedBackBigDecimal.doubleValue();
+            String accountName = (String) row[12];
+            String imageName = (String) row[13];
+            // Create and populate RoomTypeDetail object
+            RoomTypeDetail detail = new RoomTypeDetail();
+            detail.setTypeRoomId(typeRoomId);
+            detail.setTypeRoomName(typeRoomName);
+            detail.setPrice(price);
+            detail.setBedCount(bedCount);
+            detail.setAcreage(acreage);
+            detail.setGuestLimit(guestLimit);
+            detail.setDescribes(describes);
+            detail.setBedName(bedName);
+            detail.setImageList(imageList);
+            detail.setAmenitiesList(amenitiesTypeRoomDtos);
+            detail.setFeedBack(feedbackDtos);
+            detail.setAverageFeedBack(averageFeedBack);
+            detail.setAccountName(accountName);
+            detail.setImage(imageName);
+            dtos.add(detail);
+        });
+
+        return dtos;
     }
 
 }

@@ -1,18 +1,22 @@
 package com.hotel.hotel_stars.Service;
 
 import com.hotel.hotel_stars.DTO.*;
+import com.hotel.hotel_stars.DTO.Select.RoomAvailabilityInfo;
+import com.hotel.hotel_stars.DTO.Select.RoomDetailResponseDTO;
 import com.hotel.hotel_stars.DTO.selectDTO.countDto;
-import com.hotel.hotel_stars.Entity.Floor;
-import com.hotel.hotel_stars.Entity.Room;
-import com.hotel.hotel_stars.Entity.StatusRoom;
-import com.hotel.hotel_stars.Entity.TypeRoom;
+import com.hotel.hotel_stars.Entity.*;
 import com.hotel.hotel_stars.Models.RoomModel;
 import com.hotel.hotel_stars.Repository.RoomRepository;
+import com.hotel.hotel_stars.Repository.TypeRoomImageRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -23,6 +27,9 @@ public class RoomService {
 
     @Autowired
     ModelMapper modelMapper;
+
+    @Autowired
+    TypeRoomImageRepository typeRoomImageRepository;
 
     public RoomDto convertToDto(Room room) {
 
@@ -100,10 +107,10 @@ public class RoomService {
 
     public countDto displayCounts() {
         List<Object[]> results = roomRepository.getCounts();
-        countDto dto=new countDto();
+        countDto dto = new countDto();
         for (Object[] result : results) {
             // Chuyển đổi đúng kiểu
-            dto.setCountStaff( ((Number) result[0]).longValue());
+            dto.setCountStaff(((Number) result[0]).longValue());
             dto.setCountCustomers(((Number) result[1]).longValue());
             dto.setTotalRoom(((Number) result[2]).longValue());
 
@@ -166,10 +173,101 @@ public class RoomService {
         }
         return statusResponseDto;
     }
-    
+
     public List<RoomDto> getByFloorId(Integer id) {
-    	List<Room> rooms = roomRepository.findByFloorId(id);
-    	return rooms.stream().map(this::convertToDto).toList();
+        List<Room> rooms = roomRepository.findByFloorId(id);
+        return rooms.stream().map(this::convertToDto).toList();
     }
 
+    public Page<RoomAvailabilityInfo> getAvailableRooms(Pageable pageable) {
+        Page<Object[]> result = roomRepository.findAvailableRooms(pageable);
+        return result.map(row -> {
+            Integer roomId = (Integer) row[0];
+            String roomName = (String) row[1];
+            Integer typeRoomId = (Integer) row[2];
+            String typeRoomName = (String) row[3];
+            Double price = (Double) row[4];
+            Double acreage = (Double) row[5];
+            Integer guestLimit = (Integer) row[6];
+            String amenitiesDetails = (String) row[7];
+            String imageList = (String) row[8];
+            String description = (String) row[9];
+            String bedNames = (String) row[10];
+            String amenitiesIds = (String) row[11];
+
+            RoomAvailabilityInfo roomAvailabilityInfo = new RoomAvailabilityInfo();
+            roomAvailabilityInfo.setRoomId(roomId);
+            roomAvailabilityInfo.setRoomName(roomName);
+            roomAvailabilityInfo.setTypeRoomId(typeRoomId);
+            roomAvailabilityInfo.setTypeRoomName(typeRoomName);
+            roomAvailabilityInfo.setPrice(price);
+            roomAvailabilityInfo.setAcreage(acreage);
+            roomAvailabilityInfo.setGuestLimit(guestLimit);
+            roomAvailabilityInfo.setAmenitiesDetails(
+                    Arrays.stream(amenitiesDetails.split(","))
+                            .map(String::trim)
+                            .toList()
+            );
+            roomAvailabilityInfo.setImageList(Arrays.asList(imageList.split(",")));
+            roomAvailabilityInfo.setDescription(description);
+            roomAvailabilityInfo.setBedNames(Arrays.asList(bedNames.split(",")));
+            roomAvailabilityInfo.setAmenitiesIds(
+                    Arrays.stream(amenitiesIds.split(","))
+                            .map(Integer::parseInt)
+                            .toList()
+            );
+
+            return roomAvailabilityInfo;
+        });
+    }
+
+
+    public List<RoomDetailResponseDTO> getRoomDetailsByRoomId(Integer roomId) {
+        List<Object[]> result = roomRepository.findRoomDetailsByRoomId(roomId);
+        List<RoomDetailResponseDTO> roomDetailResponseDTOS = new ArrayList<>();
+
+        result.forEach(row -> {
+            Integer IdRoomId = (Integer) row[0];
+            Integer typeRoomId = (Integer) row[1];
+            String typeRoomName = (String) row[2];
+            Double price = (Double) row[3];
+            Integer bedCount = (Integer) row[4];
+            Double acreage = (Double) row[5];
+            Integer guestLimit = (Integer) row[6];
+            String bedName = (String) row[7];
+            String describes = (String) row[8];
+
+            String servicesList = (String) row[9];
+            List<String> imageIdStrings = List.of(servicesList.split(","));
+            List<Integer> imageIds = imageIdStrings.stream()
+                    .map(Integer::parseInt)
+                    .toList();
+// Tìm tất cả các hình ảnh theo ID
+            List<TypeRoomImage> typeRoomImages = typeRoomImageRepository.findAllById(imageIds);
+            List<String> imageNames = new ArrayList<>();
+            typeRoomImages.forEach(name -> {
+                imageNames.add(name.getImageName());
+
+
+            });
+
+            String amenitiesIds = (String) row[10];
+            List<String> amenitiesIdList = List.of(amenitiesIds.split(","));
+
+            RoomDetailResponseDTO roomDetailResponseDTO = new RoomDetailResponseDTO();
+            roomDetailResponseDTO.setRoomId(IdRoomId);
+            roomDetailResponseDTO.setTypeRoomId(typeRoomId);
+            roomDetailResponseDTO.setTypeRoomName(typeRoomName);
+            roomDetailResponseDTO.setPrice(price);
+            roomDetailResponseDTO.setAcreage(acreage);
+            roomDetailResponseDTO.setGuestLimit(guestLimit);
+            roomDetailResponseDTO.setBedName(bedName);
+            roomDetailResponseDTO.setDescribes(describes);
+            roomDetailResponseDTO.setBedCount(bedCount);
+            roomDetailResponseDTO.setImageNames(imageNames);
+            roomDetailResponseDTO.setAmenities(amenitiesIdList);
+            roomDetailResponseDTOS.add(roomDetailResponseDTO);
+        });
+        return roomDetailResponseDTOS;
+    }
 }
