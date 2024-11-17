@@ -15,6 +15,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -25,6 +26,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import java.util.stream.Collectors;
 
 @Service
 public class RoomService {
@@ -77,19 +79,14 @@ public class RoomService {
 		return rooms.stream().map(this::convertToDto).toList();
 	}
 
-	public RoomDto getById(Integer id) {
-		Room room = roomRepository.findById(id).get();
-		return convertToDto(room);
-	}
-
 	public StatusResponseDto PostRoom(RoomModel roomModel) {
 		try {
-			// Validate room data
-			if (roomModel.getRoomName() == null || roomModel.getRoomName().isEmpty()) {
-				throw new RuntimeException("Tên phòng không được để trống");
+			// Kiểm tra trùng tên phòng
+			if (roomRepository.existsByRoomName(roomModel.getRoomName())) {
+				return new StatusResponseDto("409", "Conflict", "Tên phòng đã tồn tại");
 			}
-			// Add more validations as needed
 
+			// Tạo đối tượng Room từ RoomModel
 			Room room = new Room();
 			TypeRoom roomType = new TypeRoom();
 			roomType.setId(roomModel.getTypeRoomId());
@@ -102,15 +99,20 @@ public class RoomService {
 			room.setStatusRoom(statusRoom);
 			room.setFloor(floor);
 
-			roomRepository.save(room); // Save the room
+			// Lưu phòng vào cơ sở dữ liệu
+			roomRepository.save(room);
 
 			return new StatusResponseDto("200", "Success", "Phòng đã được thêm thành công");
 		} catch (RuntimeException e) {
 			return new StatusResponseDto("400", "Bad Request", e.getMessage());
 		} catch (Exception e) {
-			// Log the exception if necessary
 			return new StatusResponseDto("500", "Error", "Có lỗi xảy ra khi thêm phòng: " + e.getMessage());
 		}
+	}
+
+	public RoomDto getById(Integer id) {
+		Room room = roomRepository.findById(id).get();
+		return convertToDto(room);
 	}
 
 	public countDto displayCounts() {
@@ -132,8 +134,9 @@ public class RoomService {
 					.orElseThrow(() -> new RuntimeException("Phòng không tồn tại")); // Handle room not found
 
 			// Validate room data
-			if (roomModel.getRoomName() == null || roomModel.getRoomName().isEmpty()) {
-				throw new RuntimeException("Tên phòng không được để trống");
+			// Validate: Check if the room name exists in other rooms
+			if (roomRepository.existsByRoomNameAndIdNot(roomModel.getRoomName(), roomModel.getId())) {
+				return new StatusResponseDto("409", "Conflict", "Tên phòng đã tồn tại ở một phòng khác");
 			}
 			// Add more validations as needed
 
@@ -306,4 +309,5 @@ public class RoomService {
 		});
 		return roomDetailResponseDTOS;
 	}
+
 }

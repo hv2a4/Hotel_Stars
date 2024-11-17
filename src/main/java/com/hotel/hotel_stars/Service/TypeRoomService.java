@@ -10,6 +10,8 @@ import com.hotel.hotel_stars.Repository.TypeBedRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomImageRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomRepository;
 import com.hotel.hotel_stars.utils.paramService;
+import com.hotel.hotel_stars.Models.TypeRoomAmenitiesTypeRoomModel;
+import com.hotel.hotel_stars.Models.amenitiesTypeRoomModel;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +49,7 @@ public class TypeRoomService {
         typeBedDto.setId(tr.getTypeBed().getId());
         typeBedDto.setBedName(tr.getTypeBed().getBedName());
         List<TypeRoomImage> typeRoomImages = tr.getTypeRoomImages();
+
         List<TypeRoomImageDto> typeRoomImageDtos = new ArrayList<>();
 
         for (TypeRoomImage typeRoomImage : typeRoomImages) {
@@ -56,7 +59,6 @@ public class TypeRoomService {
 
             typeRoomImageDtos.add(typeRoomImageDto);  // Thêm vào danh sách DTO
         }
-
         return new TypeRoomDto(tr.getId(), tr.getTypeRoomName(), tr.getPrice(), tr.getBedCount(),
                 tr.getAcreage(), tr.getGuestLimit(), typeBedDto, tr.getDescribes(), typeRoomImageDtos);
     }
@@ -71,33 +73,52 @@ public class TypeRoomService {
 
     // thêm loại phòng
     public TypeRoomDto addTypeRoom(typeRoomModel trmodel) {
-        List<String> errorMessages = new ArrayList<>(); // Danh sách lưu trữ các thông báo lỗi
+        List<String> errorMessages = new ArrayList<>();
+
+        if (trmodel.getImageNames().length == 0) {
+            throw new RuntimeException("422");
+        }
+
+        // Kiểm tra tên loại phòng đã tồn tại chưa
+        Optional<TypeRoom> existingTypeRoom = typeRoomRepository.findByTypeRoomName(trmodel.getTypeRoomName());
+        if (existingTypeRoom.isPresent()) {
+            throw new RuntimeException("409");
+        }
 
         TypeRoom typeRoom = new TypeRoom();
-
-        // Đặt thông tin loại phòng
         typeRoom.setTypeRoomName(trmodel.getTypeRoomName());
         typeRoom.setPrice(trmodel.getPrice());
         typeRoom.setBedCount(trmodel.getBedCount());
         typeRoom.setAcreage(trmodel.getAcreage());
+
         Optional<TypeBed> typeBed = typeBedRepository.findById(trmodel.getTypeBedId());
         typeRoom.setTypeBed(typeBed.get());
         typeRoom.setGuestLimit(trmodel.getGuestLimit());
         typeRoom.setDescribes(trmodel.getDescribes());
+
         List<TypeRoomImage> typeRoomImages = new ArrayList<>();
         typeRoom.setTypeRoomImages(typeRoomImages);
 
         // Lưu thông tin loại phòng vào cơ sở dữ liệu
         TypeRoom savedTypeRoom = typeRoomRepository.save(typeRoom);
 
-//             Lưu hình ảnh vào bảng TypeRoomImage
+        //Lưu thông tin tiện nghi loại phòng
+        List<amenitiesTypeRoomModel> amenitiesTypeRoomModel = trmodel.getAmenitiesTypeRooms();
+        for (amenitiesTypeRoomModel item : amenitiesTypeRoomModel) {
+            TypeRoomAmenitiesTypeRoom typeRoomAmenitiesTypeRoom = new TypeRoomAmenitiesTypeRoom();
+            typeRoomAmenitiesTypeRoom.setTypeRoom(savedTypeRoom);
+            Optional<AmenitiesTypeRoom> optional = amenitiesTypeRoomRepository.findById(item.getId());
+            typeRoomAmenitiesTypeRoom.setAmenitiesTypeRoom(optional.get());
+            typeRoomAmenitiesTypeRoomRepository.save(typeRoomAmenitiesTypeRoom);
+        }
 
+        // Lưu hình ảnh vào bảng TypeRoomImage
         if (trmodel.getImageNames() != null) {
             for (String imageName : trmodel.getImageNames()) {
                 TypeRoomImage typeRoomImage = new TypeRoomImage();
                 typeRoomImage.setImageName(imageName);
-                typeRoomImage.setTypeRoom(savedTypeRoom); // Gán phòng vào hình ảnh
-                typeRoomImageRepository.save(typeRoomImage); // Lưu hình ảnh
+                typeRoomImage.setTypeRoom(savedTypeRoom);
+                typeRoomImageRepository.save(typeRoomImage);
             }
         }
 
@@ -114,6 +135,7 @@ public class TypeRoomService {
         if (!existingTypeRoomOpt.isPresent()) {
             throw new EntityNotFoundException("Loại phòng với ID " + trModel.getId() + " không tồn tại.");
         }
+
         TypeRoom existingTypeRoom = existingTypeRoomOpt.get();
         // Cập nhật các thuộc tính cho loại phòng
         existingTypeRoom.setTypeRoomName(trModel.getTypeRoomName());
@@ -129,6 +151,22 @@ public class TypeRoomService {
 
         // Lưu loại phòng đã cập nhật vào cơ sở dữ liệu và chuyển đổi sang DTO
         TypeRoom updatedTypeRoom = typeRoomRepository.save(existingTypeRoom);
+
+        //Xóa tất cả các tiện nghi cũ
+        List<TypeRoomAmenitiesTypeRoom> amenitiesTypeRooms = updatedTypeRoom.getTypeRoomAmenitiesTypeRoomList();
+        for (TypeRoomAmenitiesTypeRoom item : amenitiesTypeRooms) {
+            typeRoomAmenitiesTypeRoomRepository.delete(item);
+        }
+
+        //Cập nhật thông tin tiện nghi loại phòng
+        List<amenitiesTypeRoomModel> amenitiesTypeRoomModel = trModel.getAmenitiesTypeRooms();
+        for (amenitiesTypeRoomModel item : amenitiesTypeRoomModel) {
+            TypeRoomAmenitiesTypeRoom typeRoomAmenitiesTypeRoom = new TypeRoomAmenitiesTypeRoom();
+            typeRoomAmenitiesTypeRoom.setTypeRoom(updatedTypeRoom);
+            Optional<AmenitiesTypeRoom> amenitiesTypeRoom = amenitiesTypeRoomRepository.findById(item.getId());
+            typeRoomAmenitiesTypeRoom.setAmenitiesTypeRoom(amenitiesTypeRoom.get());
+            typeRoomAmenitiesTypeRoomRepository.save(typeRoomAmenitiesTypeRoom);
+        }
         return convertTypeRoomDto(updatedTypeRoom); // Chuyển đổi loại phòng đã lưu sang DTO
     }
 
@@ -148,7 +186,10 @@ public class TypeRoomService {
             for (TypeRoomImage typeRoomImage : typeRoomImages) {
                 typeRoomImageRepository.delete(typeRoomImage);
             }
-
+            List<TypeRoomAmenitiesTypeRoom> typeRoomAmenitiesTypeRoom = typeRoom.getTypeRoomAmenitiesTypeRoomList();
+            for (TypeRoomAmenitiesTypeRoom item : typeRoomAmenitiesTypeRoom) {
+                typeRoomAmenitiesTypeRoomRepository.delete(item);
+            }
             // Sau khi xóa ảnh thành công, xóa loại phòng
             typeRoomRepository.delete(typeRoom);
         }
@@ -220,6 +261,18 @@ public class TypeRoomService {
         });
 
         return dtos;
+    }
+
+    public List<TypeRoomAmenitiesTypeRoomModel> getTypeRoomAmenitiesTypeRoom(Integer idTypeRoom) {
+        List<TypeRoomAmenitiesTypeRoom> list = typeRoomAmenitiesTypeRoomRepository.findByTypeRoomId(idTypeRoom);
+        List<TypeRoomAmenitiesTypeRoomModel> typeRoomAmenitiesTypeRoomModels = new ArrayList<>();
+        for (TypeRoomAmenitiesTypeRoom item : list) {
+            TypeRoomAmenitiesTypeRoomModel typeRoomAmenitiesTypeRoomModel = new TypeRoomAmenitiesTypeRoomModel();
+            typeRoomAmenitiesTypeRoomModel.setValue(String.valueOf(item.getAmenitiesTypeRoom().getId()));
+            typeRoomAmenitiesTypeRoomModel.setLabel(item.getAmenitiesTypeRoom().getAmenitiesTypeRoomName());
+            typeRoomAmenitiesTypeRoomModels.add(typeRoomAmenitiesTypeRoomModel);
+        }
+        return typeRoomAmenitiesTypeRoomModels;
     }
 
     public TypeRoomDto getTypeRoomsById(Integer id) {

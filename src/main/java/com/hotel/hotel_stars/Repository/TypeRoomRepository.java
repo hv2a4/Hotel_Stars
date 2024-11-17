@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
 
@@ -134,4 +135,6 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
                 accounts.avatar 
             """, nativeQuery = true)
     List<Object[]> findTypeRoomDetailsById(Integer roomId);
+    Optional<TypeRoom> findByTypeRoomName(String typeRoomName);
+
 }

@@ -132,4 +132,7 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
             "type_room.bed_count, type_room.acreage, type_room.guest_limit, type_bed.bed_name, " +
             "type_room.describes", nativeQuery = true)
     List<Object[]> findRoomDetailsByRoomId(Integer roomId);
+    
+    boolean existsByRoomName(String roomName);
+    boolean existsByRoomNameAndIdNot(String roomName, Integer id);
 }

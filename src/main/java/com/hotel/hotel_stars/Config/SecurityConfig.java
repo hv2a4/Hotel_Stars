@@ -117,7 +117,15 @@ public class SecurityConfig {
                                 "/api/room/FloorById/{id}",
                                 "api/type-room-amenities-type-room/**",
                                 "/api/booking/accountId/{id}",
-                                "/api/account/{id}")
+                                "/api/account/{id}",
+                                "/api/type-room/getAll",
+                                "api/type-room/add",
+                                "api/type-room/update",
+                                "api/type-room/delete/**",
+                                "api/type-room/top3",
+                                "/api/type-room/find-by-id",
+                                "/api/type-room/find-amenities-type-rom/**"
+                                )
                         .permitAll()
 
                         // Các endpoint yêu cầu quyền "Customer"
