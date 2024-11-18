@@ -196,7 +196,6 @@ public class RoomService {
 	    );
 	}
 
-
 	public StatusResponseDto updateActiveRoom(RoomModel model) {
 		try {
 			Room room = roomRepository.findById(model.getId())
