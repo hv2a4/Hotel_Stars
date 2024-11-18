@@ -103,9 +103,9 @@ public class paramService {
     }
 
     public Instant stringToInstant(String dateString) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime localDateTime = LocalDateTime.parse(dateString, formatter);
-        return localDateTime.atZone(ZoneId.of("UTC")).toInstant();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate localDate = LocalDate.parse(dateString, formatter);
+        return localDate.atStartOfDay(ZoneId.of("UTC")).toInstant();
     }
 
     public Instant localDateToInstant(LocalDateTime localDateTime ) {
