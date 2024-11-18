@@ -1,5 +1,7 @@
 package com.hotel.hotel_stars.Controller;
 
+import com.hotel.hotel_stars.DTO.RoomDto;
+import com.hotel.hotel_stars.DTO.Select.PaginatedResponseDto;
 import com.hotel.hotel_stars.DTO.Select.RoomAvailabilityInfo;
 import com.hotel.hotel_stars.DTO.StatusResponseDto;
 import com.hotel.hotel_stars.Entity.Room;
@@ -136,5 +138,14 @@ public class RoomController {
     @GetMapping("/details")
     public ResponseEntity<?> getRoomDetails(@RequestParam Integer roomId) {
         return ResponseEntity.ok(roomService.getRoomDetailsByRoomId(roomId));
+    }
+
+    @GetMapping
+    public PaginatedResponseDto<RoomDto> getAllRooms(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy
+    ) {
+        return roomService.getAll(page, size, sortBy);
     }
 }

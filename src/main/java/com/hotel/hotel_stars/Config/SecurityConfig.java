@@ -124,7 +124,12 @@ public class SecurityConfig {
                                 "api/type-room/delete/**",
                                 "api/type-room/top3",
                                 "/api/type-room/find-by-id",
-                                "/api/type-room/find-amenities-type-rom/**"
+                                "/api/type-room/find-amenities-type-rom/**",
+                                "api/room/getAll",
+                                "api/room/post-room",
+                                "api/room/put-room",
+                                "api/amenities-type-room/getAll",
+                                "api/room/getById/**"
                                 )
                         .permitAll()
 

@@ -49,8 +49,8 @@ public class AccountController {
     @Autowired
     private TypeRoomService typeRoomService;
 
-    @GetMapping("/getAll")
-    public ResponseEntity<?> getAllAccounts() {
+    @GetMapping("/getAlls")
+    public ResponseEntity<?> getAllAccount() {
         System.out.println("Múi giờ hệ thống: " + ZoneId.systemDefault());
         ZonedDateTime vietnamTime = ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
         System.out.println("Thời gian hiện tại ở Việt Nam: " + vietnamTime);
@@ -59,7 +59,10 @@ public class AccountController {
         System.out.println(paramServices.localDateToInstant(localDateTime));
         return ResponseEntity.ok("ạksfasj");
     }
-
+    @GetMapping("/getAll")
+    public ResponseEntity<?> getAllAccounts() {
+        return ResponseEntity.ok(accountService.getAllAccounts());
+    }
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable("id") Integer id) {
         return ResponseEntity.ok(accountService.getAccountId(id));
