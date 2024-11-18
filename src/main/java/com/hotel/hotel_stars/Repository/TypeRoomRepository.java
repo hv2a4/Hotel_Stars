@@ -19,13 +19,25 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
             tr.id AS typeRoomId, 
             tr.type_room_name AS typeRoomName, 
             tr.price, 
+            (CASE
+                    WHEN ds.id IS NULL OR NOT (NOW() BETWEEN ds.start_date AND ds.end_date)\s
+                    THEN 0
+                    ELSE (tr.price * (1 - IFNULL(ds.percent, 0) / 100))
+                 END) AS finalPrice,
             tr.acreage, 
             tr.guest_limit AS guestLimit, 
             GROUP_CONCAT(DISTINCT CONCAT(atr.amenities_type_room_name) SEPARATOR ', ') AS amenitiesTypeRoomDetails, 
-            (TIMESTAMPDIFF(DAY, :startDate, :endDate) * tr.price) AS estCost, 
-            GROUP_CONCAT(DISTINCT tpi.image_name) AS imageName, tr.describes
+             (TIMESTAMPDIFF(DAY, "2024-11-01", "2024-11-03") *\s
+                 (CASE
+                    WHEN ds.id IS NULL OR NOT (NOW() BETWEEN ds.start_date AND ds.end_date)\s
+                    THEN tr.price
+                    ELSE (tr.price * (1 - IFNULL(ds.percent, 0) / 100))
+                  END)) AS estCost, 
+            GROUP_CONCAT(DISTINCT tpi.image_name) AS imageName, tr.describes, ds.percent,ds.discount_name
         FROM 
             type_room tr
+        LEFT JOIN
+            discount ds ON tr.id = ds.type_room_id
         JOIN 
             room r ON tr.id = r.type_room_id
         LEFT JOIN 
@@ -43,7 +55,7 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
             b.id IS NULL  
             AND tr.guest_limit = :guestLimit
         GROUP BY 
-            tr.id, tr.type_room_name, tr.price, tr.acreage, tr.guest_limit, r.room_name, r.id,tr.describes
+            tr.id, tr.type_room_name, tr.price, tr.acreage, tr.guest_limit, r.room_name, r.id,tr.describes ,ds.percent,ds.discount_name
     """, nativeQuery = true)
     List<Object[]> findAvailableRooms(Instant startDate, Instant endDate, Integer guestLimit);
 

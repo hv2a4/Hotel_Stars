@@ -292,23 +292,29 @@ public class TypeRoomService {
         Instant starDate = paramServices.stringToInstant(startDates);
         Instant endDate = paramServices.stringToInstant(endDates);
         List<Object[]> result = typeRoomRepository.findAvailableRooms(starDate,endDate,guestLimit);
+        System.out.println("độ dài: "+result.size());
         for (Object[] results : result) {
+
             // Assuming the results array contains data in the correct order:
+
             // Adjust the indices to match the actual data order returned by your query.
             Integer roomId = (Integer) results[0];
             String roomName = (String) results[1];
             Integer roomTypeId = (Integer) results[2];
             String roomTypeName = (String) results[3];
             Double priceTypeRoom = (Double) results[4];
-            Double acreage = (Double) results[5];
-            Integer guestLimits = (Integer) results[6];
-            String amenitiesTypeRoomDetails = (String) results[7];
-            Double estCost = (Double) results[8];
-            String imagesString = (String) results[9];
+            Double priceDiscountTypeRoom = (Double) results[5];
+            Double acreage = (Double) results[6];
+            Integer guestLimits = (Integer) results[7];
+            String amenitiesTypeRoomDetails = (String) results[8];
+            Double estCost = (Double) results[9];
+            String imagesString = (String) results[10];
             List<String> listImages = Arrays.stream(imagesString.split(","))
                     .map(String::trim)
                     .collect(Collectors.toList());
-            String describe=(String) results[10];
+            String describe=(String) results[11];
+            Double discountPercent = (results[12] != null) ? (Double) results[12] : 0.0;
+            String discountNames = (results[13] != null) ? (String) results[13] : null;
             // Create a new DTO object and add it to the list
             FindTypeRoomDto dto = new FindTypeRoomDto(
                     roomId,
@@ -316,15 +322,21 @@ public class TypeRoomService {
                     roomTypeId,
                     roomTypeName,
                     priceTypeRoom,
+                    priceDiscountTypeRoom,
                     acreage,
                     guestLimits,
                     amenitiesTypeRoomDetails,
                     estCost,
                     listImages,
-                    describe
+                    describe,
+                    discountPercent,
+                    discountNames
             );
             dtoList.add(dto);
+
+
         }
+
         return dtoList;
     }
 

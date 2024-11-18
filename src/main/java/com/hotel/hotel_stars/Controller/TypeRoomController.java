@@ -156,7 +156,6 @@ public class TypeRoomController {
             @RequestParam Integer guestLimit) {
 
         return ResponseEntity.ok(trservice.getRoom(startDate, endDate, guestLimit)); // Trả về ResponseEntity với dữ
-                                                                                     // liệu và mã trạng thái OK (200)
     }
 
     @GetMapping("/detail-type-room")
