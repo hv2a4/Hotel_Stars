@@ -77,7 +77,6 @@ public class SecurityConfig {
                                 "/api/account/account-by-id/{username}",
                                 "/api/account/toggleDelete/{id}",
                                 "/api/account/get-info-staff",
-                                "/api/booking/**",
                                 "api/feedback/**",
                                 "api/service-hotel/getAll",
                                 "/api/status/**",
@@ -99,7 +98,6 @@ public class SecurityConfig {
                                 "/api/account/updateAccount",
                                 "/api/account/updatePassword",
                                 "/api/room/getCountRoom",
-                                "/api/booking/sendBooking",
                                 "/api/booking/confirmBooking",
                                 "/api/type-room/find-type-room",
                                 "/api/service-package/post-service-package",
@@ -135,7 +133,7 @@ public class SecurityConfig {
 
                         // Các endpoint yêu cầu quyền "Customer"
                         .requestMatchers(
-                                "api/discount/**")
+                                "api/discount/**","/api/booking/sendBooking")
                         .hasAnyAuthority("Customer")
 
                         // Các endpoint yêu cầu quyền "Staff" hoặc "HotelOwner"
