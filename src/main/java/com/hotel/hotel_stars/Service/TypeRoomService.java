@@ -295,9 +295,6 @@ public class TypeRoomService {
         System.out.println("độ dài: "+result.size());
         for (Object[] results : result) {
 
-            // Assuming the results array contains data in the correct order:
-
-            // Adjust the indices to match the actual data order returned by your query.
             Integer roomId = (Integer) results[0];
             String roomName = (String) results[1];
             Integer roomTypeId = (Integer) results[2];

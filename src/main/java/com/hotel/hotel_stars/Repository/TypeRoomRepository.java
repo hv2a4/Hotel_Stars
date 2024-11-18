@@ -55,7 +55,7 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
             b.id IS NULL  
             AND tr.guest_limit = :guestLimit
         GROUP BY 
-            tr.id, tr.type_room_name, tr.price, tr.acreage, tr.guest_limit, r.room_name, r.id,tr.describes ,ds.percent,ds.discount_name
+            tr.id, tr.type_room_name, tr.price, tr.acreage, tr.guest_limit, r.room_name, r.id,tr.describes ,ds.percent,ds.discount_name,ds.id
     """, nativeQuery = true)
     List<Object[]> findAvailableRooms(Instant startDate, Instant endDate, Integer guestLimit);
 
@@ -147,6 +147,7 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
                 accounts.avatar 
             """, nativeQuery = true)
     List<Object[]> findTypeRoomDetailsById(Integer roomId);
+
     Optional<TypeRoom> findByTypeRoomName(String typeRoomName);
 
 }
