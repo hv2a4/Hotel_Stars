@@ -9,6 +9,7 @@ import com.hotel.hotel_stars.Entity.*;
 import com.hotel.hotel_stars.Models.RoomModel;
 import com.hotel.hotel_stars.Repository.RoomRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomImageRepository;
+import com.hotel.hotel_stars.utils.paramService;
 import com.hotel.hotel_stars.Repository.StatusRoomRepository;
 
 import org.modelmapper.ModelMapper;
@@ -19,6 +20,11 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.sql.Date;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,7 +40,8 @@ import java.util.stream.Collectors;
 public class RoomService {
     @Autowired
     private RoomRepository roomRepository;
-
+    @Autowired
+    paramService paramServices;
     @Autowired
     ModelMapper modelMapper;
     @Autowired
@@ -192,20 +199,40 @@ public class RoomService {
         return rooms.stream().map(this::convertToDto).toList();
     }
 
-    public PaginatedResponseDto<RoomDto> getAll(int page, int size, String sortBy) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-        Page<Room> roomPage = roomRepository.findAll(pageable);
-
-        List<RoomDto> roomDtos = roomPage.stream()
-                .map(this::convertToDto)
-                .toList();
-
-        return new PaginatedResponseDto<>(
-                roomDtos,
-                roomPage.getNumber(),
-                roomPage.getTotalPages(),
-                roomPage.getTotalElements());
+    public java.sql.Date stringToSqlDate(String dateString) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate localDate = LocalDate.parse(dateString, formatter);
+        return java.sql.Date.valueOf(localDate); // Trả về java.sql.Date
     }
+
+    public PaginatedResponseDto<RoomDto> getAll(int page, int size, String sortBy, Date startDates, Date endDates,
+                                                Integer guestLimit) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+        Page<Room> roomPage = roomRepository.findAvailableRoomsWithPagination(startDates, endDates, guestLimit,
+                pageable);
+        List<RoomDto> roomDtos = roomPage.stream().map(this::convertToDto).collect(Collectors.toList());
+        return new PaginatedResponseDto<>(roomDtos, page, roomPage.getTotalPages(), roomPage.getTotalElements());
+    }
+    // public PaginatedResponseDto<RoomDto> getAll(int page, int size, String
+    // sortBy, Instant startDate, Instant endDate, Integer guestLimit) {
+    // int offset = (page - 1) * size;
+    //
+    // List<Object[]> roomData =
+    // roomRepository.findAvailableRoomsWithPagination(startDate, endDate,
+    // guestLimit, size, offset);
+    //
+    // List<RoomDto> roomDtos = roomData.stream().map(this::convertToDto).toList();
+    //
+    // long totalElements = roomRepository.countAvailableRooms(startDate, endDate,
+    // guestLimit); // Thêm phương thức đếm tổng số phòng
+    //
+    // return new PaginatedResponseDto<>(
+    // roomDtos,
+    // page,
+    // (int) Math.ceil((double) totalElements / size),
+    // totalElements
+    // );
+    // }
 
     public StatusResponseDto updateActiveRoom(RoomModel model) {
         try {
@@ -239,9 +266,9 @@ public class RoomService {
             String description = (String) row[9];
             String bedNames = (String) row[10];
             String amenitiesIds = (String) row[11];
-            Double finalPrice = (Double) row[12];  // finalPrice from SQL query
-            Double estCost = (Double) row[13];     // estCost from SQL query
-            Double percent = (Double) row[14];     // percent from SQL query
+            Double finalPrice = (Double) row[12]; // finalPrice from SQL query
+            Double estCost = (Double) row[13]; // estCost from SQL query
+            Double percent = (Double) row[14]; // percent from SQL query
 
             RoomAvailabilityInfo roomAvailabilityInfo = new RoomAvailabilityInfo();
             roomAvailabilityInfo.setRoomId(roomId);
@@ -251,17 +278,13 @@ public class RoomService {
             roomAvailabilityInfo.setPrice(price);
             roomAvailabilityInfo.setAcreage(acreage);
             roomAvailabilityInfo.setGuestLimit(guestLimit);
-            roomAvailabilityInfo.setAmenitiesDetails(
-                    Arrays.stream(amenitiesDetails.split(","))
-                            .map(String::trim)
-                            .toList());
+            roomAvailabilityInfo
+                    .setAmenitiesDetails(Arrays.stream(amenitiesDetails.split(",")).map(String::trim).toList());
             roomAvailabilityInfo.setImageList(Arrays.asList(imageList.split(",")));
             roomAvailabilityInfo.setDescription(description);
             roomAvailabilityInfo.setBedNames(Arrays.asList(bedNames.split(",")));
-            roomAvailabilityInfo.setAmenitiesIds(
-                    Arrays.stream(amenitiesIds.split(","))
-                            .map(Integer::parseInt)
-                            .toList());
+            roomAvailabilityInfo
+                    .setAmenitiesIds(Arrays.stream(amenitiesIds.split(",")).map(Integer::parseInt).toList());
 
             // Setting the additional fields
             roomAvailabilityInfo.setFinalPrice(finalPrice);
@@ -271,7 +294,6 @@ public class RoomService {
             return roomAvailabilityInfo;
         });
     }
-
 
     public List<RoomDetailResponseDTO> getRoomDetailsByRoomId(Integer roomId) {
         List<Object[]> result = roomRepository.findRoomDetailsByRoomId(roomId);
@@ -290,9 +312,7 @@ public class RoomService {
 
             String servicesList = (String) row[9];
             List<String> imageIdStrings = List.of(servicesList.split(","));
-            List<Integer> imageIds = imageIdStrings.stream()
-                    .map(Integer::parseInt)
-                    .toList();
+            List<Integer> imageIds = imageIdStrings.stream().map(Integer::parseInt).toList();
             // Tìm tất cả các hình ảnh theo ID
             List<TypeRoomImage> typeRoomImages = typeRoomImageRepository.findAllById(imageIds);
             List<String> imageNames = new ArrayList<>();
@@ -327,5 +347,4 @@ public class RoomService {
         });
         return roomDetailResponseDTOS;
     }
-
 }
