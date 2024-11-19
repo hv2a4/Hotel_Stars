@@ -20,4 +20,7 @@ public class RoomAvailabilityInfo {
     private String description;               // Mô tả phòng
     private List<String> bedNames;            // Tên giường (dưới dạng mảng)
     private List<Integer> amenitiesIds;       // Danh sách ID tiện ích (dưới dạng mảng)
+    private Double finalPrice;
+    private Double estCost;
+    private Double percent;
 }

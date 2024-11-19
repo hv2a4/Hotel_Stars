@@ -61,7 +61,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
             "JOIN roles ON accounts.role_id = roles.id", nativeQuery = true)
     List<Object[]> findAllBookingDetailsUsingSQL();
 
-    @Query("SELECT new com.hotel.hotel_stars.DTO.Select.CustomerReservation(" +
+    @Query("SELECT DISTINCT new com.hotel.hotel_stars.DTO.Select.CustomerReservation(" +
             "a.id, a.fullname, a.phone, a.email, " +
             "b.id, b.startAt, b.endAt, " +
             "tr.guestLimit, tr.typeRoomName, r.roomName, " +
@@ -76,8 +76,9 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
             "JOIN Room r ON br.room.id = r.id " +
             "JOIN TypeRoom tr ON r.typeRoom.id = tr.id " +
             "JOIN Role role ON a.role.id = role.id " +
-            "WHERE b.id = :bookingId")
-    Optional<CustomerReservation> findBookingDetailsById(@Param("bookingId") Integer bookingId);
+            "WHERE b.id = :bookingId and r.roomName = :roomName")
+    Optional<CustomerReservation> findBookingDetailsById(@Param("bookingId") Integer bookingId, @Param("roomName") String roomName);
+
 
     @Query(value = """
             SELECT

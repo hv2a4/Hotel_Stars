@@ -9,8 +9,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
 public interface RoomRepository extends JpaRepository<Room, Integer> {
     @Query(value = "SELECT " +
             "(SELECT COUNT(*) FROM accounts WHERE role_id = 2) AS count_employees, " +
@@ -81,15 +83,27 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
 
     @Query("select r from Room r where r.floor.id = ?1")
     List<Room> findByFloorId(Integer floorId);
-    
-    
+
+
     Page<Room> findAll(Pageable pageable);
 
     @Query(value = "SELECT r.id AS roomId, r.room_name, tr.id AS typeRoomId, tr.type_room_name, tr.price, tr.acreage, tr.guest_limit, " +
             "GROUP_CONCAT(DISTINCT CONCAT(atr.amenities_type_room_name) SEPARATOR ', ') AS amenitiesTypeRoomDetails, " +
             "GROUP_CONCAT(DISTINCT tpi.image_name) AS image_list, tr.describes, " +
             "GROUP_CONCAT(DISTINCT type_bed.bed_name) AS bed_name, " +
-            "GROUP_CONCAT(DISTINCT trat.amenities_type_room_id) AS amenities_list " +
+            "GROUP_CONCAT(DISTINCT trat.amenities_type_room_id) AS amenities_list, " +
+            "(CASE " +
+            "    WHEN discount.id IS NULL OR NOT (NOW() BETWEEN discount.start_date AND discount.end_date) " +
+            "    THEN 0 " +
+            "    ELSE (tr.price * (1 - IFNULL(discount.percent, 0) / 100)) " +
+            "END) AS finalPrice, " +
+            "(TIMESTAMPDIFF(DAY, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 1 DAY)) * " +
+            "(CASE " +
+            "    WHEN discount.id IS NULL OR NOT (NOW() BETWEEN discount.start_date AND discount.end_date) " +
+            "    THEN tr.price " +
+            "    ELSE (tr.price * (1 - IFNULL(discount.percent, 0) / 100)) " +
+            "END)) AS estCost, " +
+            "discount.percent " +
             "FROM type_room tr " +
             "JOIN room r ON tr.id = r.type_room_id " +
             "LEFT JOIN booking_room br ON br.room_id = r.id " +
@@ -99,9 +113,11 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
             "JOIN amenities_type_room atr ON trat.amenities_type_room_id = atr.id " +
             "JOIN type_room_image tpi ON tpi.type_room_id = tr.id " +
             "JOIN type_bed ON tr.type_bed_id = type_bed.id " +
+            "JOIN discount ON tr.id = discount.type_room_id " +
             "WHERE b.id IS NULL " +
-            "GROUP BY r.id, r.room_name, tr.id, tr.type_room_name, tr.price, tr.acreage, tr.guest_limit, tr.describes",
-            countQuery = "SELECT COUNT(DISTINCT r.id) FROM type_room tr " +
+            "GROUP BY r.id, r.room_name, tr.id, tr.type_room_name, tr.price, tr.acreage, tr.guest_limit, tr.describes, discount.id",
+            countQuery = "SELECT COUNT(DISTINCT r.id) " +
+                    "FROM type_room tr " +
                     "JOIN room r ON tr.id = r.type_room_id " +
                     "LEFT JOIN booking_room br ON br.room_id = r.id " +
                     "LEFT JOIN booking b ON br.booking_id = b.id " +
@@ -110,7 +126,9 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
             nativeQuery = true)
     Page<Object[]> findAvailableRooms(Pageable pageable);
 
-    @Query(value = "SELECT room.id AS roomId, " +
+
+    @Query(value = "SELECT " +
+            "room.id AS roomId, " +
             "type_room.id AS typeRoomId, " +
             "type_room.type_room_name AS typeRoomName, " +
             "type_room.price, " +
@@ -120,19 +138,43 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
             "type_bed.bed_name AS bedName, " +
             "type_room.describes, " +
             "GROUP_CONCAT(DISTINCT type_room_image.id) AS imageNames, " +
-            "GROUP_CONCAT(DISTINCT amenities_type_room.amenities_type_room_name) AS amenities " +
+            "GROUP_CONCAT(DISTINCT amenities_type_room.amenities_type_room_name) AS amenities, " +
+            "(CASE " +
+            "    WHEN discount.id IS NULL OR NOT (NOW() BETWEEN discount.start_date AND discount.end_date) " +
+            "    THEN 0 " +
+            "    ELSE (type_room.price * (1 - IFNULL(discount.percent, 0) / 100)) " +
+            "END) AS finalPrice, " +
+            "(TIMESTAMPDIFF(DAY, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 1 DAY)) * " +
+            "(CASE " +
+            "    WHEN discount.id IS NULL OR NOT (NOW() BETWEEN discount.start_date AND discount.end_date) " +
+            "    THEN type_room.price " +
+            "    ELSE (type_room.price * (1 - IFNULL(discount.percent, 0) / 100)) " +
+            "END)) AS estCost, " +
+            "discount.percent " +
             "FROM type_room " +
             "JOIN type_room_image ON type_room.id = type_room_image.type_room_id " +
             "JOIN type_bed ON type_room.type_bed_id = type_bed.id " +
             "JOIN type_room_amenities_type_room ON type_room.id = type_room_amenities_type_room.type_room_id " +
             "JOIN amenities_type_room ON type_room_amenities_type_room.amenities_type_room_id = amenities_type_room.id " +
             "JOIN room ON type_room.id = room.type_room_id " +
+            "LEFT JOIN discount ON type_room.id = discount.type_room_id " +
             "WHERE room.id = ?1 " +
-            "GROUP BY room.id, type_room.id, type_room.type_room_name, type_room.price, " +
-            "type_room.bed_count, type_room.acreage, type_room.guest_limit, type_bed.bed_name, " +
-            "type_room.describes", nativeQuery = true)
+            "GROUP BY room.id, " +
+            "type_room.id, " +
+            "type_room.type_room_name, " +
+            "type_room.price, " +
+            "type_room.bed_count, " +
+            "type_room.acreage, " +
+            "type_room.guest_limit, " +
+            "type_bed.bed_name, " +
+            "type_room.describes, " +
+            "discount.id, " +
+            "discount.percent",
+            nativeQuery = true)
     List<Object[]> findRoomDetailsByRoomId(Integer roomId);
-    
+
+
     boolean existsByRoomName(String roomName);
+
     boolean existsByRoomNameAndIdNot(String roomName, Integer id);
 }

@@ -197,9 +197,9 @@ public class BookingService {
         return dtos;
     }
 
-    public CustomerReservation mapToCustomerReservation(Integer bookingId) {
+    public CustomerReservation mapToCustomerReservation(Integer bookingId, String roomName) {
         // Gọi phương thức trong repository
-        Optional<CustomerReservation> customerReservation = bookingRepository.findBookingDetailsById(bookingId);
+        Optional<CustomerReservation> customerReservation = bookingRepository.findBookingDetailsById(bookingId, roomName);
 
         // Kiểm tra nếu có kết quả
         if (customerReservation.isPresent()) {

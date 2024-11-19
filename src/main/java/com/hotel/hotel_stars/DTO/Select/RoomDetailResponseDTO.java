@@ -21,4 +21,7 @@ public class RoomDetailResponseDTO {
     private String describes;
     private List<String> imageNames;
     private List<String> amenities;
+    private Double finalPrice;
+    private Double estCost;
+    private Double percent;
 }
