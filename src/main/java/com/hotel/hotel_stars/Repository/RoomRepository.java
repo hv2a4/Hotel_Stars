@@ -8,9 +8,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.sql.Date;
+import java.time.Instant;
 import java.util.List;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 public interface RoomRepository extends JpaRepository<Room, Integer> {
     @Query(value = "SELECT " +
             "(SELECT COUNT(*) FROM accounts WHERE role_id = 2) AS count_employees, " +
@@ -135,4 +136,23 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
     
     boolean existsByRoomName(String roomName);
     boolean existsByRoomNameAndIdNot(String roomName, Integer id);
+    
+    // khôi
+    @Query(value = """
+    	    SELECT r
+    	    FROM Room r
+    	    LEFT JOIN BookingRoom br ON br.room.id = r.id
+    	    LEFT JOIN Booking b ON br.booking.id = b.id 
+    	        AND (:startDate <= DATE(b.endAt) AND :endDate >= DATE(b.startAt)) 
+    	    WHERE b.id IS NULL  
+    	        AND r.statusRoom.id = 1
+    	        AND EXISTS (
+    	            SELECT 1
+    	            FROM TypeRoom tr 
+    	            WHERE tr.id = r.typeRoom.id AND tr.guestLimit >= :guestLimit
+    	        )
+    	    ORDER BY r.roomName
+    	""")
+    	Page<Room> findAvailableRoomsWithPagination(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("guestLimit") Integer guestLimit, Pageable pageable);
+    //khôi
 }

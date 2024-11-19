@@ -18,7 +18,7 @@ import com.hotel.hotel_stars.Models.changePasswordModel;
 import com.hotel.hotel_stars.Repository.AccountRepository;
 import com.hotel.hotel_stars.Repository.RoleRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomRepository;
-import com.hotel.hotel_stars.Utils.paramService;
+import com.hotel.hotel_stars.utils.paramService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -72,10 +72,21 @@ public class AccountService {
         RoleDto roleDto = new RoleDto(account.getRole().getId(), account.getRole().getRoleName());
 
         // Chuyển đổi danh sách Booking sang BookingDto
-        List<BookingDto> bookingDtoList = account.getBookingList().stream()
-                .map(booking -> new BookingDto(booking.getId(), booking.getCreateAt(), booking.getStartAt(),
-                        booking.getEndAt(), booking.getStatusPayment(), new AccountDto(),new MethodPaymentDto(booking.getMethodPayment().getId(),booking.getMethodPayment().getMethodPaymentName()))) // Cần xử lý accountDto trong BookingDto
-                .collect(Collectors.toList());
+        List<BookingDto> bookingDtoList = account.getBookingList() != null
+        	    ? account.getBookingList().stream()
+        	        .map(booking -> new BookingDto(
+        	            booking.getId(),
+        	            booking.getCreateAt(),
+        	            booking.getStartAt(),
+        	            booking.getEndAt(),
+        	            booking.getStatusPayment(),
+        	            new AccountDto(), // Chỗ này có thể cần xử lý chính xác hơn
+        	            booking.getMethodPayment() != null 
+        	                ? new MethodPaymentDto(booking.getMethodPayment().getId(), booking.getMethodPayment().getMethodPaymentName())
+        	                : null
+        	        ))
+        	        .collect(Collectors.toList())
+        	    : Collections.emptyList();
 
         // Trả về AccountDto
         return new AccountDto(
@@ -295,8 +306,9 @@ public class AccountService {
             account.setAvatar(accountModel.getAvatar());
             // Lưu tài khoản vào cơ sở dữ liệu và chuyển đổi sang DTO
             Account savedAccount = accountRepository.save(account);
-            return convertToDto(savedAccount); // Chuyển đổi tài khoản đã lưu sang DTO
-
+            AccountDto dto = convertToDto(savedAccount);
+            System.out.println("Converted DTO: " + dto);
+            return dto;
         } catch (DataIntegrityViolationException e) {
             // Xử lý lỗi vi phạm tính toàn vẹn dữ liệu (VD: trùng lặp tài khoản)
             throw new RuntimeException("Có lỗi xảy ra do vi phạm tính toàn vẹn dữ liệu", e);

@@ -7,6 +7,8 @@ import com.hotel.hotel_stars.DTO.StatusResponseDto;
 import com.hotel.hotel_stars.Entity.Room;
 import com.hotel.hotel_stars.Models.RoomModel;
 import com.hotel.hotel_stars.Service.RoomService;
+import com.hotel.hotel_stars.utils.paramService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Date;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,7 +27,8 @@ import java.util.Map;
 public class RoomController {
     @Autowired
     private RoomService roomService;
-
+    @Autowired
+    paramService paramServices;
     @GetMapping("/getCountRoom")
     public ResponseEntity<?> getAll() {
         return ResponseEntity.ok(roomService.displayCounts());
@@ -141,11 +146,19 @@ public class RoomController {
     }
 
     @GetMapping
-    public PaginatedResponseDto<RoomDto> getAllRooms(
+    public ResponseEntity<PaginatedResponseDto<RoomDto>> getAllRooms(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) Integer guestLimit
     ) {
-        return roomService.getAll(page, size, sortBy);
+        Date startInstant = startDate != null ? roomService.stringToSqlDate(startDate) : null;
+        Date endInstant = endDate != null ? roomService.stringToSqlDate(endDate) : null;
+        System.out.println(startInstant);
+        System.out.println(endInstant);
+        return ResponseEntity.ok(roomService.getAll(page, size, sortBy, startInstant, endInstant, guestLimit));
     }
+
 }
