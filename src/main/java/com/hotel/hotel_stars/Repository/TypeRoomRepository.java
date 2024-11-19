@@ -59,7 +59,7 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
             b.id IS NULL  
             AND tr.guest_limit = :guestLimit
         GROUP BY 
-            tr.id, tr.type_room_name, tr.price, tr.acreage, tr.guest_limit, r.room_name, r.id,tr.describes ,ds.percent,ds.discount_name
+            tr.id, tr.type_room_name, tr.price, tr.acreage, tr.guest_limit, r.room_name, r.id,tr.describes ,ds.percent,ds.discount_name,ds.id
     """, nativeQuery = true)
     List<Object[]> findAvailableRooms(Instant startDate, Instant endDate, Integer guestLimit);
 
@@ -83,5 +83,26 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
 
     @Query("SELECT tr FROM TypeRoom tr WHERE tr.typeRoomName LIKE %:keyword%")
     List<TypeRoom> findByTypeRoomNameContaining(@Param("keyword") String keyword);
+
+
+    @Query(value = "SELECT COUNT(DISTINCT r_inner.id) as totalRoom " +
+            "FROM room r_inner " +
+            "WHERE r_inner.id = :roomId " +
+            "AND NOT EXISTS ( " +
+            "    SELECT 1 " +
+            "    FROM booking_room br_inner " +
+            "    JOIN booking b_inner " +
+            "        ON br_inner.booking_id = b_inner.id " +
+            "    WHERE br_inner.room_id = r_inner.id " +
+            "    AND ( " +
+            "        DATE(b_inner.start_at) <= :endDate " +
+            "        AND DATE(b_inner.end_at) >= :startDate " +
+            "    ) " +
+            ")",
+            nativeQuery = true)
+    Long  countAvailableRoom(@Param("roomId") Integer roomId,
+                           @Param("startDate") Instant startDate,
+                           @Param("endDate") Instant endDate);
+
 
 }

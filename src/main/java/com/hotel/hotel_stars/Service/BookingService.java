@@ -17,10 +17,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.*;
 import java.util.List;
 
@@ -80,16 +77,57 @@ public class BookingService {
         return paymentInfoDTOs;
     }
 
+    public Double calculateDiscountedPrice(Room room, Instant start, Instant end) {
+        Double originalPrice = room.getTypeRoom().getPrice();
+        Double finalPrice = originalPrice; // Start with the original price
+        Instant currentTime = Instant.now();
 
+        if (room.getTypeRoom().getDiscountList() != null && !room.getTypeRoom().getDiscountList().isEmpty()) {
+            // Find a valid discount based on the current time
+            Optional<Discount> validDiscount = room.getTypeRoom().getDiscountList().stream()
+                    .filter(discount ->
+                            currentTime.isAfter(discount.getStartDate()) &&
+                                    currentTime.isBefore(discount.getEndDate()))
+                    .findFirst();
+
+            if (validDiscount.isPresent()) {
+                Instant discountStartDate = validDiscount.get().getStartDate();
+                Instant discountEndDate = validDiscount.get().getEndDate();
+
+                // Check if the booking period falls within the discount period
+                if (start.isAfter(discountStartDate) && end.isBefore(discountEndDate.plusSeconds(1))) {
+                    Double discountPercent = validDiscount.get().getPercent();
+
+                    // Ensure the discountPercent is within a valid range (0-100)
+                    if (discountPercent < 0) {
+                        discountPercent = 0.0; // No discount if the percentage is negative
+                    } else if (discountPercent > 100) {
+                        discountPercent = 100.0; // Cap the discount at 100%
+                    }
+
+                    // Calculate the final price after applying the discount
+                    finalPrice = originalPrice * (1 - discountPercent / 100);
+                    System.out.println(finalPrice);
+                }
+            }
+        }
+        return finalPrice; // Return the final price, ensuring it's positive
+    }
 
     public Boolean checkCreatbkRoom(Integer bookingId,List<Integer> roomId) {
-        Optional<Booking> booking=bookingRepository.findById(bookingId);
+        Booking booking=bookingRepository.findById(bookingId).get();
+        Long days =  Duration.between(booking.getStartAt(), booking.getEndAt()).toDays();
+
         for(int i=0;i<roomId.size();i++) {
             Room room = roomRepository.findById(roomId.get(i)).get();
             BookingRoom bookingRoom = new BookingRoom();
-            bookingRoom.setBooking(booking.get());
+            Double priceFind=calculateDiscountedPrice(room,booking.getStartAt(),booking.getEndAt());
+            System.out.println("tiền: "+priceFind);
+            bookingRoom.setBooking(booking);
             bookingRoom.setRoom(room);
-            bookingRoom.setPrice(room.getTypeRoom().getPrice());
+            System.out.println("chưa set: "+room.getTypeRoom().getPrice());
+            bookingRoom.setPrice(priceFind * days);
+            System.out.println("set rồi: "+bookingRoom.getPrice());
             try{
                 bookingRoomRepository.save(bookingRoom);
             } catch (Exception e) {
@@ -112,6 +150,7 @@ public class BookingService {
         booking.setEndAt(endDateIns);
         booking.setStatus(statusBooking.get());
         booking.setStatusPayment(false);
+        booking.setMethodPayment(payment.get());
         System.out.println(LocalDateTime.now());
         booking.setCreateAt( LocalDateTime.now());
         try{

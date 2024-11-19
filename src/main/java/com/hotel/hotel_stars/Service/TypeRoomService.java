@@ -170,16 +170,13 @@ public class TypeRoomService {
     }
 
     public List<FindTypeRoomDto> getRoom(String startDates, String endDates, Integer guestLimit) {
-        List<FindTypeRoomDto> dtoList =new ArrayList<>();
         Instant starDate = paramServices.stringToInstant(startDates);
         Instant endDate = paramServices.stringToInstant(endDates);
-        List<Object[]> result = typeRoomRepository.findAvailableRooms(starDate,endDate,guestLimit);
-        System.out.println("độ dài: "+result.size());
-        for (Object[] results : result) {
+        List<Object[]> result = typeRoomRepository.findAvailableRooms(starDate, endDate, guestLimit);
 
-            // Assuming the results array contains data in the correct order:
+        System.out.println("độ dài: " + result.size());
 
-            // Adjust the indices to match the actual data order returned by your query.
+        return result.stream().map(results -> {
             Integer roomId = (Integer) results[0];
             String roomName = (String) results[1];
             Integer roomTypeId = (Integer) results[2];
@@ -194,11 +191,11 @@ public class TypeRoomService {
             List<String> listImages = Arrays.stream(imagesString.split(","))
                     .map(String::trim)
                     .collect(Collectors.toList());
-            String describe=(String) results[11];
+            String describe = (String) results[11];
             Double discountPercent = (results[12] != null) ? (Double) results[12] : 0.0;
             String discountNames = (results[13] != null) ? (String) results[13] : null;
-            // Create a new DTO object and add it to the list
-            FindTypeRoomDto dto = new FindTypeRoomDto(
+
+            return new FindTypeRoomDto(
                     roomId,
                     roomName,
                     roomTypeId,
@@ -214,12 +211,7 @@ public class TypeRoomService {
                     discountPercent,
                     discountNames
             );
-            dtoList.add(dto);
-
-
-        }
-
-        return dtoList;
+        }).collect(Collectors.toList());
     }
 
 }
