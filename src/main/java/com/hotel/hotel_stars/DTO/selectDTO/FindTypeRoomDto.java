@@ -15,14 +15,12 @@ public class FindTypeRoomDto {
     Integer roomTypeId;
     String roomTypeName;
     Double priceTypeRoom;
-    Double discountPricetypeRoom;;
     Double acreage;
     Integer guestLimit;
     String amenitiesTypeRoomDetails;
     Double estCost;
     List<String> listImages;
     String describes;
-    Double discountPercent;
-    String discountName;
+
 
 }

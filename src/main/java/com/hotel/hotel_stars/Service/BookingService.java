@@ -37,7 +37,8 @@ public class BookingService {
     private BookingRoomRepository bookingRoomRepository;
     @Autowired
     private MethodPaymentRepository methodPaymentRepository;
-
+    @Autowired
+    private DiscountRepository discountRepository;
     @Autowired
     private StatusBookingRepository statusBookingRepository;
     @Autowired
@@ -77,51 +78,39 @@ public class BookingService {
         return paymentInfoDTOs;
     }
 
-    public Double calculateDiscountedPrice(Room room, Instant start, Instant end) {
-        Double originalPrice = room.getTypeRoom().getPrice();
-        Double finalPrice = originalPrice; // Start with the original price
-        Instant currentTime = Instant.now();
-
-        if (room.getTypeRoom().getDiscountList() != null && !room.getTypeRoom().getDiscountList().isEmpty()) {
-            // Find a valid discount based on the current time
-            Optional<Discount> validDiscount = room.getTypeRoom().getDiscountList().stream()
-                    .filter(discount ->
-                            currentTime.isAfter(discount.getStartDate()) &&
-                                    currentTime.isBefore(discount.getEndDate()))
-                    .findFirst();
-
-            if (validDiscount.isPresent()) {
-                Instant discountStartDate = validDiscount.get().getStartDate();
-                Instant discountEndDate = validDiscount.get().getEndDate();
-
-                // Check if the booking period falls within the discount period
-                if (start.isAfter(discountStartDate) && end.isBefore(discountEndDate.plusSeconds(1))) {
-                    Double discountPercent = validDiscount.get().getPercent();
-
-                    // Ensure the discountPercent is within a valid range (0-100)
-                    if (discountPercent < 0) {
-                        discountPercent = 0.0; // No discount if the percentage is negative
-                    } else if (discountPercent > 100) {
-                        discountPercent = 100.0; // Cap the discount at 100%
-                    }
-
-                    // Calculate the final price after applying the discount
-                    finalPrice = originalPrice * (1 - discountPercent / 100);
-                    System.out.println(finalPrice);
+    public Double calculateDiscountedPrice(Room room, LocalDateTime creatNow,Discount discount,Booking booking) {
+        Double typeRoomPrice =  room.getTypeRoom().getPrice();
+        Instant current=paramServices.localdatetimeToInsant(creatNow);
+        if(discount == null){
+            return typeRoomPrice;
+        }
+        if(room.getTypeRoom().getId() == discount.getTypeRoom().getId()){
+            if (!current.isBefore(discount.getStartDate()) && !current.isAfter(discount.getEndDate())) {
+                double discountRate = discount.getPercent() / 100.0;
+                typeRoomPrice = typeRoomPrice * (1 - discountRate);
+                booking.setDiscountName(discount.getDiscountName());
+                booking.setDiscountPercent(discount.getPercent());
+                try{
+                  bookingRepository.save(booking);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
             }
         }
-        return finalPrice; // Return the final price, ensuring it's positive
+        return typeRoomPrice; // Return the final price, ensuring it's positive
     }
 
-    public Boolean checkCreatbkRoom(Integer bookingId,List<Integer> roomId) {
+    public Boolean checkCreatbkRoom(Integer bookingId,List<Integer> roomId,String discountName) {
         Booking booking=bookingRepository.findById(bookingId).get();
+        Discount discount = discountRepository.findByDiscountName(discountName);
         Long days =  Duration.between(booking.getStartAt(), booking.getEndAt()).toDays();
 
         for(int i=0;i<roomId.size();i++) {
             Room room = roomRepository.findById(roomId.get(i)).get();
+            System.out.println("giá mặc định: "+room.getTypeRoom().getPrice());
             BookingRoom bookingRoom = new BookingRoom();
-            Double priceFind=calculateDiscountedPrice(room,booking.getStartAt(),booking.getEndAt());
+            Double priceFind=calculateDiscountedPrice(room,booking.getCreateAt(),discount,booking);
             System.out.println("tiền: "+priceFind);
             bookingRoom.setBooking(booking);
             bookingRoom.setRoom(room);
@@ -155,7 +144,7 @@ public class BookingService {
         booking.setCreateAt( LocalDateTime.now());
         try{
            bookingRepository.save(booking);
-           if(checkCreatbkRoom(booking.getId(),bookingModels.getRoomId())){
+           if(checkCreatbkRoom(booking.getId(),bookingModels.getRoomId(),bookingModels.getDiscountName())){
                System.out.println(jwtService.generateBoking(booking.getId()));
                Boolean flag=paramServices.sendEmails(booking.getAccount().getEmail(),"Xác nhận đặt phòng",paramServices.generateBooking(booking.getAccount().getFullname(), jwtService.generateBoking(booking.getId())));
                return (flag==true)?true:false;

@@ -24,13 +24,19 @@ public class Booking {
 
     @Column(name = "start_at")
     private Instant startAt;
-    
+
 
     @Column(name = "end_at")
     private Instant endAt;
 
     @Column(name = "status_payment")
     private Boolean statusPayment;
+
+    @Column(name = "discount_name")
+    private String discountName;
+
+    @Column(name = "discount_percent")
+    private Double discountPercent;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "method_payment_id")

@@ -107,7 +107,10 @@ public class paramService {
         LocalDate localDate = LocalDate.parse(dateString, formatter);
         return localDate.atStartOfDay(ZoneId.of("UTC")).toInstant();
     }
-
+    public Instant localdatetimeToInsant(LocalDateTime localDateTime) {
+        ZoneId zoneId = ZoneId.of("UTC");
+        return localDateTime.atZone(zoneId).toInstant();
+    }
     public Instant localDateToInstant(LocalDateTime localDateTime ) {
         ZonedDateTime vietnamTime = LocalDateTime.now().atZone(ZoneId.of("Asia/Saigon"));
         System.out.println("thời gian2: "+ LocalDateTime.now());

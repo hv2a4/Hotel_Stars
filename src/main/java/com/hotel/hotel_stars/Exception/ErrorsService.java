@@ -55,10 +55,7 @@ public class ErrorsService {
         Optional<Account> account=accountRepository.findByUsername(bookingModels.getUserName());
         RoomAvailabilityResponse response = isRoomAvailable(bookingModels.getRoomId(), bookingModels.getStartDate(), bookingModels.getEndDate());
         System.out.println(response.isAllRoomsAvailable());
-        if (response.isAllRoomsAvailable() == false) {
-            Room rooms=roomRepository.findById(response.getUnavailableRoomId()).get();
-            errors.add(new ValidationError("room", "Id: "+rooms.getId() +", "+"Phòng: "+rooms.getRoomName()+", Loại phòng: "+rooms.getTypeRoom().getTypeRoomName() +", Đã có người đặt rồi"));
-        }
+
         if(!account.isPresent()){
             errors.add(new ValidationError("username", "người dùng này không tồn tại"));
         }
@@ -70,6 +67,10 @@ public class ErrorsService {
         }
         if (startInstant.isAfter(endInstant)) {
             errors.add(new ValidationError("startdate", "Ngày Bắt đầu không nhỏ hơn ngày kết thúc"));
+        }
+        else if (response.isAllRoomsAvailable() == false) {
+            Room rooms=roomRepository.findById(response.getUnavailableRoomId()).get();
+            errors.add(new ValidationError("room", "Id: "+rooms.getId() +", "+"Phòng: "+rooms.getRoomName()+", Loại phòng: "+rooms.getTypeRoom().getTypeRoomName() +", Đã có người đặt rồi"));
         }
         if (!errors.isEmpty()) {
             throw new CustomValidationException(errors);
