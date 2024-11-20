@@ -8,7 +8,6 @@ import com.hotel.hotel_stars.Models.typeRoomModel;
 import com.hotel.hotel_stars.Repository.*;
 import com.hotel.hotel_stars.Repository.TypeBedRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomImageRepository;
-import com.hotel.hotel_stars.Repository.TypeRoomRepository;
 import com.hotel.hotel_stars.utils.paramService;
 import com.hotel.hotel_stars.Models.TypeRoomAmenitiesTypeRoomModel;
 import com.hotel.hotel_stars.Models.amenitiesTypeRoomModel;
@@ -43,6 +42,7 @@ public class TypeRoomService {
 
     @Autowired
     FeedBackRepository feedBackRepository;
+
     // chuyển đổi entity sang dto (đổ dữ liệu lên web)
     public TypeRoomDto convertTypeRoomDto(TypeRoom tr) {
         TypeBedDto typeBedDto = new TypeBedDto();
@@ -54,15 +54,14 @@ public class TypeRoomService {
 
         for (TypeRoomImage typeRoomImage : typeRoomImages) {
             TypeRoomImageDto typeRoomImageDto = new TypeRoomImageDto();
-            typeRoomImageDto.setId(typeRoomImage.getId());  // Lấy ID của từng ảnh
-            typeRoomImageDto.setImageName(typeRoomImage.getImageName());  // Lấy tên ảnh từ từng ảnh
+            typeRoomImageDto.setId(typeRoomImage.getId()); // Lấy ID của từng ảnh
+            typeRoomImageDto.setImageName(typeRoomImage.getImageName()); // Lấy tên ảnh từ từng ảnh
 
-            typeRoomImageDtos.add(typeRoomImageDto);  // Thêm vào danh sách DTO
+            typeRoomImageDtos.add(typeRoomImageDto); // Thêm vào danh sách DTO
         }
         return new TypeRoomDto(tr.getId(), tr.getTypeRoomName(), tr.getPrice(), tr.getBedCount(),
                 tr.getAcreage(), tr.getGuestLimit(), typeBedDto, tr.getDescribes(), typeRoomImageDtos);
     }
-
 
     // Hiển thị danh sách dịch vụ phòng
     public List<TypeRoomDto> getAllTypeRooms() {
@@ -102,7 +101,7 @@ public class TypeRoomService {
         // Lưu thông tin loại phòng vào cơ sở dữ liệu
         TypeRoom savedTypeRoom = typeRoomRepository.save(typeRoom);
 
-        //Lưu thông tin tiện nghi loại phòng
+        // Lưu thông tin tiện nghi loại phòng
         List<amenitiesTypeRoomModel> amenitiesTypeRoomModel = trmodel.getAmenitiesTypeRooms();
         for (amenitiesTypeRoomModel item : amenitiesTypeRoomModel) {
             TypeRoomAmenitiesTypeRoom typeRoomAmenitiesTypeRoom = new TypeRoomAmenitiesTypeRoom();
@@ -152,13 +151,13 @@ public class TypeRoomService {
         // Lưu loại phòng đã cập nhật vào cơ sở dữ liệu và chuyển đổi sang DTO
         TypeRoom updatedTypeRoom = typeRoomRepository.save(existingTypeRoom);
 
-        //Xóa tất cả các tiện nghi cũ
+        // Xóa tất cả các tiện nghi cũ
         List<TypeRoomAmenitiesTypeRoom> amenitiesTypeRooms = updatedTypeRoom.getTypeRoomAmenitiesTypeRoomList();
         for (TypeRoomAmenitiesTypeRoom item : amenitiesTypeRooms) {
             typeRoomAmenitiesTypeRoomRepository.delete(item);
         }
 
-        //Cập nhật thông tin tiện nghi loại phòng
+        // Cập nhật thông tin tiện nghi loại phòng
         List<amenitiesTypeRoomModel> amenitiesTypeRoomModel = trModel.getAmenitiesTypeRooms();
         for (amenitiesTypeRoomModel item : amenitiesTypeRoomModel) {
             TypeRoomAmenitiesTypeRoom typeRoomAmenitiesTypeRoom = new TypeRoomAmenitiesTypeRoom();
@@ -195,7 +194,6 @@ public class TypeRoomService {
         }
     }
 
-
     public List<TypeRoomWithReviewsDTO> getTypeRooms() {
         List<Object[]> result = typeRoomRepository.findTop3TypeRoomsWithGoodReviews();
         List<TypeRoomWithReviewsDTO> dtos = new ArrayList<>();
@@ -224,10 +222,12 @@ public class TypeRoomService {
             });
 
             // Lấy danh sách tiện nghi và chuyển đổi thành DTO
-            List<TypeRoomAmenitiesTypeRoom> amenitiesTypeRoom = typeRoomAmenitiesTypeRoomRepository.findByTypeRoom_Id(id);
+            List<TypeRoomAmenitiesTypeRoom> amenitiesTypeRoom = typeRoomAmenitiesTypeRoomRepository
+                    .findByTypeRoom_Id(id);
             List<TypeRoomAmenitiesTypeRoomDto> amenitiesDtos = new ArrayList<>();
             amenitiesTypeRoom.forEach(amenities -> {
-                AmenitiesTypeRoom amenitiesTypeRoomDto = amenitiesTypeRoomRepository.findById(amenities.getAmenitiesTypeRoom().getId()).get();
+                AmenitiesTypeRoom amenitiesTypeRoomDto = amenitiesTypeRoomRepository
+                        .findById(amenities.getAmenitiesTypeRoom().getId()).get();
                 AmenitiesTypeRoomDto roomDto = new AmenitiesTypeRoomDto();
                 roomDto.setId(amenitiesTypeRoomDto.getId());
                 roomDto.setAmenitiesTypeRoomName(amenitiesTypeRoomDto.getAmenitiesTypeRoomName());
@@ -247,16 +247,15 @@ public class TypeRoomService {
             TypeRoomWithReviewsDTO typeRoomWithReviewsDTO = new TypeRoomWithReviewsDTO(
                     id,
                     typeRoomName,
-                    price,         // Trả về BigDecimal
+                    price, // Trả về BigDecimal
                     bedCount,
-                    acreage,       // Trả về BigDecimal
+                    acreage, // Trả về BigDecimal
                     guestLimit,
                     describes,
                     typeRoomImageDtos,
                     amenitiesDtos,
                     totalReviews,
-                    averageStars
-            );
+                    averageStars);
             dtos.add(typeRoomWithReviewsDTO);
         });
 
@@ -288,48 +287,51 @@ public class TypeRoomService {
     }
 
     public List<FindTypeRoomDto> getRoom(String startDates, String endDates, Integer guestLimit) {
-        Instant starDate = paramServices.stringToInstant(startDates);
+        // Corrected the typo in variable names
+        Instant startDate = paramServices.stringToInstant(startDates);
         Instant endDate = paramServices.stringToInstant(endDates);
-        List<Object[]> result = typeRoomRepository.findAvailableRooms(starDate, endDate, guestLimit);
 
+        // Fetch the result from the repository
+        List<Object[]> result = typeRoomRepository.findAvailableRooms(startDate, endDate, guestLimit);
+
+        // Debug output to check the size of the result
         System.out.println("độ dài: " + result.size());
 
+        // Convert the result to a List of FindTypeRoomDto
         return result.stream().map(results -> {
+            // Ensure the casting matches the expected types
             Integer roomId = (Integer) results[0];
             String roomName = (String) results[1];
             Integer roomTypeId = (Integer) results[2];
             String roomTypeName = (String) results[3];
             Double priceTypeRoom = (Double) results[4];
-            Double priceDiscountTypeRoom = (Double) results[5];
-            Double acreage = (Double) results[6];
-            Integer guestLimits = (Integer) results[7];
-            String amenitiesTypeRoomDetails = (String) results[8];
-            Double estCost = (Double) results[9];
-            String imagesString = (String) results[10];
+            Double acreage = (Double) results[5];
+            Integer guestLimits = (Integer) results[6];
+            String amenitiesTypeRoomDetails = (String) results[7];
+            Double estCost = (Double) results[8];
+            String imagesString = (String) results[9];
+
+            // Split the imagesString by commas and trim whitespace
             List<String> listImages = Arrays.stream(imagesString.split(","))
                     .map(String::trim)
                     .collect(Collectors.toList());
-            String describe = (String) results[11];
-            Double discountPercent = (results[12] != null) ? (Double) results[12] : 0.0;
-            String discountNames = (results[13] != null) ? (String) results[13] : null;
 
+            String describe = (String) results[10];
+
+            // Construct and return a new FindTypeRoomDto
             return new FindTypeRoomDto(
                     roomId,
                     roomName,
                     roomTypeId,
                     roomTypeName,
                     priceTypeRoom,
-                    priceDiscountTypeRoom,
                     acreage,
                     guestLimits,
                     amenitiesTypeRoomDetails,
                     estCost,
                     listImages,
-                    describe,
-                    discountPercent,
-                    discountNames
-            );
-        }).toList();
+                    describe);
+        }).collect(Collectors.toList()); // Collect the results into a List
     }
 
     public List<RoomTypeDetail> getRoomTypeDetailById(Integer roomId) {
@@ -339,7 +341,7 @@ public class TypeRoomService {
         results.forEach(row -> {
             Integer typeRoomId = (Integer) row[0];
             String typeRoomName = (String) row[1];
-            Double price = (Double) row[2];           // Changed from Integer to Double
+            Double price = (Double) row[2]; // Changed from Integer to Double
             Integer bedCount = (Integer) row[3];
             Double acreage = (Double) row[4];
             Integer guestLimit = (Integer) row[5];
@@ -356,15 +358,15 @@ public class TypeRoomService {
             List<Integer> amenitiesList = new ArrayList<>();
             if (row[9] != null) {
                 amenitiesList = Arrays.stream(((String) row[9]).split(","))
-                        .map(Integer::parseInt)  // Convert each string to Integer
+                        .map(Integer::parseInt) // Convert each string to Integer
                         .toList();
             }
             List<AmenitiesTypeRoom> amenitiesTypeRooms = amenitiesTypeRoomRepository.findAllById(amenitiesList);
             List<AmenitiesTypeRoomDto> amenitiesTypeRoomDtos = amenitiesTypeRooms.stream()
                     .map(amenitiesTypeRoom -> new AmenitiesTypeRoomDto(
-                            amenitiesTypeRoom.getId(),  // Hoặc các trường khác cần thiết
+                            amenitiesTypeRoom.getId(), // Hoặc các trường khác cần thiết
                             amenitiesTypeRoom.getAmenitiesTypeRoomName() // Chuyển các trường khác nếu cần
-                    ))
+            ))
                     .toList();
 
             List<Integer> feedBack = new ArrayList<>();
@@ -381,8 +383,7 @@ public class TypeRoomService {
                     feedback.getStars(),
                     feedback.getCreateAt(),
                     feedback.getRatingStatus(),
-                    null
-            )).toList();
+                    null)).toList();
 
             BigDecimal averageFeedBackBigDecimal = (BigDecimal) row[11];
             Double averageFeedBack = averageFeedBackBigDecimal.doubleValue();
@@ -409,4 +410,5 @@ public class TypeRoomService {
 
         return dtos;
     }
+
 }

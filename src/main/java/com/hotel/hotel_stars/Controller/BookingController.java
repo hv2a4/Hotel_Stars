@@ -55,10 +55,15 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getPaymentInfoByAccountId(id));
     }
 
+    @GetMapping("/accountId/{id}")
+    public ResponseEntity<?> getBookingByAccount(@PathVariable("id") Integer id) {
+        return ResponseEntity.ok(bookingService.getListByAccountId(id));
+    }
+
     @PostMapping("/sendBooking")
     public ResponseEntity<?> postBooking(@Valid @RequestBody bookingModel bookingModels) {
         Map<String, String> response = new HashMap<String, String>();
-        System.out.println(bookingModels.getRoomId().size());
+        errorsServices.errorBooking(bookingModels);
         Boolean flag = bookingService.sendBookingEmail(bookingModels);
         if (flag == true) {
             response = paramServices.messageSuccessApi(201, "success",
@@ -72,6 +77,7 @@ public class BookingController {
 
     @GetMapping("/confirmBooking")
     public ResponseEntity<?> updateBooking(@RequestParam("token") String token) {
+
         try {
             Integer id = jwtService.extractBookingId(token);
             Optional<StatusBooking> statusBooking = statusBookingRepository.findById(2);
@@ -91,7 +97,6 @@ public class BookingController {
 
             return ResponseEntity.ok(paramServices.confirmBookings(booking, formattedAmount));
         } catch (ExpiredJwtException e) {
-            // Xử lý token hết hạn tại đây
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Token đã hết hạn. Vui lòng liên lạc qua số điện thoại 1900 6522");
         } catch (Exception e) {
@@ -100,8 +105,4 @@ public class BookingController {
         }
     }
 
-    @GetMapping("/accountId/{id}")
-    public ResponseEntity<?> getBookingByAccount(@PathVariable("id") Integer id) {
-        return ResponseEntity.ok(bookingService.getListByAccountId(id));
-    }
 }

@@ -72,7 +72,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/service-package/put-service-package").permitAll()
                         .requestMatchers("/api/service-package/delete-service-package/**").permitAll()
                         // All
-                        // Các endpoint không yêu cầu xác thực
+                                //khoi
+                                .requestMatchers("/api/account/getAll").permitAll()
+                                .requestMatchers("/api/account/add-account-staff").permitAll()
+                                //khoi
+                        // vu
                         .requestMatchers(
                                 "/api/account/account-by-id/{username}",
                                 "/api/account/toggleDelete/{id}",
@@ -131,7 +135,43 @@ public class SecurityConfig {
                                 )
                         .permitAll()
 
-                        // Các endpoint yêu cầu quyền "Customer"
+                                // nghia
+                                .requestMatchers("/api/account/register").permitAll()
+                                .requestMatchers("/api/account/getTokenGG").permitAll()
+                                .requestMatchers("/api/account/loginToken").permitAll()
+                                .requestMatchers("/api/account/sendEmail").permitAll()
+                                .requestMatchers("/api/discount/getAll").permitAll()
+                                .requestMatchers("/api/account/getAll").permitAll()
+                                .requestMatchers("/api/booking/sendBooking").permitAll()
+                                .requestMatchers("/api/account/updateAccount").permitAll()
+                                .requestMatchers("/api/account/updatePassword").permitAll()
+                                .requestMatchers("/api/room/getCountRoom").permitAll()
+                                .requestMatchers("/api/booking/confirmBooking").permitAll()
+                                .requestMatchers("/api/type-room/find-type-room").permitAll()
+                                // nghia
+
+                                //son
+                                .requestMatchers("/api/amenities-type-room/**").permitAll()
+                                //son
+
+                                //---------------------------api cần token có phân quyền Customer  ( khách hàng )
+                                //nghia
+
+                               // .requestMatchers("/api/booking/sendBooking").hasAnyAuthority("Customer")
+                                //vu
+                                .requestMatchers("api/discount/**").hasAnyAuthority("Customer")
+                                //vu
+
+                                //--------------------------- api cần token có phân quyền Staff  ( nhân viên )
+                                .requestMatchers("/api/hotel/login").hasAnyAuthority("Staff", "HotelOwner")
+                                .requestMatchers("/api/hotel/getAll").hasAnyAuthority("Staff", "HotelOwner")
+
+
+
+
+                        //--------------------------- api cần token có phân quyền HotelOwner  (chủ  khách sạn )
+                        .requestMatchers("/api/account/login").hasAuthority("HotelOwner")
+                        //vu
                         .requestMatchers(
                                 "api/discount/**","/api/booking/sendBooking")
                         .hasAnyAuthority("Customer")
