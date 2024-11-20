@@ -30,10 +30,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.*;
 import java.util.List;
 import java.util.Optional;
@@ -59,6 +56,7 @@ public class BookingService {
     InvoiceService invoiceService;
     @Autowired
     BookingRoomService bookingRoomService;
+    private DiscountRepository discountRepository;
     @Autowired
     private StatusBookingRepository statusBookingRepository;
 
@@ -110,14 +108,45 @@ public class BookingService {
         return paymentInfoDTOs;
     }
 
-    public Boolean checkCreatbkRoom(Integer bookingId, List<Integer> roomId) {
-        Optional<Booking> booking = bookingRepository.findById(bookingId);
+    public Double calculateDiscountedPrice(Room room, LocalDateTime creatNow, Discount discount, Booking booking) {
+        Double typeRoomPrice = room.getTypeRoom().getPrice();
+        Instant current = paramServices.localdatetimeToInsant(creatNow);
+        if (discount == null) {
+            return typeRoomPrice;
+        }
+        if (room.getTypeRoom().getId() == discount.getTypeRoom().getId()) {
+            if (!current.isBefore(discount.getStartDate()) && !current.isAfter(discount.getEndDate())) {
+                double discountRate = discount.getPercent() / 100.0;
+                typeRoomPrice = typeRoomPrice * (1 - discountRate);
+                booking.setDiscountName(discount.getDiscountName());
+                booking.setDiscountPercent(discount.getPercent());
+                try {
+                    bookingRepository.save(booking);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        return typeRoomPrice; // Return the final price, ensuring it's positive
+    }
+
+    public Boolean checkCreatbkRoom(Integer bookingId, List<Integer> roomId, String discountName) {
+        Booking booking = bookingRepository.findById(bookingId).get();
+        Discount discount = discountRepository.findByDiscountName(discountName);
+        Long days = Duration.between(booking.getStartAt(), booking.getEndAt()).toDays();
+
         for (int i = 0; i < roomId.size(); i++) {
             Room room = roomRepository.findById(roomId.get(i)).get();
+            System.out.println("giá mặc định: " + room.getTypeRoom().getPrice());
             BookingRoom bookingRoom = new BookingRoom();
-            bookingRoom.setBooking(booking.get());
+            Double priceFind = calculateDiscountedPrice(room, booking.getCreateAt(), discount, booking);
+            System.out.println("tiền: " + priceFind);
+            bookingRoom.setBooking(booking);
             bookingRoom.setRoom(room);
-            bookingRoom.setPrice(room.getTypeRoom().getPrice());
+            System.out.println("chưa set: " + room.getTypeRoom().getPrice());
+            bookingRoom.setPrice(priceFind * days);
+            System.out.println("set rồi: " + bookingRoom.getPrice());
             try {
                 bookingRoomRepository.save(bookingRoom);
             } catch (Exception e) {
@@ -140,11 +169,12 @@ public class BookingService {
         booking.setEndAt(endDateIns);
         booking.setStatus(statusBooking.get());
         booking.setStatusPayment(false);
+        booking.setMethodPayment(payment.get());
         System.out.println(LocalDateTime.now());
         booking.setCreateAt(LocalDateTime.now());
         try {
             bookingRepository.save(booking);
-            if (checkCreatbkRoom(booking.getId(), bookingModels.getRoomId())) {
+            if (checkCreatbkRoom(booking.getId(), bookingModels.getRoomId(), bookingModels.getDiscountName())) {
                 System.out.println(jwtService.generateBoking(booking.getId()));
                 Boolean flag = paramServices.sendEmails(booking.getAccount().getEmail(), "Xác nhận đặt phòng",
                         paramServices.generateBooking(booking.getAccount().getFullname(),

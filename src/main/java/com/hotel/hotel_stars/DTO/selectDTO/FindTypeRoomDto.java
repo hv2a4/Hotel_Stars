@@ -21,4 +21,6 @@ public class FindTypeRoomDto {
     Double estCost;
     List<String> listImages;
     String describes;
+
+
 }

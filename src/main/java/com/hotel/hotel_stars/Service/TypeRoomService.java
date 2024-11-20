@@ -288,13 +288,19 @@ public class TypeRoomService {
     }
 
     public List<FindTypeRoomDto> getRoom(String startDates, String endDates, Integer guestLimit) {
-        List<FindTypeRoomDto> dtoList =new ArrayList<>();
-        Instant starDate = paramServices.stringToInstant(startDates);
+        // Corrected the typo in variable names
+        Instant startDate = paramServices.stringToInstant(startDates);
         Instant endDate = paramServices.stringToInstant(endDates);
-        List<Object[]> result = typeRoomRepository.findAvailableRooms(starDate,endDate,guestLimit);
-        for (Object[] results : result) {
-            // Assuming the results array contains data in the correct order:
-            // Adjust the indices to match the actual data order returned by your query.
+
+        // Fetch the result from the repository
+        List<Object[]> result = typeRoomRepository.findAvailableRooms(startDate, endDate, guestLimit);
+
+        // Debug output to check the size of the result
+        System.out.println("độ dài: " + result.size());
+
+        // Convert the result to a List of FindTypeRoomDto
+        return result.stream().map(results -> {
+            // Ensure the casting matches the expected types
             Integer roomId = (Integer) results[0];
             String roomName = (String) results[1];
             Integer roomTypeId = (Integer) results[2];
@@ -305,12 +311,16 @@ public class TypeRoomService {
             String amenitiesTypeRoomDetails = (String) results[7];
             Double estCost = (Double) results[8];
             String imagesString = (String) results[9];
+
+            // Split the imagesString by commas and trim whitespace
             List<String> listImages = Arrays.stream(imagesString.split(","))
                     .map(String::trim)
                     .collect(Collectors.toList());
-            String describe=(String) results[10];
-            // Create a new DTO object and add it to the list
-            FindTypeRoomDto dto = new FindTypeRoomDto(
+
+            String describe = (String) results[10];
+
+            // Construct and return a new FindTypeRoomDto
+            return new FindTypeRoomDto(
                     roomId,
                     roomName,
                     roomTypeId,
@@ -323,9 +333,7 @@ public class TypeRoomService {
                     listImages,
                     describe
             );
-            dtoList.add(dto);
-        }
-        return dtoList;
+        }).collect(Collectors.toList());  // Collect the results into a List
     }
 
     public List<RoomTypeDetail> getRoomTypeDetailById(Integer roomId) {

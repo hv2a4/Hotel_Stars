@@ -13,39 +13,57 @@ import java.util.Optional;
 public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
 
     @Query(value = """
-        SELECT 
-            r.id AS roomId, 
-            r.room_name AS roomName, 
-            tr.id AS typeRoomId, 
-            tr.type_room_name AS typeRoomName, 
-            tr.price, 
-            tr.acreage, 
-            tr.guest_limit AS guestLimit, 
-            GROUP_CONCAT(DISTINCT CONCAT(atr.amenities_type_room_name) SEPARATOR ', ') AS amenitiesTypeRoomDetails, 
-            (TIMESTAMPDIFF(DAY, :startDate, :endDate) * tr.price) AS estCost, 
-            GROUP_CONCAT(DISTINCT tpi.image_name) AS imageName, tr.describes
-        FROM 
-            type_room tr
-        JOIN 
-            room r ON tr.id = r.type_room_id
-        LEFT JOIN 
-            booking_room br ON br.room_id = r.id
-        LEFT JOIN 
-            booking b ON br.booking_id = b.id 
-            AND (:startDate <=DATE(b.end_at) AND :endDate >=DATE(b.start_at)) 
-        JOIN 
-            type_room_amenities_type_room trat ON tr.id = trat.type_room_id 
-        JOIN 
-            amenities_type_room atr ON trat.amenities_type_room_id = atr.id 
-        JOIN 
-            type_room_image tpi ON tpi.type_room_id = tr.id 
-        WHERE 
-            b.id IS NULL  
-            AND tr.guest_limit = :guestLimit
-        GROUP BY 
-            tr.id, tr.type_room_name, tr.price, tr.acreage, tr.guest_limit, r.room_name, r.id,tr.describes
+    SELECT
+        r.id AS roomId,
+        r.room_name,
+        tr.id AS typeroomId,
+        tr.type_room_name,
+        tr.price,
+        tr.acreage,
+        tr.guest_limit,
+        GROUP_CONCAT(DISTINCT CONCAT(atr.amenities_type_room_name) SEPARATOR ', ') AS amenitiesTypeRoomDetails,
+        -- Estimate cost without considering discounts
+        (TIMESTAMPDIFF(DAY, :startDate, :endDate) * tr.price) AS estCost,
+        GROUP_CONCAT(DISTINCT tpi.image_name) AS image_name,
+        tr.describes
+    FROM
+        type_room tr
+    JOIN
+        room r ON tr.id = r.type_room_id
+    LEFT JOIN
+        booking_room br ON br.room_id = r.id
+    LEFT JOIN
+        booking b ON br.booking_id = b.id
+        AND (
+            :startDate <= DATE(b.end_at)
+            AND :endDate >= DATE(b.start_at)
+        )
+    JOIN
+        type_room_amenities_type_room trat ON tr.id = trat.type_room_id
+    JOIN
+        amenities_type_room atr ON trat.amenities_type_room_id = atr.id
+    JOIN
+        type_room_image tpi ON tpi.type_room_id = tr.id
+    WHERE
+        NOT EXISTS (
+            SELECT 1
+            FROM booking_room br_inner
+            JOIN booking b_inner ON br_inner.booking_id = b_inner.id
+            WHERE br_inner.room_id = r.id
+            AND (
+                DATE(b_inner.start_at) <= :endDate
+                AND DATE(b_inner.end_at) >= :startDate
+            )
+        )
+        AND tr.guest_limit <= :guestLimit
+    GROUP BY
+        tr.id, tr.type_room_name, tr.price, tr.acreage, tr.guest_limit, r.room_name, r.id, tr.describes
     """, nativeQuery = true)
-    List<Object[]> findAvailableRooms(Instant startDate, Instant endDate, Integer guestLimit);
+    List<Object[]> findAvailableRooms(
+            @Param("startDate") Instant startDate,
+            @Param("endDate") Instant endDate,
+            @Param("guestLimit") Integer guestLimit
+    );
 
     // kiểm tên loại phòng có tồn tại trong csdl
     boolean existsByTypeRoomName(String typeRoomName);
@@ -136,5 +154,27 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
             """, nativeQuery = true)
     List<Object[]> findTypeRoomDetailsById(Integer roomId);
     Optional<TypeRoom> findByTypeRoomName(String typeRoomName);
+
+    @Query(value = "SELECT COUNT(DISTINCT r_inner.id) as totalRoom " +
+            "FROM room r_inner " +
+            "WHERE r_inner.id = :roomId " +
+            "AND NOT EXISTS ( " +
+            "    SELECT 1 " +
+            "    FROM booking_room br_inner " +
+            "    JOIN booking b_inner " +
+            "        ON br_inner.booking_id = b_inner.id " +
+            "    WHERE br_inner.room_id = r_inner.id " +
+            "    AND ( " +
+            "        DATE(b_inner.start_at) <= :endDate " +
+            "        AND DATE(b_inner.end_at) >= :startDate " +
+            "    ) " +  // Removed the `+` sign here
+            "    AND b_inner.status_id != 6 " +
+            ")",
+            nativeQuery = true)
+
+    Long  countAvailableRoom(@Param("roomId") Integer roomId,
+                           @Param("startDate") Instant startDate,
+                           @Param("endDate") Instant endDate);
+
 
 }
