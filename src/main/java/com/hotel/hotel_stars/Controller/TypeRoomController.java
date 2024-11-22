@@ -1,5 +1,6 @@
 package com.hotel.hotel_stars.Controller;
 
+import com.hotel.hotel_stars.DTO.Select.BookingDetailDTO;
 import com.hotel.hotel_stars.DTO.Select.RoomTypeDetail;
 import com.hotel.hotel_stars.DTO.Select.TypeRoomBookingCountDto;
 import com.hotel.hotel_stars.DTO.TypeRoomDto;
@@ -38,6 +39,10 @@ public class TypeRoomController {
     @GetMapping("/getAll")
     public ResponseEntity<?> getAllTypeRooms() {
         return ResponseEntity.ok(trservice.getAllTypeRooms());
+    }
+    @GetMapping("/account/{accountId}")
+    public ResponseEntity<List<BookingDetailDTO>> getBookingDetails(@PathVariable Integer accountId) {
+        return ResponseEntity.ok(bookingService.getBookingDetailsByAccountId(accountId));
     }
 
     @PostMapping("/add")
@@ -154,13 +159,17 @@ public class TypeRoomController {
             @RequestParam String startDate,
             @RequestParam String endDate,
             @RequestParam Integer guestLimit) {
-
         return ResponseEntity.ok(trservice.getRoom(startDate, endDate, guestLimit)); // Trả về ResponseEntity với dữ
+
     }
 
     @GetMapping("/detail-type-room")
     public ResponseEntity<?> getTypeRoomDetail(@RequestParam Integer id) {
         List<RoomTypeDetail> typeRoomDto = trservice.getRoomTypeDetailById(id);
         return ResponseEntity.ok(typeRoomDto);
+    }
+    @GetMapping("/accountId/{id}")
+    public ResponseEntity<?> getBookingByAccount(@PathVariable("id") Integer id) {
+        return ResponseEntity.ok(bookingService.getListByAccountId(id));
     }
 }

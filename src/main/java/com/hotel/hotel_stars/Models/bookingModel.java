@@ -13,13 +13,17 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class bookingModel {
-    @NotBlank(message = "Không được bỏ trống username")
+//    @NotBlank(message = "Không được bỏ trống username")
     String userName;
 
     @NotBlank(message = "Không được bỏ trống ngày bắt đầu")
     String startDate;
     @NotBlank(message = "Không được bỏ trống ngày kết thúc")
     String endDate;
+
+    String discountName;
+
+    Double discountPercent;
 
     @NotEmpty(message = "Không được bỏ trống id phòng")
     List<Integer> roomId;

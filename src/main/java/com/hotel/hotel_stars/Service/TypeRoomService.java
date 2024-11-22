@@ -288,50 +288,55 @@ public class TypeRoomService {
     }
 
     public List<FindTypeRoomDto> getRoom(String startDates, String endDates, Integer guestLimit) {
-        Instant starDate = paramServices.stringToInstant(startDates);
+        // Corrected the typo in variable names
+        Instant startDate = paramServices.stringToInstant(startDates);
         Instant endDate = paramServices.stringToInstant(endDates);
-        List<Object[]> result = typeRoomRepository.findAvailableRooms(starDate, endDate, guestLimit);
 
+        // Fetch the result from the repository
+        List<Object[]> result = typeRoomRepository.findAvailableRooms(startDate, endDate, guestLimit);
+
+        // Debug output to check the size of the result
         System.out.println("độ dài: " + result.size());
 
+        // Convert the result to a List of FindTypeRoomDto
         return result.stream().map(results -> {
+            // Ensure the casting matches the expected types
             Integer roomId = (Integer) results[0];
             String roomName = (String) results[1];
             Integer roomTypeId = (Integer) results[2];
             String roomTypeName = (String) results[3];
             Double priceTypeRoom = (Double) results[4];
-            Double priceDiscountTypeRoom = (Double) results[5];
-            Double acreage = (Double) results[6];
-            Integer guestLimits = (Integer) results[7];
-            String amenitiesTypeRoomDetails = (String) results[8];
-            Double estCost = (Double) results[9];
-            String imagesString = (String) results[10];
+            Double acreage = (Double) results[5];
+            Integer guestLimits = (Integer) results[6];
+            String amenitiesTypeRoomDetails = (String) results[7];
+            Double estCost = (Double) results[8];
+            String imagesString = (String) results[9];
+
+            // Split the imagesString by commas and trim whitespace
             List<String> listImages = Arrays.stream(imagesString.split(","))
                     .map(String::trim)
                     .collect(Collectors.toList());
-            String describe = (String) results[11];
-            Double discountPercent = (results[12] != null) ? (Double) results[12] : 0.0;
-            String discountNames = (results[13] != null) ? (String) results[13] : null;
 
+            String describe = (String) results[10];
+
+            // Construct and return a new FindTypeRoomDto
             return new FindTypeRoomDto(
                     roomId,
                     roomName,
                     roomTypeId,
                     roomTypeName,
                     priceTypeRoom,
-                    priceDiscountTypeRoom,
                     acreage,
                     guestLimits,
                     amenitiesTypeRoomDetails,
                     estCost,
                     listImages,
-                    describe,
-                    discountPercent,
-                    discountNames
+                    describe
             );
-        }).toList();
+        }).collect(Collectors.toList());  // Collect the results into a List
     }
-
+    
+    
     public List<RoomTypeDetail> getRoomTypeDetailById(Integer roomId) {
         List<Object[]> results = typeRoomRepository.findTypeRoomDetailsById(roomId); // Adjust the method call if needed
         List<RoomTypeDetail> dtos = new ArrayList<>();

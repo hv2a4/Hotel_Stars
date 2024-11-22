@@ -15,6 +15,7 @@ import com.hotel.hotel_stars.DTO.AccountDto;
 import com.hotel.hotel_stars.DTO.BookingDto;
 import com.hotel.hotel_stars.DTO.MethodPaymentDto;
 import com.hotel.hotel_stars.DTO.RoleDto;
+import com.hotel.hotel_stars.DTO.StatusBookingDto;
 import com.hotel.hotel_stars.DTO.StatusResponseDto;
 import com.hotel.hotel_stars.DTO.accountHistoryDto;
 import com.hotel.hotel_stars.Entity.*;
@@ -30,10 +31,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.*;
 import java.util.List;
 import java.util.Optional;
@@ -60,6 +58,8 @@ public class BookingService {
     @Autowired
     BookingRoomService bookingRoomService;
     @Autowired
+    private DiscountRepository discountRepository;
+    @Autowired
     private StatusBookingRepository statusBookingRepository;
 
     @Autowired
@@ -70,6 +70,8 @@ public class BookingService {
 
     @Autowired
     AmenitiesTypeRoomRepository amenitiesTypeRoomRepository;
+    @Autowired
+    StatusRoomRepository statusRoomRepository;
     @Autowired
     JwtService jwtService;
     @Autowired
@@ -110,14 +112,41 @@ public class BookingService {
         return paymentInfoDTOs;
     }
 
-    public Boolean checkCreatbkRoom(Integer bookingId, List<Integer> roomId) {
-        Optional<Booking> booking = bookingRepository.findById(bookingId);
+    public Double calculateDiscountedPrice(Room room, LocalDateTime creatNow, Discount discount, Booking booking) {
+        Double typeRoomPrice = room.getTypeRoom().getPrice();
+        Instant current = paramServices.localdatetimeToInsant(creatNow);
+        if (discount == null) {
+            return typeRoomPrice;
+        }
+        if (room.getTypeRoom().getId() == discount.getTypeRoom().getId()) {
+            if (!current.isBefore(discount.getStartDate()) && !current.isAfter(discount.getEndDate())) {
+                double discountRate = discount.getPercent() / 100.0;
+                typeRoomPrice = typeRoomPrice * (1 - discountRate);
+                booking.setDiscountName(discount.getDiscountName());
+                booking.setDiscountPercent(discount.getPercent());
+                try {
+                    bookingRepository.save(booking);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        return typeRoomPrice; // Return the final price, ensuring it's positive
+    }
+
+    public Boolean checkCreatbkRoom(Integer bookingId, List<Integer> roomId, String discountName) {
+        Booking booking = bookingRepository.findById(bookingId).get();
+        Discount discount = discountRepository.findByDiscountName(discountName);
+        Long days = Duration.between(booking.getStartAt(), booking.getEndAt()).toDays();
+
         for (int i = 0; i < roomId.size(); i++) {
             Room room = roomRepository.findById(roomId.get(i)).get();
             BookingRoom bookingRoom = new BookingRoom();
-            bookingRoom.setBooking(booking.get());
+            Double priceFind = calculateDiscountedPrice(room, booking.getCreateAt(), discount, booking);
+            bookingRoom.setBooking(booking);
             bookingRoom.setRoom(room);
-            bookingRoom.setPrice(room.getTypeRoom().getPrice());
+            bookingRoom.setPrice(priceFind * days);
             try {
                 bookingRoomRepository.save(bookingRoom);
             } catch (Exception e) {
@@ -127,6 +156,28 @@ public class BookingService {
         }
         return true;
     }
+    public Boolean checkCreatbkOffRoom(Integer bookingId, List<Integer> roomId, String discountName) {
+        Booking booking = bookingRepository.findById(bookingId).get();
+        Discount discount = discountRepository.findByDiscountName(discountName);
+        Long days = Duration.between(booking.getStartAt(), booking.getEndAt()).toDays();
+
+        for (int i = 0; i < roomId.size(); i++) {
+            Room room = roomRepository.findById(roomId.get(i)).get();
+            BookingRoom bookingRoom = new BookingRoom();
+            Double priceFind = calculateDiscountedPrice(room, booking.getCreateAt(), discount, booking);
+            bookingRoom.setBooking(booking);
+            bookingRoom.setRoom(room);
+            bookingRoom.setPrice(priceFind * days);
+            try {
+                bookingRoomRepository.save(bookingRoom);
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
+        }
+        return true;
+    }
+
 
     public Boolean sendBookingEmail(bookingModel bookingModels) {
         Booking booking = new Booking();
@@ -140,16 +191,42 @@ public class BookingService {
         booking.setEndAt(endDateIns);
         booking.setStatus(statusBooking.get());
         booking.setStatusPayment(false);
+        booking.setMethodPayment(payment.get());
         System.out.println(LocalDateTime.now());
         booking.setCreateAt(LocalDateTime.now());
         try {
             bookingRepository.save(booking);
-            if (checkCreatbkRoom(booking.getId(), bookingModels.getRoomId())) {
+            if (checkCreatbkRoom(booking.getId(), bookingModels.getRoomId(), bookingModels.getDiscountName())) {
                 System.out.println(jwtService.generateBoking(booking.getId()));
                 Boolean flag = paramServices.sendEmails(booking.getAccount().getEmail(), "Xác nhận đặt phòng",
                         paramServices.generateBooking(booking.getAccount().getFullname(),
                                 jwtService.generateBoking(booking.getId())));
                 return (flag == true) ? true : false;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+        return false;
+    }
+    
+    public Boolean addBookingOffline(bookingModel bookingModels) {
+    	Booking booking = new Booking();
+        Optional<Account> accounts = accountRepository.findByUsername(bookingModels.getUserName());
+        Optional<StatusBooking> statusBooking = statusBookingRepository.findById(1);
+        Instant starDateIns = paramServices.stringToInstant(bookingModels.getStartDate());
+        Instant endDateIns = paramServices.stringToInstant(bookingModels.getEndDate());
+        booking.setAccount(accounts.get());
+        booking.setStartAt(starDateIns);
+        booking.setEndAt(endDateIns);
+        booking.setStatus(statusBooking.get());
+        booking.setStatusPayment(false);
+        booking.setMethodPayment(null);
+        booking.setCreateAt(LocalDateTime.now());
+        try {
+            bookingRepository.save(booking);
+            if (checkCreatbkOffRoom(booking.getId(), bookingModels.getRoomId(), bookingModels.getDiscountName())) { 
+                return true;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -350,13 +427,46 @@ public class BookingService {
         dto.setEndAt(booking.getEndAt());
         dto.setId(booking.getId());
         dto.setStartAt(booking.getStartAt());
+        dto.setStatusBookingDto(new StatusBookingDto(booking.getStatus().getId(), booking.getStatus().getStatusBookingName()));
         dto.setStatusPayment(booking.getStatusPayment());
         dto.setBookingRooms(bookingRoomService.convertListDto(booking.getBookingRooms()));
         dto.setInvoiceDtos(invoiceService.convertListDtos(booking.getInvoice()));
-        dto.setMethodPaymentDto(new MethodPaymentDto(booking.getMethodPayment().getId(),
-                booking.getMethodPayment().getMethodPaymentName()));
+
+        // Kiểm tra null trước khi tạo MethodPaymentDto
+        if (booking.getMethodPayment() != null) {
+            dto.setMethodPaymentDto(new MethodPaymentDto(
+                booking.getMethodPayment().getId(),
+                booking.getMethodPayment().getMethodPaymentName()
+            ));
+        } else {
+            dto.setMethodPaymentDto(null); // Hoặc tạo một DTO mặc định
+        }
+
         return dto;
     }
+
+    
+    public List<accountHistoryDto> getAllBooking(String filterType, LocalDate startDate, LocalDate endDate) {
+        // Nếu không có filterType, startDate, hoặc endDate, trả về toàn bộ danh sách
+        if (filterType == null && startDate == null && endDate == null) {
+            return bookingRepository.findAll().stream()
+                    .sorted(Comparator.comparing(Booking::getCreateAt).reversed()) // Sắp xếp giảm dần tại đây
+                    .map(this::convertToDto)
+                    .collect(Collectors.toList());
+        }
+
+        // Gọi repository để lấy danh sách theo điều kiện
+        List<Booking> bookings = bookingRepository.findBookingsByTime(filterType, startDate, endDate);
+
+        // Sắp xếp danh sách giảm dần theo createAt
+        bookings.sort(Comparator.comparing(Booking::getCreateAt).reversed());
+
+        // Chuyển đổi thành DTO
+        return bookings.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
 
     public List<accountHistoryDto> getListByAccountId(Integer id) {
         List<Booking> bookings = bookingRepository.findByAccount_Id(id);
