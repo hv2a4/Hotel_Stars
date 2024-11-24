@@ -29,20 +29,9 @@ public class AmenitiesHotelService {
 
     // chuyển đổi entity sang dto (đổ dữ liệu lên web)
     public AmenitiesHotelDto convertAmenitiesHotelDto(AmenitiesHotel ah) {
-        HotelDto hotelDto = new HotelDto();
-        hotelDto.setId(ah.getHotel().getId());
-        hotelDto.setHotelName(ah.getHotel().getHotelName());
-        hotelDto.setDescriptions(ah.getHotel().getDescriptions());
-        hotelDto.setProvince(ah.getHotel().getProvince());
-        hotelDto.setDistrict(ah.getHotel().getDistrict());
-        hotelDto.setWard(ah.getHotel().getWard());
-        hotelDto.setAddress(ah.getHotel().getAddress());
-        hotelDto.setHotelPhone(ah.getHotel().getHotelPhone());
         return new AmenitiesHotelDto(
                 ah.getId(),
-                ah.getAmenitiesHotelName(),
-                ah.getIcon(),
-                hotelDto
+                ah.getAmenitiesHotelName()
         );
     }
 
@@ -70,9 +59,9 @@ public class AmenitiesHotelService {
 
         // Kiểm tra tên loại phòng
         if (amenitiesHotelModel.getAmenitiesHotelName() == null || amenitiesHotelModel.getAmenitiesHotelName().isEmpty()) {
-            errorMessages.add("Tên không được để trống");
+            errorMessages.add("Tên tiện nghi khách sạn không được để trống");
         } else if (amenitiesHotelRepository.existsByAmenitiesHotelName(amenitiesHotelModel.getAmenitiesHotelName())) {
-            errorMessages.add("Tên này đã tồn tại");
+            errorMessages.add("Tên tiện nghi khách sạn này đã tồn tại");
         }
 
         if (!errorMessages.isEmpty()) {
@@ -84,7 +73,6 @@ public class AmenitiesHotelService {
 
             // Đặt thông tin loại phòng
             amenitiesHotel.setAmenitiesHotelName(amenitiesHotelModel.getAmenitiesHotelName());
-            amenitiesHotel.setIcon("abc");
             // Đặt hotelId mặc định là 1
             Optional<Hotel> hotel = hotelRepository.findById(1);
             // Kiểm tra nếu không tìm thấy hotel với id = 1
@@ -106,21 +94,21 @@ public class AmenitiesHotelService {
     }
 
     // cập nhật dịch vụ phòng
-    public AmenitiesHotelDto updateAmenitiesHotel(Integer ahId, amenitiesHotelModel amenitiesHotelModel) {
+    public AmenitiesHotelDto updateAmenitiesHotel(amenitiesHotelModel amenitiesHotelModel) {
         List<String> errorMessages = new ArrayList<>(); // Danh sách lưu trữ các thông báo lỗi
 
         // Kiểm tra xem loại phòng có tồn tại hay không
-        Optional<AmenitiesHotel> existingAmenitiesHotelOpt = amenitiesHotelRepository.findById(ahId);
+        Optional<AmenitiesHotel> existingAmenitiesHotelOpt = amenitiesHotelRepository.findById(amenitiesHotelModel.getId());
         if (!existingAmenitiesHotelOpt.isPresent()) {
-            throw new EntityNotFoundException("Loại phòng với ID " + amenitiesHotelModel.getId() + " không tồn tại.");
+            throw new EntityNotFoundException("Tiện ích khách sạn với ID " + amenitiesHotelModel.getId() + " không tồn tại.");
         }
         AmenitiesHotel existingAmenitiesHotel = existingAmenitiesHotelOpt.get();
 
         // Kiểm tra tên loại phòng
         if (amenitiesHotelModel.getAmenitiesHotelName() == null || amenitiesHotelModel.getAmenitiesHotelName().isEmpty()) {
-            errorMessages.add("Tên loại phòng không được để trống");
+            errorMessages.add("Tên tiện nghi khách sạn không được để trống");
         } else if (!existingAmenitiesHotel.getAmenitiesHotelName().equals(amenitiesHotelModel.getAmenitiesHotelName()) && amenitiesHotelRepository.existsByAmenitiesHotelName(amenitiesHotelModel.getAmenitiesHotelName())) {
-            errorMessages.add("Tên loại phòng này đã tồn tại");
+            errorMessages.add("Tên tiện nghi khách sạn này đã tồn tại");
         }
 
 
@@ -148,7 +136,7 @@ public class AmenitiesHotelService {
     // xóa dịch vụ phòng
     public void deleteTypeRoom(Integer id) {
         if (!amenitiesHotelRepository.existsById(id)) {
-            throw new NoSuchElementException("Loại tiện nghi này không tồn tại"); // Ném ngoại lệ nếu không tồn tại
+            throw new NoSuchElementException("Tiện nghi khách sạn này không tồn tại"); // Ném ngoại lệ nếu không tồn tại
         }
         amenitiesHotelRepository.deleteById(id);
     }

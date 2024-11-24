@@ -232,6 +232,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/room").permitAll()
                 // khoi
 
+                // tuong
+                .requestMatchers("/api/amenitiesHotel/**", "/api/amenitiesHotel/getById/**", "/api/amenities-type-room/delete/**").hasAnyAuthority("HotelOwner")
+                // tuong
+
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())

@@ -11,7 +11,4 @@ import java.io.Serializable;
 public class AmenitiesHotelDto implements Serializable {
     Integer id;
     String amenitiesHotelName;
-    String icon;
-    HotelDto hotelDto;
-//    TypeAmenitiesHotelDto typeAmenitiesHotelDto;
 }

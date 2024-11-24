@@ -10,8 +10,4 @@ public class amenitiesHotelModel {
 
     @NotBlank(message = "Tên tiện nghi khách sạn không được để trống")
     private String amenitiesHotelName;
-
-    private String icon;
-
-    private Integer hotelId;
 }
