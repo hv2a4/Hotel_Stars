@@ -23,7 +23,6 @@ public class bookingModel {
 
     String discountName;
 
-    Double discountPercent;
 
     @NotEmpty(message = "Không được bỏ trống id phòng")
     List<Integer> roomId;

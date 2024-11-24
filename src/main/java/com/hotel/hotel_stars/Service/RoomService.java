@@ -4,6 +4,7 @@ import com.hotel.hotel_stars.DTO.*;
 import com.hotel.hotel_stars.DTO.Select.RoomAvailabilityInfo;
 import com.hotel.hotel_stars.DTO.Select.RoomDetailResponseDTO;
 import com.hotel.hotel_stars.DTO.Select.PaginatedResponseDto;
+import com.hotel.hotel_stars.DTO.Select.RoomListBooking;
 import com.hotel.hotel_stars.DTO.selectDTO.countDto;
 import com.hotel.hotel_stars.Entity.*;
 import com.hotel.hotel_stars.Models.RoomModel;
@@ -348,5 +349,40 @@ public class RoomService {
         return roomDetailResponseDTOS;
     }
 
+    public List<RoomListBooking> getRoomInBookingId(List<Integer> roomIdList) {
+        List<Object[]> reusult = roomRepository.findRoomsDetailsByIds(roomIdList);
+        List<RoomListBooking> roomListBookings = new ArrayList<>();
+        reusult.forEach(row -> {
 
+            Integer roomId =(Integer) row[0];
+            String roomName = (String) row[1];
+            Integer floorId = (Integer) row[2];
+            Integer typeRoomId = (Integer) row[3];
+            String typeRoomName = (String) row[4];
+            Double price =(Double) row[5];
+            Integer bedCount = (Integer) row[6];
+            Double acreage =(Double) row[7];
+            Integer guestLimit = (Integer) row[8];
+            String describes = (String) row[9];
+            String imageName = (String) row[10];
+
+            List<String> imgName = Arrays.stream(imageName.split(",")).toList();
+
+            RoomListBooking roomListBooking = new RoomListBooking();
+            roomListBooking.setRoomId(roomId);
+            roomListBooking.setRoomName(roomName);
+            roomListBooking.setFloorId(floorId);
+            roomListBooking.setTypeRoomId(typeRoomId);
+            roomListBooking.setTypeRoomName(typeRoomName);
+            roomListBooking.setPrice(price);
+            roomListBooking.setAcreage(acreage);
+            roomListBooking.setGuestLimit(guestLimit);
+            roomListBooking.setDescribes(describes);
+            roomListBooking.setBedCount(bedCount);
+            roomListBooking.setAcreage(acreage);
+            roomListBooking.setListImageName(imgName);
+            roomListBookings.add(roomListBooking);
+        });
+        return roomListBookings;
+    }
 }

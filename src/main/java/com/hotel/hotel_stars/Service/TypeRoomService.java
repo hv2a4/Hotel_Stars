@@ -286,20 +286,78 @@ public class TypeRoomService {
         }
     }
 
-    public List<FindTypeRoomDto> getRoom(String startDates, String endDates, Integer guestLimit) {
-        // Corrected the typo in variable names
+//    public List<FindTypeRoomDto> getRoom(String startDates, String endDates, Integer guestLimit) {
+//        // Corrected the typo in variable names
+//        Instant startDate = paramServices.stringToInstant(startDates);
+//        Instant endDate = paramServices.stringToInstant(endDates);
+//
+//        // Fetch the result from the repository
+//        List<Object[]> result = typeRoomRepository.findAvailableRooms(startDate, endDate, guestLimit);
+//
+//        // Debug output to check the size of the result
+//        System.out.println("độ dài: " + result.size());
+//
+//        // Convert the result to a List of FindTypeRoomDto
+//        return result.stream().map(results -> {
+//            // Ensure the casting matches the expected types
+//            Integer roomId = (Integer) results[0];
+//            String roomName = (String) results[1];
+//            Integer roomTypeId = (Integer) results[2];
+//            String roomTypeName = (String) results[3];
+//            Double priceTypeRoom = (Double) results[4];
+//            Double acreage = (Double) results[5];
+//            Integer guestLimits = (Integer) results[6];
+//            String amenitiesTypeRoomDetails = (String) results[7];
+//            Double estCost = (Double) results[8];
+//            String imagesString = (String) results[9];
+//
+//            // Split the imagesString by commas and trim whitespace
+//            List<String> listImages = Arrays.stream(imagesString.split(","))
+//                    .map(String::trim)
+//                    .collect(Collectors.toList());
+//
+//            List<String> amenitiesList = Arrays.stream(amenitiesTypeRoomDetails.split(","))
+//                    .map(String::trim)
+//                    .toList();
+//
+//
+//            String describe = (String) results[10];
+//            String bed_name = (String) results[11];
+//
+//            List<String> bedNameList = Arrays.stream(bed_name.split(","))
+//                    .map(String::trim)
+//                    .toList();
+//            // Construct and return a new FindTypeRoomDto
+//            return new FindTypeRoomDto(
+//                    roomId,
+//                    roomName,
+//                    roomTypeId,
+//                    roomTypeName,
+//                    priceTypeRoom,
+//                    acreage,
+//                    guestLimits,
+//                    amenitiesList,
+//                    estCost,
+//                    listImages,
+//                    describe,
+//                    bedNameList
+//            );
+//        }).collect(Collectors.toList()); // Collect the results into a List
+//    }
+
+    public List<FindTypeRoomDto> getRoom(String startDates, String endDates, Integer guestLimit, Integer page, Integer size) {
         Instant startDate = paramServices.stringToInstant(startDates);
         Instant endDate = paramServices.stringToInstant(endDates);
 
-        // Fetch the result from the repository
-        List<Object[]> result = typeRoomRepository.findAvailableRooms(startDate, endDate, guestLimit);
+        // Tính toán limit và offset cho phân trang
+        int limit = size;
+        int offset = (page - 1) * size;
 
-        // Debug output to check the size of the result
-        System.out.println("độ dài: " + result.size());
+        // Gọi repository với phân trang
+        List<Object[]> result = typeRoomRepository.findAvailableRoomsWithPagination(startDate, endDate, guestLimit, limit, offset);
 
-        // Convert the result to a List of FindTypeRoomDto
+        // Chuyển đổi kết quả từ Object[] thành DTO
         return result.stream().map(results -> {
-            // Ensure the casting matches the expected types
             Integer roomId = (Integer) results[0];
             String roomName = (String) results[1];
             Integer roomTypeId = (Integer) results[2];
@@ -311,27 +369,33 @@ public class TypeRoomService {
             Double estCost = (Double) results[8];
             String imagesString = (String) results[9];
 
-            // Split the imagesString by commas and trim whitespace
             List<String> listImages = Arrays.stream(imagesString.split(","))
                     .map(String::trim)
                     .collect(Collectors.toList());
 
-            String describe = (String) results[10];
+            List<String> amenitiesList = Arrays.stream(amenitiesTypeRoomDetails.split(","))
+                    .map(String::trim)
+                    .toList();
 
-            // Construct and return a new FindTypeRoomDto
+            String describe = (String) results[10];
+            String bedName = (String) results[11];
+            List<String> bedNameList = Arrays.stream(bedName.split(","))
+                    .map(String::trim)
+                    .toList();
+
             return new FindTypeRoomDto(
-                    roomId,
-                    roomName,
-                    roomTypeId,
-                    roomTypeName,
-                    priceTypeRoom,
-                    acreage,
-                    guestLimits,
-                    amenitiesTypeRoomDetails,
-                    estCost,
-                    listImages,
-                    describe);
-        }).collect(Collectors.toList()); // Collect the results into a List
+                    roomId, roomName, roomTypeId, roomTypeName, priceTypeRoom, acreage, guestLimits,
+                    amenitiesList, estCost, listImages, describe, bedNameList
+            );
+        }).toList();
+    }
+
+    public long getTotalRoomCount(String startDates, String endDates, Integer guestLimit) {
+        Instant startDate = paramServices.stringToInstant(startDates);
+        Instant endDate = paramServices.stringToInstant(endDates);
+
+        // Gọi repository để đếm tổng số phòng có sẵn
+        return typeRoomRepository.countAvailableRooms(startDate, endDate, guestLimit);
     }
 
     public List<RoomTypeDetail> getRoomTypeDetailById(Integer roomId) {
@@ -366,7 +430,7 @@ public class TypeRoomService {
                     .map(amenitiesTypeRoom -> new AmenitiesTypeRoomDto(
                             amenitiesTypeRoom.getId(), // Hoặc các trường khác cần thiết
                             amenitiesTypeRoom.getAmenitiesTypeRoomName() // Chuyển các trường khác nếu cần
-            ))
+                    ))
                     .toList();
 
             List<Integer> feedBack = new ArrayList<>();

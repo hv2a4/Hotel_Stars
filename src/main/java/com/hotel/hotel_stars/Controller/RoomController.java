@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.sql.Date;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -29,6 +30,7 @@ public class RoomController {
     private RoomService roomService;
     @Autowired
     paramService paramServices;
+
     @GetMapping("/getCountRoom")
     public ResponseEntity<?> getAll() {
         return ResponseEntity.ok(roomService.displayCounts());
@@ -161,4 +163,8 @@ public class RoomController {
         return ResponseEntity.ok(roomService.getAll(page, size, sortBy, startInstant, endInstant, guestLimit));
     }
 
+    @GetMapping("list-room")
+    public ResponseEntity<?> getListRoomBookingId(@RequestParam List<Integer> roomId) {
+        return ResponseEntity.ok(roomService.getRoomInBookingId(roomId));
+    }
 }

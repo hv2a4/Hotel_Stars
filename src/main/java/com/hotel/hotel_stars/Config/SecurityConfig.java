@@ -130,6 +130,7 @@ public class SecurityConfig {
                                 "api/room/getAll",
                                 "api/room/post-room",
                                 "api/room/put-room",
+                                "api/room/list-room",
                                 "api/amenities-type-room/getAll",
                                 "api/room/getById/**"
                                 )

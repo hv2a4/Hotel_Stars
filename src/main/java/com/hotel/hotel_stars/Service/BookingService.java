@@ -55,8 +55,8 @@ public class BookingService {
     @Autowired
     InvoiceService invoiceService;
     @Autowired
-
     BookingRoomService bookingRoomService;
+    @Autowired
     private DiscountRepository discountRepository;
     @Autowired
     private StatusBookingRepository statusBookingRepository;
@@ -134,7 +134,7 @@ public class BookingService {
 
     public Boolean checkCreatbkRoom(Integer bookingId, List<Integer> roomId, String discountName) {
         Booking booking = bookingRepository.findById(bookingId).get();
-        Discount discount = discountRepository.findByDiscountName(discountName);
+        Discount discount = (discountRepository.findByDiscountName(discountName)!=null)?discountRepository.findByDiscountName(discountName):null;
         Long days = Duration.between(booking.getStartAt(), booking.getEndAt()).toDays();
 
         for (int i = 0; i < roomId.size(); i++) {

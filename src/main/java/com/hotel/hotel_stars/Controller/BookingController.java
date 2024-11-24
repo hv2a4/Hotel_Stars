@@ -63,15 +63,21 @@ public class BookingController {
     @PostMapping("/sendBooking")
     public ResponseEntity<?> postBooking(@Valid @RequestBody bookingModel bookingModels) {
         Map<String, String> response = new HashMap<String, String>();
-        errorsServices.errorBooking(bookingModels);
-        Boolean flag = bookingService.sendBookingEmail(bookingModels);
-        if (flag == true) {
-            response = paramServices.messageSuccessApi(201, "success",
-                    "Đặt phòng thành công, vui lòng vào email để xác nhận");
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } else {
-            response = paramServices.messageSuccessApi(400, "error", "Đặt phòng thất bại");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        System.out.println("mảng được tìm thấy: "+bookingModels.getRoomId());
+        try {
+            errorsServices.errorBooking(bookingModels);
+            Boolean flag = bookingService.sendBookingEmail(bookingModels);
+            if (flag) {
+                response = paramServices.messageSuccessApi(201, "success",
+                        "Đặt phòng thành công, vui lòng vào email để xác nhận");
+                return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            } else {
+                response = paramServices.messageSuccessApi(400, "error", "Đặt phòng thất bại");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+        } catch (Exception e) {
+            response.put("error", e.getMessage());  // Thêm thông tin lỗi ở đây
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
@@ -94,7 +100,7 @@ public class BookingController {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
+            System.out.println("Số phòng đếm được: "+booking.getBookingRooms().size());
             return ResponseEntity.ok(paramServices.confirmBookings(booking, formattedAmount));
         } catch (ExpiredJwtException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

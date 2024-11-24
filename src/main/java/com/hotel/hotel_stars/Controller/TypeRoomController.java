@@ -1,8 +1,10 @@
 package com.hotel.hotel_stars.Controller;
 
+import com.hotel.hotel_stars.DTO.Select.PaginatedResponse;
 import com.hotel.hotel_stars.DTO.Select.RoomTypeDetail;
 import com.hotel.hotel_stars.DTO.Select.TypeRoomBookingCountDto;
 import com.hotel.hotel_stars.DTO.TypeRoomDto;
+import com.hotel.hotel_stars.DTO.selectDTO.FindTypeRoomDto;
 import com.hotel.hotel_stars.Entity.TypeRoom;
 import com.hotel.hotel_stars.Entity.TypeRoomAmenitiesTypeRoom;
 import com.hotel.hotel_stars.Exception.CustomValidationException;
@@ -149,14 +151,35 @@ public class TypeRoomController {
         return ResponseEntity.ok(typeRoomDto); // Trả về ResponseEntity với dữ liệu và mã trạng thái OK (200)
     }
 
+//    @GetMapping("/find-type-room")
+//    public ResponseEntity<?> findTypeRoom(
+//            @RequestParam String startDate,
+//            @RequestParam String endDate,
+//            @RequestParam Integer guestLimit) {
+//
+//        return ResponseEntity.ok(trservice.getRoom(startDate, endDate, guestLimit)); // Trả về ResponseEntity với dữ
+//    }
+
     @GetMapping("/find-type-room")
     public ResponseEntity<?> findTypeRoom(
             @RequestParam String startDate,
             @RequestParam String endDate,
-            @RequestParam Integer guestLimit) {
+            @RequestParam Integer guestLimit,
+            @RequestParam(defaultValue = "1") Integer page,  // Mặc định là trang 1
+            @RequestParam(defaultValue = "10") Integer size // Mặc định là 10 bản ghi/trang
+    ) {
+        // Fetch dữ liệu phòng với phân trang
+        List<FindTypeRoomDto> rooms = trservice.getRoom(startDate, endDate, guestLimit, page, size);
 
-        return ResponseEntity.ok(trservice.getRoom(startDate, endDate, guestLimit)); // Trả về ResponseEntity với dữ
+        // Lấy tổng số phòng để tính toán tổng số trang
+        long totalItems = trservice.getTotalRoomCount(startDate, endDate, guestLimit);
+        int totalPages = (int) Math.ceil((double) totalItems / size);
+
+        // Tạo đối tượng response chứa dữ liệu phân trang
+        PaginatedResponse<FindTypeRoomDto> response = new PaginatedResponse<>(rooms, totalItems, totalPages, page, size);
+        return ResponseEntity.ok(response);
     }
+
 
     @GetMapping("/detail-type-room")
     public ResponseEntity<?> getTypeRoomDetail(@RequestParam Integer id) {
