@@ -15,13 +15,13 @@ import com.hotel.hotel_stars.Service.BookingRoomCustomerInfomationService;
 
 @RestController
 @CrossOrigin("*")
-@RequestMapping("/api/booking-infomation/")
+@RequestMapping("/api/booking-infomation")
 public class BookingRoomCustomerInformationController {
 
 	@Autowired
 	BookingRoomCustomerInfomationService bookingRoomCustomerInfomationService;
 	
-	@GetMapping("booking-room")
+	@GetMapping("/booking-room")
 	public ResponseEntity<?> getBookingRoomId(@RequestParam("bookingroom") List<Integer> id){
 		return ResponseEntity.ok(bookingRoomCustomerInfomationService.getListBookingRoom_Id(id));
 	}

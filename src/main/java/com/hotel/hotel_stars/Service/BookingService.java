@@ -22,6 +22,8 @@ import com.hotel.hotel_stars.Entity.*;
 import com.hotel.hotel_stars.Exception.CustomValidationException;
 import com.hotel.hotel_stars.Exception.ErrorsService;
 import com.hotel.hotel_stars.Models.bookingModel;
+import com.hotel.hotel_stars.Models.bookingModelNew;
+import com.hotel.hotel_stars.Models.bookingRoomModel;
 import com.hotel.hotel_stars.Repository.*;
 import com.hotel.hotel_stars.utils.paramService;
 
@@ -213,7 +215,7 @@ public class BookingService {
     public Boolean addBookingOffline(bookingModel bookingModels) {
     	Booking booking = new Booking();
         Optional<Account> accounts = accountRepository.findByUsername(bookingModels.getUserName());
-        Optional<StatusBooking> statusBooking = statusBookingRepository.findById(1);
+        Optional<StatusBooking> statusBooking = statusBookingRepository.findById(4);
         Instant starDateIns = paramServices.stringToInstant(bookingModels.getStartDate());
         Instant endDateIns = paramServices.stringToInstant(bookingModels.getEndDate());
         booking.setAccount(accounts.get());
@@ -472,4 +474,85 @@ public class BookingService {
         List<Booking> bookings = bookingRepository.findByAccount_Id(id);
         return bookings.stream().map(this::convertToDto).collect(Collectors.toList());
     }
+    
+    public boolean updateStatusBooking(Integer idBooking, Integer idStatus, bookingModelNew bookingModel) {
+        Optional<Booking> bookingOptional = bookingRepository.findById(idBooking);
+        if (!bookingOptional.isPresent()) {
+            return false;
+        }
+
+        Optional<StatusBooking> statusBookingOptional = statusBookingRepository.findById(idStatus);
+        if (!statusBookingOptional.isPresent()) {
+            return false;
+        }
+
+        Booking booking = bookingOptional.get();
+        StatusBooking statusBooking = statusBookingOptional.get();
+
+        booking.setStatus(statusBooking);
+        booking.setStartAt(bookingModel.getStartDate());
+        booking.setEndAt(bookingModel.getEndDate());
+        bookingRepository.save(booking);
+        
+        return true;
+    }
+    
+    public boolean updateStatusCheckInBooking(Integer idBooking, List<Integer> idBookingRoom, List<bookingRoomModel> model) {
+        // Kiểm tra booking tồn tại
+        Optional<Booking> bookingOptional = bookingRepository.findById(idBooking);
+        if (!bookingOptional.isPresent()) {
+            return false;
+        }
+
+        // Kiểm tra danh sách idBookingRoom và model
+        if (idBookingRoom != null && !idBookingRoom.isEmpty() && model != null && !model.isEmpty()) {
+            for (bookingRoomModel br : model) {
+                if (idBookingRoom.contains(br.getRoomId())) {
+                    BookingRoom bookingRoom = bookingRoomRepository.findById(br.getId()).get();
+                    System.out.println(bookingRoom.getId());
+                    bookingRoom.setCheckIn(br.getCheckIn());
+                    bookingRoom.setCheckOut(br.getCheckOut());
+                    
+                    bookingRoomRepository.save(bookingRoom);
+
+                    // Cập nhật trạng thái phòng
+                    Room room = roomRepository.findById(br.getRoomId()).get();
+                    StatusRoom statusRoom = statusRoomRepository.findById(2).get(); // Đang sử dụng
+                    
+                    room.setStatusRoom(statusRoom);
+                    System.out.println(room.getStatusRoom().getStatusRoomName());
+                    roomRepository.save(room);
+                }
+            }
+        }
+
+        // Kiểm tra trạng thái tổng thể của booking
+        Booking booking = bookingOptional.get();
+        boolean allRoomsCheckedIn = booking.getBookingRooms().stream()
+            .allMatch(room -> {
+                // Kiểm tra null trước khi lấy trạng thái phòng
+                if (room.getRoom() == null || room.getRoom().getStatusRoom() == null) {
+                    System.out.println("Room or StatusRoom is null");
+                    return false; // Trả về false nếu có phòng hoặc trạng thái phòng bị null
+                }
+                // Kiểm tra trạng thái phòng
+                System.out.println("Room ID: " + room.getRoom().getId() + " Status ID: " + room.getRoom().getStatusRoom().getId());
+                return room.getRoom().getStatusRoom().getId() == 2; // Kiểm tra trạng thái "đang sử dụng"
+            });
+
+        if (allRoomsCheckedIn) {
+            Optional<StatusBooking> optionalStatusBooking = statusBookingRepository.findById(7); // Đang sử dụng
+            if (!optionalStatusBooking.isPresent()) {
+                return false; // Trả về false nếu không tìm thấy StatusBooking
+            }
+            StatusBooking statusBooking = optionalStatusBooking.get();
+            booking.setStatus(statusBooking);
+            bookingRepository.save(booking); 
+        } 
+
+        return true;
+    }
+
+
+
 }

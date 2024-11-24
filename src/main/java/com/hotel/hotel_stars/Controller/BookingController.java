@@ -10,6 +10,8 @@ import com.hotel.hotel_stars.Entity.StatusBooking;
 import com.hotel.hotel_stars.Exception.CustomValidationException;
 import com.hotel.hotel_stars.Exception.ErrorsService;
 import com.hotel.hotel_stars.Models.bookingModel;
+import com.hotel.hotel_stars.Models.bookingModelNew;
+import com.hotel.hotel_stars.Models.bookingRoomModel;
 import com.hotel.hotel_stars.Repository.BookingRepository;
 import com.hotel.hotel_stars.Repository.BookingRoomRepository;
 import com.hotel.hotel_stars.Repository.StatusBookingRepository;
@@ -55,6 +57,38 @@ public class BookingController {
 	        @RequestParam(required = false) LocalDate endDate) {
 	    List<accountHistoryDto> bookings = bookingService.getAllBooking(filterType, startDate, endDate);
 	    return ResponseEntity.ok(bookings);
+	}
+
+	@PutMapping("/update-status/{id}/{idStatus}")
+	public ResponseEntity<?> updateStatus(@PathVariable("id") Integer idBooking, @PathVariable("idStatus") Integer idStatus, @RequestBody bookingModelNew bookingModel) {
+	    // Gọi phương thức updateStatusBooking từ service
+		Map<String, String> response = new HashMap<String, String>();
+	    boolean update = bookingService.updateStatusBooking(idBooking, idStatus, bookingModel);
+
+	    if (update == true) {
+			response = paramServices.messageSuccessApi(201, "success",
+					"Cập nhật trạng thái thành công");
+			return ResponseEntity.status(HttpStatus.CREATED).body(response);
+		} else {
+			response = paramServices.messageSuccessApi(400, "error", "Cập nhật trạng thái thất bại");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
+	}
+	@PutMapping("/update-checkIn/{id}")
+	public ResponseEntity<?> updateCheckIn(@PathVariable("id") Integer id,
+	                                       @RequestParam("roomId") List<Integer> roomId,
+	                                       @RequestBody List<bookingRoomModel> model) {
+		Map<String, String> response = new HashMap<String, String>();
+	    boolean update = bookingService.updateStatusCheckInBooking(id, roomId, model);
+
+	    if (update == true) {
+			response = paramServices.messageSuccessApi(201, "success",
+					"Cập nhật trạng thái thành công");
+			return ResponseEntity.status(HttpStatus.CREATED).body(response);
+		} else {
+			response = paramServices.messageSuccessApi(400, "error", "Cập nhật trạng thái thất bại");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
 	}
 
 

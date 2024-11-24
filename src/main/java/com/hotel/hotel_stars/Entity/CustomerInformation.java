@@ -14,6 +14,7 @@ import java.util.List;
 @Table(name = "customer_information", schema = "hotel_manager")
 public class CustomerInformation {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 
