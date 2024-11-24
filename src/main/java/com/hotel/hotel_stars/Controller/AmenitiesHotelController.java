@@ -49,14 +49,14 @@ public class AmenitiesHotelController {
             // Xử lý lỗi nếu không tìm thấy dịch vụ phòng
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("code", 404);
-            errorResponse.put("message", "Dịch vụ phòng không tồn tại.");
+            errorResponse.put("message", "Dịch vụ khách sạn không tồn tại.");
             errorResponse.put("status", "error");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
         } catch (RuntimeException ex) {
             // Xử lý lỗi chung cho các lỗi không xác định
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("code", 500);
-            errorResponse.put("message", "Có lỗi xảy ra khi lấy dịch vụ phòng: " + ex.getMessage());
+            errorResponse.put("message", "Có lỗi xảy ra khi lấy tiện nghi khách sạn: " + ex.getMessage());
             errorResponse.put("status", "error");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
@@ -84,16 +84,16 @@ public class AmenitiesHotelController {
             // Trả về lỗi máy chủ nội bộ với mã lỗi 500
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("code", 500);
-            errorResponse.put("message", "Có lỗi xảy ra khi thêm vào: " + ex.getMessage());
+            errorResponse.put("message", "" + ex.getMessage());
             errorResponse.put("status", "error");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 
-    @PutMapping("update/{id}")
-    public ResponseEntity<?> updateAmenitiesHotel(@PathVariable Integer id, @Valid @RequestBody amenitiesHotelModel ahmodel) {
+    @PutMapping("update")
+    public ResponseEntity<?> updateAmenitiesHotel(@Valid @RequestBody amenitiesHotelModel ahmodel) {
         try {
-            AmenitiesHotelDto updatedAh = ahservice.updateAmenitiesHotel(id, ahmodel);
+            AmenitiesHotelDto updatedAh = ahservice.updateAmenitiesHotel(ahmodel);
             // tạo thông báo
             Map<String, Object> response = new HashMap<>();
             response.put("code", 200);
@@ -111,7 +111,7 @@ public class AmenitiesHotelController {
         } catch (RuntimeException ex) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("code", 500);
-            errorResponse.put("message", "Có lỗi xảy ra khi cập nhật vào: " + ex.getMessage());
+            errorResponse.put("message", "" + ex.getMessage());
             errorResponse.put("status", "error");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
@@ -122,7 +122,11 @@ public class AmenitiesHotelController {
         try {
             // Gọi phương thức trong service để xóa tài khoản
             ahservice.deleteTypeRoom(id);
-            return ResponseEntity.ok("Đã xóa thành công."); // Phản hồi thành công
+            Map<String, Object> response = new HashMap<>();
+            response.put("code", 200);
+            response.put("message", "Xóa tiện nghi thành công");
+            response.put("status", "success");
+            return ResponseEntity.ok(response); // Phản hồi thành công
         } catch (NoSuchElementException ex) {
             // Trả về lỗi nếu tài khoản không tồn tại
             Map<String, Object> errorResponse = new HashMap<>();
@@ -134,7 +138,7 @@ public class AmenitiesHotelController {
             // Xử lý lỗi xung đột khóa ngoại
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("code", 409); // Mã lỗi cho xung đột
-            errorResponse.put("message", "Không thể xóa vì có dữ liệu liên quan.");
+            errorResponse.put("message", "Không thể xóa vì tiện nghi đang được sử dụng.");
             errorResponse.put("status", "error");
             return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
         } catch (CustomValidationException ex) {

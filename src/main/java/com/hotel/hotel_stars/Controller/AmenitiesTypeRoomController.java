@@ -85,16 +85,16 @@ public class AmenitiesTypeRoomController {
             // Trả về lỗi máy chủ nội bộ với mã lỗi 500
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("code", 500);
-            errorResponse.put("message", "Có lỗi xảy ra khi thêm vào: " + ex.getMessage());
+            errorResponse.put("message", "" + ex.getMessage());
             errorResponse.put("status", "error");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 
-    @PutMapping("update/{id}")
-    public ResponseEntity<?> updateAmenitiesTypeRoom(@PathVariable Integer id, @Valid @RequestBody amenitiesTypeRoomModel atrmodel) {
+    @PutMapping("update")
+    public ResponseEntity<?> updateAmenitiesTypeRoom(@Valid @RequestBody amenitiesTypeRoomModel atrmodel) {
         try {
-            AmenitiesTypeRoomDto updatedAtr = atrservice.updateAmenitiesTypeRoom(id, atrmodel);
+            AmenitiesTypeRoomDto updatedAtr = atrservice.updateAmenitiesTypeRoom(atrmodel);
             // tạo thông báo
             Map<String, Object> response = new HashMap<>();
             response.put("code", 200);
@@ -112,7 +112,7 @@ public class AmenitiesTypeRoomController {
         } catch (RuntimeException ex) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("code", 500);
-            errorResponse.put("message", "Có lỗi xảy ra khi cập nhật vào: " + ex.getMessage());
+            errorResponse.put("message", "" + ex.getMessage());
             errorResponse.put("status", "error");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
@@ -123,7 +123,11 @@ public class AmenitiesTypeRoomController {
         try {
             // Gọi phương thức trong service để xóa tài khoản
             atrservice.deleteAmenitiesTypeRoom(id);
-            return ResponseEntity.ok("Đã xóa thành công."); // Phản hồi thành công
+            Map<String, Object> response = new HashMap<>();
+            response.put("code", 200);
+            response.put("message", "Xóa tiện nghi loại phòng thành công");
+            response.put("status", "success");
+            return ResponseEntity.ok(response); // Phản hồi thành công
         } catch (NoSuchElementException ex) {
             // Trả về lỗi nếu tài khoản không tồn tại
             Map<String, Object> errorResponse = new HashMap<>();
