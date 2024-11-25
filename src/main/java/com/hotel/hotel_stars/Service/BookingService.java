@@ -162,6 +162,7 @@ public class BookingService {
         }
         return true;
     }
+
     public Boolean checkCreatbkOffRoom(Integer bookingId, List<Integer> roomId, String discountName) {
         Booking booking = bookingRepository.findById(bookingId).get();
         Discount discount = discountRepository.findByDiscountName(discountName);
@@ -183,7 +184,6 @@ public class BookingService {
         }
         return true;
     }
-
 
     public Boolean sendBookingEmail(bookingModel bookingModels) {
         Booking booking = new Booking();
@@ -215,9 +215,9 @@ public class BookingService {
         }
         return false;
     }
-    
+
     public Boolean addBookingOffline(bookingModel bookingModels) {
-    	Booking booking = new Booking();
+        Booking booking = new Booking();
         Optional<Account> accounts = accountRepository.findByUsername(bookingModels.getUserName());
         Optional<StatusBooking> statusBooking = statusBookingRepository.findById(4);
         Instant starDateIns = paramServices.stringToInstant(bookingModels.getStartDate());
@@ -231,7 +231,7 @@ public class BookingService {
         booking.setCreateAt(LocalDateTime.now());
         try {
             bookingRepository.save(booking);
-            if (checkCreatbkOffRoom(booking.getId(), bookingModels.getRoomId(), bookingModels.getDiscountName())) { 
+            if (checkCreatbkOffRoom(booking.getId(), bookingModels.getRoomId(), bookingModels.getDiscountName())) {
                 return true;
             }
         } catch (Exception e) {
