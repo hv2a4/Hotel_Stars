@@ -65,6 +65,7 @@ public class SecurityConfig {
                 }))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/account/login").authenticated()
+                                .requestMatchers("/api/account/changepassword").authenticated()
                         // -------------------------- code này dành cho mấy cái api không cần token
 
                         // All

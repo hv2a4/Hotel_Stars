@@ -390,8 +390,7 @@ public class AccountService {
         if (accountsObject.isEmpty()) {
             return false;
         }
-        paramServices.sendEmails(accountsObject.get().getEmail(), "Đổi mật khẩu ",
-                "Click vào đây: " + "http://localhost:8080/api/account/updatePassword?token=" + jwtService.generateSimpleToken(email));
+        paramServices.sendEmails(accountsObject.get().getEmail(), "Đổi mật khẩu ",paramServices.contentEmail(jwtService.generateSimpleToken(email)));
         return true;
     }
 
@@ -406,7 +405,7 @@ public class AccountService {
             response = paramServices.messageSuccessApi(400, "error", "mật khẩu và xác nhận mật khẩu không đúng");
         } else {
             try {
-                response = paramServices.messageSuccessApi(200, "success", "đổi mật khẩu thành công");
+                response = paramServices.messageSuccessApi(200, "success", "Đổi mật khẩu thành công");
                 String password = encoder.encode(changePasswordModels.getResetPassword());
                 accounts.get().setPasswords(password);
                 accountRepository.save(accounts.get());

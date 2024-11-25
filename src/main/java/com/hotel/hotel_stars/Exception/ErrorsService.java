@@ -33,7 +33,6 @@ public class ErrorsService {
         Instant start = paramServices.stringToInstant(startDate);
         Instant end = paramServices.stringToInstant(endDate);
 
-        // Iterate through each room ID to check availability
         for (Integer roomId : roomIds) {
             Long count = typeRoomRepository.countAvailableRoom(roomId, start, end);
             // If the count is 0, the room is not available
@@ -43,8 +42,6 @@ public class ErrorsService {
                 return new RoomAvailabilityResponse(false, roomId);
             }
         }
-
-        // If all rooms are available (count > 0), return true with null for unavailableRoomId
         return new RoomAvailabilityResponse(true, null);
     }
 

@@ -341,4 +341,39 @@ public class paramService {
             "</body>\n" +
             "</html>";
     }
+    public String contentEmail(String token){
+        return  "<!DOCTYPE html>\n"
+                + "<html lang=\"vi\">\n"
+                + "<head>\n"
+                + "    <meta charset=\"UTF-8\">\n"
+                + "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
+                + "    <title>Xác Nhận Đổi Mật Khẩu</title>\n"
+                + "    <style>\n"
+                + "        .button {\n"
+                + "            background-color: #4CAF50;\n"
+                + "            color: white;\n"
+                + "            padding: 10px 15px;\n"
+                + "            text-decoration: none;\n"
+                + "            border-radius: 5px;\n"
+                + "            display: inline-block;\n" // Để nút có thể được căn giữa
+                + "            margin-top: 10px;\n" // Khoảng cách trên nút
+                + "        }\n"
+                + "        p {\n"
+                + "            color: #000; /* Màu chữ cho các đoạn văn */\n"
+                + "        }\n"
+                + "    </style>\n"
+                + "</head>\n"
+                + "<body>\n"
+                + "<div class=\"container\">\n"
+                + "    <h2 style=\"color: #000;\">Xác Nhận Đổi Mật Khẩu</h2>\n" // Màu chữ cho tiêu đề
+                + "    <p>Xin chào Bạn</p>\n"
+                + "    <p>Bạn đã yêu cầu thay đổi mật khẩu cho tài khoản của mình tại Hotel Start.</p>\n"
+                + "    <p>Để xác nhận việc thay đổi mật khẩu, vui lòng nhấp vào liên kết bên dưới:</p>\n"
+                + "    <p><a href=\"http://localhost:8080/api/account/updatePassword?token="+token+"\" class=\"button\" style=\"color: white;\">Xác Nhận Đổi Mật Khẩu</a></p>\n"
+                + "    <p>Nếu bạn không yêu cầu thay đổi mật khẩu, xin vui lòng bỏ qua email này hoặc liên hệ với chúng tôi để được hỗ trợ.</p>\n"
+                + "    <p>Trân trọng,<br>Hotel Start</p>\n"
+                + "</div>\n"
+                + "</body>\n"
+                + "</html>";
+    }
 }

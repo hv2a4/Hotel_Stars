@@ -199,8 +199,17 @@ public class TypeRoomService {
                     .map(String::trim)
                     .collect(Collectors.toList());
 
-            String describe = (String) results[10];
+            List<String> amenitiesList = Arrays.stream(amenitiesTypeRoomDetails.split(","))
+                    .map(String::trim)
+                    .toList();
 
+
+            String describe = (String) results[10];
+            String bed_name = (String) results[11];
+
+            List<String> bedNameList = Arrays.stream(bed_name.split(","))
+                    .map(String::trim)
+                    .toList();
             // Construct and return a new FindTypeRoomDto
             return new FindTypeRoomDto(
                     roomId,
@@ -210,12 +219,13 @@ public class TypeRoomService {
                     priceTypeRoom,
                     acreage,
                     guestLimits,
-                    amenitiesTypeRoomDetails,
+                    amenitiesList,
                     estCost,
                     listImages,
-                    describe
+                    describe,
+                    bedNameList
             );
-        }).collect(Collectors.toList());  // Collect the results into a List
+        }).collect(Collectors.toList()); // Collect the results into a List
     }
 
 

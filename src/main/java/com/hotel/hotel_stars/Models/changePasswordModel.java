@@ -12,4 +12,5 @@ public class changePasswordModel {
     String password;
     String resetPassword;
     String confirmPassword;
+    String token;
 }

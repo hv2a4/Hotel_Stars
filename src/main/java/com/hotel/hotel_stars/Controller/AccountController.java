@@ -187,7 +187,14 @@ public class AccountController {
 
     @PutMapping("changepassword")
     public ResponseEntity<?> changepass(@RequestBody changePasswordModel changePasswordModels) {
+        String username = jwtService.extractUsername(changePasswordModels.getToken());
         Map<String, String> response = new HashMap<String, String>();
+        if(!changePasswordModels.getUsername().equals(username)) {
+          response =   paramServices.messageSuccessApi
+                  (400,"error","Lỗi xác thực: Token không khớp với tài khoản.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(response);
+        }
         response = accountService.changeUpdatePass(changePasswordModels);
         if (response.get("code").equals(String.valueOf(400))) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

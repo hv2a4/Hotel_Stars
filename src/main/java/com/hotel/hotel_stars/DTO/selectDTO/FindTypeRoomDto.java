@@ -12,15 +12,14 @@ import java.util.List;
 public class FindTypeRoomDto {
     Integer roomId;
     String roomName;
-    Integer roomTypeId;
-    String roomTypeName;
-    Double priceTypeRoom;
+    Integer typeRoomId;
+    String typeRoomName;
+    Double price;
     Double acreage;
     Integer guestLimit;
-    String amenitiesTypeRoomDetails;
+    List<String> amenitiesDetails;
     Double estCost;
-    List<String> listImages;
+    List<String> imageList;
     String describes;
-
-
+    List<String> bedNames;
 }
