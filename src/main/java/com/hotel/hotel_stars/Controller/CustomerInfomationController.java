@@ -29,9 +29,9 @@ public class CustomerInfomationController {
 
     // API thêm thông tin khách hàng
     @PostMapping("/add")
-    public ResponseEntity<?> addCustomerInformation(@Valid @RequestBody customerInformationModel customerModel) {
+    public ResponseEntity<?> addCustomerInformation(@Valid @RequestBody customerInformationModel customerModel, @RequestParam("idBookingRoom") Integer idBookingRoom) {
         try {
-            CustomerInformationDto customerDto = customerInformationService.addCustomerInformation(customerModel);
+            CustomerInformationDto customerDto = customerInformationService.addCustomerInformation(customerModel,idBookingRoom);
             Map<String, Object> response = new HashMap<>();
             response.put("code", 200);
             response.put("message", "Thêm thành công");

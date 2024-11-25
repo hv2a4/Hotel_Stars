@@ -3,12 +3,15 @@ package com.hotel.hotel_stars.Service;
 import com.hotel.hotel_stars.DTO.*;
 import com.hotel.hotel_stars.Entity.Booking;
 import com.hotel.hotel_stars.Entity.BookingRoom;
+import com.hotel.hotel_stars.Entity.TypeRoom;
+import com.hotel.hotel_stars.Entity.TypeRoomImage;
 import com.hotel.hotel_stars.Repository.BookingRoomRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.awt.geom.QuadCurve2D;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -19,6 +22,24 @@ public class BookingRoomService {
     @Autowired
     private BookingRoomRepository bookingRoomRepository;
 
+    public TypeRoomDto convertTypeRoomDto(TypeRoom tr) {
+        TypeBedDto typeBedDto = new TypeBedDto();
+        typeBedDto.setId(tr.getTypeBed().getId());
+        typeBedDto.setBedName(tr.getTypeBed().getBedName());
+        List<TypeRoomImage> typeRoomImages = tr.getTypeRoomImages();
+
+        List<TypeRoomImageDto> typeRoomImageDtos = new ArrayList<>();
+
+        for (TypeRoomImage typeRoomImage : typeRoomImages) {
+            TypeRoomImageDto typeRoomImageDto = new TypeRoomImageDto();
+            typeRoomImageDto.setId(typeRoomImage.getId());  // Lấy ID của từng ảnh
+            typeRoomImageDto.setImageName(typeRoomImage.getImageName());  // Lấy tên ảnh từ từng ảnh
+
+            typeRoomImageDtos.add(typeRoomImageDto);  // Thêm vào danh sách DTO
+        }
+        return new TypeRoomDto(tr.getId(), tr.getTypeRoomName(), tr.getPrice(), tr.getBedCount(),
+                tr.getAcreage(), tr.getGuestLimit(), typeBedDto, tr.getDescribes(), typeRoomImageDtos);
+    }
     public BookingRoomDto toDTO(BookingRoom bookingRoom) {
         BookingRoomDto bookingRoomDto = modelMapper.map(bookingRoom, BookingRoomDto.class);
 
@@ -64,7 +85,7 @@ public class BookingRoomService {
         roomDto.setRoomName(bookingRoom.getRoom().getRoomName());
         roomDto.setFloorDto(floorDto);
         roomDto.setStatusRoomDto(statusRoomDto);
-
+        roomDto.setTypeRoomDto(convertTypeRoomDto(bookingRoom.getRoom().getTypeRoom()));
         // Ánh xạ các đối tượng đầy đủ của Booking và Room
         bookingRoomDto.setBooking(bookingDto);
         bookingRoomDto.setRoom(roomDto);
@@ -86,5 +107,9 @@ public class BookingRoomService {
     public List<BookingRoomDto> getByRoom(Integer roomId, Integer statusId){
     	List<BookingRoom> bookingRoom = bookingRoomRepository.findByRoom_IdAndRoom_StatusRoom_Id(roomId, statusId);
     	return bookingRoom.stream().map(this::toDTO).toList();
+    }
+    public List<BookingRoomDto> getBookingRoomIds(List<Integer> ids){
+    	List<BookingRoom> bookingRooms = bookingRoomRepository.findByIdIn(ids);
+    	return bookingRooms.stream().map(this::toDTO).toList();
     }
 }

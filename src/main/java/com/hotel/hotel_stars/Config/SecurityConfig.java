@@ -1,4 +1,4 @@
-package com.hotel.hotel_stars.Config;
+        package com.hotel.hotel_stars.Config;
 
 import com.hotel.hotel_stars.filter.JwtAuthFilter;
 import jakarta.servlet.ServletException;
@@ -137,9 +137,6 @@ public class SecurityConfig {
                         .permitAll()
 
                                 // nghia
-                                .requestMatchers("/api/account/register").permitAll()
-                                .requestMatchers("/api/account/getTokenGG").permitAll()
-                                .requestMatchers("/api/account/loginToken").permitAll()
                                 .requestMatchers("/api/account/sendEmail").permitAll()
                                 .requestMatchers("/api/discount/getAll").permitAll()
                                 .requestMatchers("/api/account/getAll").permitAll()
@@ -176,7 +173,6 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "api/discount/**","/api/booking/sendBooking")
                         .hasAnyAuthority("Customer")
-
                         // Các endpoint yêu cầu quyền "Staff" hoặc "HotelOwner"
                         .requestMatchers(
                                 "/api/hotel/login",
@@ -224,17 +220,22 @@ public class SecurityConfig {
                         .requestMatchers("/api/service-hotel/update-data-service-hotel").hasAnyAuthority("HotelOwner")
                         .requestMatchers("/api/service-hotel/delete-data-service-hotel/**")
                         .hasAnyAuthority("HotelOwner")
-                        .requestMatchers("/api/booking-infomation/booking-room").hasAnyAuthority("HotelOwner")
+                        //.requestMatchers("/api/booking-infomation/booking-room").hasAnyAuthority("HotelOwner")
                         .requestMatchers("/api/booking-room-service-room/service").hasAnyAuthority("HotelOwner")
                         .requestMatchers("/api/booking-room/room").hasAnyAuthority("Staff", "HotelOwner")
                         .requestMatchers("/api/status-room/get-status-excluding/**").permitAll()
                         .requestMatchers("/api/room/update-active").hasAnyAuthority("Staff", "HotelOwner")
                         .requestMatchers("/api/room").permitAll()
+                        .requestMatchers("/api/booking/booking-offline").permitAll()
+                        .requestMatchers("/api/booking").permitAll()
+                        .requestMatchers("/api/booking/update-status/**").permitAll()
+                        .requestMatchers("/api/booking/update-checkIn/**").permitAll()
+                        .requestMatchers("/api/booking-infomation/booking-room").permitAll()
+                        .requestMatchers("/api/booking-room/list-booking-room").permitAll()
+                        .requestMatchers("/api/customer-info/add").permitAll()
                 // khoi
-
-                // tuong
-                .requestMatchers("/api/amenitiesHotel/**", "/api/amenitiesHotel/getById/**", "/api/amenities-type-room/delete/**").hasAnyAuthority("HotelOwner")
-                // tuong
+                        //vu
+                        
 
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

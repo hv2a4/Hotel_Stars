@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -110,4 +111,22 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
     List<Object[]> findAvailableRooms();
 
     List<Booking> findByAccount_Id(Integer accountId);
+    
+    @Query(value = """
+    	    SELECT b 
+    	    FROM Booking b
+    	    WHERE 
+    	        (:filterType = '1' AND DATE(b.startAt) BETWEEN :startDate AND :endDate)
+    	        OR (:filterType = '2' AND WEEK(b.startAt) = WEEK(:startDate) AND WEEK(b.startAt) = WEEK(:endDate))
+    	        OR (:filterType = '3' AND MONTH(b.startAt) = MONTH(:startDate) AND MONTH(b.startAt) = MONTH(:endDate))
+    	        OR (:filterType IS NULL AND DATE(b.startAt) BETWEEN :startDate AND :endDate)
+    	        OR (:startDate IS NULL AND :endDate IS NULL)
+    	    ORDER BY b.createAt DESC
+    	    """)
+    	List<Booking> findBookingsByTime(
+    	        @Param("filterType") String filterType,
+    	        @Param("startDate") LocalDate startDate,
+    	        @Param("endDate") LocalDate endDate
+    	);
+
 }

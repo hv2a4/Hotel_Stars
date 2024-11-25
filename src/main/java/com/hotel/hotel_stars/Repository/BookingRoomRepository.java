@@ -13,4 +13,5 @@ public interface BookingRoomRepository extends JpaRepository<BookingRoom, Intege
 	@Query("select br from BookingRoom br where br.booking.account.id = ?1")
 	List<BookingRoom> findBookingRoomByAccountId(Integer id);
 	List<BookingRoom> findByRoom_IdAndRoom_StatusRoom_Id(Integer roomId, Integer statusRoomId);
+	List<BookingRoom> findByIdIn(List<Integer> ids);
 }

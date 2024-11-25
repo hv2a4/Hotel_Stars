@@ -1,6 +1,7 @@
 package com.hotel.hotel_stars.Controller;
 
 import com.hotel.hotel_stars.DTO.Select.PaginatedResponse;
+import com.hotel.hotel_stars.DTO.Select.BookingDetailDTO;
 import com.hotel.hotel_stars.DTO.Select.RoomTypeDetail;
 import com.hotel.hotel_stars.DTO.Select.TypeRoomBookingCountDto;
 import com.hotel.hotel_stars.DTO.TypeRoomDto;
@@ -40,6 +41,11 @@ public class TypeRoomController {
     @GetMapping("/getAll")
     public ResponseEntity<?> getAllTypeRooms() {
         return ResponseEntity.ok(trservice.getAllTypeRooms());
+    }
+
+    @GetMapping("/account/{accountId}")
+    public ResponseEntity<List<BookingDetailDTO>> getBookingDetails(@PathVariable Integer accountId) {
+        return ResponseEntity.ok(bookingService.getBookingDetailsByAccountId(accountId));
     }
 
     @PostMapping("/add")
@@ -141,7 +147,8 @@ public class TypeRoomController {
     }
 
     @GetMapping("/find-amenities-type-rom/{idTypeRoom}")
-    public ResponseEntity<List<TypeRoomAmenitiesTypeRoomModel>> getTypeRoomAmenitiesTypeRoom(@PathVariable Integer idTypeRoom) {
+    public ResponseEntity<List<TypeRoomAmenitiesTypeRoomModel>> getTypeRoomAmenitiesTypeRoom(
+            @PathVariable Integer idTypeRoom) {
         return ResponseEntity.ok(trservice.getTypeRoomAmenitiesTypeRoom(idTypeRoom));
     }
 
@@ -151,21 +158,22 @@ public class TypeRoomController {
         return ResponseEntity.ok(typeRoomDto); // Trả về ResponseEntity với dữ liệu và mã trạng thái OK (200)
     }
 
-//    @GetMapping("/find-type-room")
-//    public ResponseEntity<?> findTypeRoom(
-//            @RequestParam String startDate,
-//            @RequestParam String endDate,
-//            @RequestParam Integer guestLimit) {
-//
-//        return ResponseEntity.ok(trservice.getRoom(startDate, endDate, guestLimit)); // Trả về ResponseEntity với dữ
-//    }
-
+    // @GetMapping("/find-type-room")
+    // public ResponseEntity<?> findTypeRoom(
+    // @RequestParam String startDate,
+    // @RequestParam String endDate,
+    // @RequestParam Integer guestLimit) {
+    //
+    // return ResponseEntity.ok(trservice.getRoom(startDate, endDate, guestLimit));
+    // // Trả về ResponseEntity với dữ
+    // }
+    
     @GetMapping("/find-type-room")
     public ResponseEntity<?> findTypeRoom(
             @RequestParam String startDate,
             @RequestParam String endDate,
             @RequestParam Integer guestLimit,
-            @RequestParam(defaultValue = "1") Integer page,  // Mặc định là trang 1
+            @RequestParam(defaultValue = "1") Integer page, // Mặc định là trang 1
             @RequestParam(defaultValue = "10") Integer size // Mặc định là 10 bản ghi/trang
     ) {
         // Fetch dữ liệu phòng với phân trang
@@ -176,14 +184,19 @@ public class TypeRoomController {
         int totalPages = (int) Math.ceil((double) totalItems / size);
 
         // Tạo đối tượng response chứa dữ liệu phân trang
-        PaginatedResponse<FindTypeRoomDto> response = new PaginatedResponse<>(rooms, totalItems, totalPages, page, size);
+        PaginatedResponse<FindTypeRoomDto> response = new PaginatedResponse<>(rooms, totalItems, totalPages, page,
+                size);
         return ResponseEntity.ok(response);
     }
-
 
     @GetMapping("/detail-type-room")
     public ResponseEntity<?> getTypeRoomDetail(@RequestParam Integer id) {
         List<RoomTypeDetail> typeRoomDto = trservice.getRoomTypeDetailById(id);
         return ResponseEntity.ok(typeRoomDto);
+    }
+
+    @GetMapping("/accountId/{id}")
+    public ResponseEntity<?> getBookingByAccount(@PathVariable("id") Integer id) {
+        return ResponseEntity.ok(bookingService.getListByAccountId(id));
     }
 }

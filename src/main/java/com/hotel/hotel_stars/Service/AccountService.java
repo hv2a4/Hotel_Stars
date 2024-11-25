@@ -131,7 +131,6 @@ public class AccountService {
         Account accounts = new Account();
 
         if (accountModels == null) {
-            System.out.println("fffff");
             return false;
         }
         try {
@@ -307,7 +306,6 @@ public class AccountService {
             // Lưu tài khoản vào cơ sở dữ liệu và chuyển đổi sang DTO
             Account savedAccount = accountRepository.save(account);
             AccountDto dto = convertToDto(savedAccount);
-            System.out.println("Converted DTO: " + dto);
             return dto;
         } catch (DataIntegrityViolationException e) {
             // Xử lý lỗi vi phạm tính toàn vẹn dữ liệu (VD: trùng lặp tài khoản)

@@ -1,8 +1,12 @@
 package com.hotel.hotel_stars.Service;
 
 import com.hotel.hotel_stars.DTO.CustomerInformationDto;
+import com.hotel.hotel_stars.Entity.BookingRoom;
+import com.hotel.hotel_stars.Entity.BookingRoomCustomerInformation;
 import com.hotel.hotel_stars.Entity.CustomerInformation;
 import com.hotel.hotel_stars.Models.customerInformationModel;
+import com.hotel.hotel_stars.Repository.BookingRoomCustomerInformationRepository;
+import com.hotel.hotel_stars.Repository.BookingRoomRepository;
 import com.hotel.hotel_stars.Repository.CustomerInformationRepository;
 import jakarta.validation.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +22,10 @@ import java.util.Optional;
 public class CustomerInformationService {
     @Autowired
     private CustomerInformationRepository customerInformationRepository;
+    @Autowired
+    BookingRoomRepository bookingRoomRepository;
+    @Autowired
+    BookingRoomCustomerInformationRepository bookingRoomCustomerInformationRepository;
 
     public CustomerInformationDto convertToDto(CustomerInformation customerInformation) {
         return new CustomerInformationDto(
@@ -40,7 +48,7 @@ public class CustomerInformationService {
     }
 
     // Thêm khách hàng mới
-    public CustomerInformationDto addCustomerInformation(customerInformationModel customerInformationModel) {
+    public CustomerInformationDto addCustomerInformation(customerInformationModel customerInformationModel, Integer idBookingRoom) {
         try {
             CustomerInformation customerInformation = new CustomerInformation();
             customerInformation.setCccd(customerInformationModel.getCccd());
@@ -53,6 +61,11 @@ public class CustomerInformationService {
 
             // Lưu vào cơ sở dữ liệu
             CustomerInformation savedCustomerInformation = customerInformationRepository.save(customerInformation);
+            BookingRoomCustomerInformation bookingRoomCustomerInformation = new BookingRoomCustomerInformation();
+            BookingRoom bookingRoom = bookingRoomRepository.findById(idBookingRoom).get();
+            bookingRoomCustomerInformation.setBookingRoom(bookingRoom);
+            bookingRoomCustomerInformation.setCustomerInformation(savedCustomerInformation);
+            bookingRoomCustomerInformationRepository.save(bookingRoomCustomerInformation);
             return convertToDto(savedCustomerInformation);
 
         } catch (DataIntegrityViolationException e) {
