@@ -163,6 +163,7 @@ public class AccountController {
 	public ResponseEntity<?> sendEmailEmployee(@RequestBody Map<String, String> request) {
 		Map<Object, Object> response = new HashMap<>();
 		String email = request.get("email");
+		System.out.println(email);
 		Boolean result = accountService.sendEmailUpdatePassword(email);
 		if (result == false) {
 			response.put("message", "Email Không tồn tại");
