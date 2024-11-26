@@ -157,7 +157,8 @@ public class SecurityConfig {
 
                                // .requestMatchers("/api/booking/sendBooking").hasAnyAuthority("Customer")
                                 //vu
-                                .requestMatchers("api/discount/**").hasAnyAuthority("Customer")
+//                                .requestMatchers("api/discount/**").hasAnyAuthority("Customer")
+                                 // tuong cmt
                                 //vu
 
                                 //--------------------------- api cần token có phân quyền Staff  ( nhân viên )
@@ -171,7 +172,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/account/login").hasAuthority("HotelOwner")
                         //vu
                         .requestMatchers(
-                                "api/discount/**","/api/booking/sendBooking")
+                                "/api/booking/sendBooking")// tuong sửa lại
                         .hasAnyAuthority("Customer")
                         // Các endpoint yêu cầu quyền "Staff" hoặc "HotelOwner"
                         .requestMatchers(
