@@ -239,6 +239,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/booking-room/getById/**").permitAll()
                         .requestMatchers("/api/booking-room-service-room/booking-room-id").permitAll()
                         .requestMatchers("/api/booking-room-service-room/service").permitAll()
+                        .requestMatchers("/api/service-room/booking-room").permitAll()
                 // khoi
                         //vu
                         

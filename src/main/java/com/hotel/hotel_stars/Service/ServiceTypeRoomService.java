@@ -28,7 +28,8 @@ public class ServiceTypeRoomService {
 
 	@Autowired
 	BookingRoomService bookingRoomService;
-    
+    //khôi
+
     public BookingRoomServiceRoomDto convertDto(BookingRoomServiceRoom bookingRoomServiceRoom) {
 		BookingRoomServiceRoomDto dto = new BookingRoomServiceRoomDto();
 		dto.setCreateAt(bookingRoomServiceRoom.getCreateAt());
@@ -39,10 +40,12 @@ public class ServiceTypeRoomService {
 		dto.setServiceRoomDto(null);
 		return dto;
 	}
+    
 	public TypeServiceRoomDto convertToDto(TypeServiceRoom typeServiceRoom) {
 	    TypeServiceRoomDto dto = new TypeServiceRoomDto();
 	    dto.setId(typeServiceRoom.getId());
 	    dto.setServiceRoomName(typeServiceRoom.getServiceRoomName());
+	    dto.setDuration(typeServiceRoom.getDuration());
 
 	    // Chuyển đổi danh sách ServiceRoom -> ServiceRoomDto
 	    if (typeServiceRoom.getServiceRooms() != null) {
@@ -55,8 +58,11 @@ public class ServiceTypeRoomService {
 	                serviceRoomDto.setPrice(serviceRoom.getPrice());
 	                serviceRoomDto.setImageName(serviceRoom.getImageName());
 	                serviceRoomDto.setBookingRoomServiceRooms(bookingRoomServiceRoomDtos);
-	                // Không ánh xạ vòng lặp ngược để tránh lỗi stackoverflow
-	                serviceRoomDto.setTypeServiceRoomDto(null);
+	                TypeServiceRoomDto typeServiceRoomDto = new TypeServiceRoomDto();
+	                typeServiceRoomDto.setId(serviceRoom.getTypeServiceRoomId().getId());
+	                typeServiceRoomDto.setDuration(serviceRoom.getTypeServiceRoomId().getDuration());
+	                typeServiceRoomDto.setServiceRoomName(serviceRoom.getTypeServiceRoomId().getServiceRoomName());
+	                serviceRoomDto.setTypeServiceRoomDto(typeServiceRoomDto);
 	                return serviceRoomDto;
 	            }).collect(Collectors.toSet())
 	        );
