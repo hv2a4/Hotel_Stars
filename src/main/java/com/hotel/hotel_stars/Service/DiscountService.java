@@ -39,6 +39,11 @@ public class DiscountService {
         return discounts.stream().map(this::convertToDto).toList();
     }
 
+    public List<DiscountDto> getDiscountByTypeRoom(Integer id) {
+        List<Discount> discounts = discountRepository.findActiveDiscountsForTypeRoom(id);
+        return discounts.stream().map(this::convertToDto).toList();
+    }
+
     public DiscountDto findDiscountDtoById(Integer id) {
         Discount discount = discountRepository.findById(id).orElse(null);
         return convertToDto(discount);

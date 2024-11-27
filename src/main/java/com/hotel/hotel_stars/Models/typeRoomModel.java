@@ -1,5 +1,6 @@
 package com.hotel.hotel_stars.Models;
 
+import com.hotel.hotel_stars.DTO.AmenitiesTypeRoomDto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -41,4 +42,6 @@ public class typeRoomModel {
     private String describes;
 
     private String[] imageNames;
+
+    private List<amenitiesTypeRoomModel> amenitiesTypeRooms;
 }

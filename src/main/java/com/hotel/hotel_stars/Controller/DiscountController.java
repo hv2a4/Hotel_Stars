@@ -32,6 +32,10 @@ public class DiscountController {
     public ResponseEntity<?> getAllDiscount() {
         return ResponseEntity.ok(discountService.getAllDiscountDtos());
     }
+    @GetMapping("getAllDiscountTR")
+    public ResponseEntity<?> getDiscountByTR(@RequestParam(required = false) Integer typeRoomId) {
+        return ResponseEntity.ok(discountService.getDiscountByTypeRoom(typeRoomId));
+    }
 
     @GetMapping("get-by-id/{id}")
     public ResponseEntity<?> getDiscountById(@PathVariable Integer id) {

@@ -23,6 +23,9 @@ public class TypeServiceRoom {
     @Column(name = "service_room_name")
     private String serviceRoomName;
 
+    @Column(name = "duration")
+    String duration;
+
     @OneToMany(mappedBy = "typeServiceRoomId", fetch=FetchType.LAZY)
     private Set<ServiceRoom> serviceRooms = new LinkedHashSet<>();
 }

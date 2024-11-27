@@ -58,6 +58,7 @@ import java.util.stream.Collectors;
         return new AmenitiesTypeRoomDto(
                 atr.getId(),
                 atr.getAmenitiesTypeRoomName()
+//                atr.getIcon()
         );
     }
 
@@ -79,72 +80,72 @@ import java.util.stream.Collectors;
     }
 
     // thêm dịch vụ phòng
-    public TypeRoomAmenitiesTypeRoomDto addTypeRoomAmenitiesTypeRoom(TypeRoomAmenitiesTypeRoomModel tr_atrmodel) {
-        try {
-            TypeRoomAmenitiesTypeRoom tr_atr = new TypeRoomAmenitiesTypeRoom();
-
-            // Đặt thông tin loại phòng
-            Optional<TypeRoom> tr = trrep.findById(tr_atrmodel.getTypeRoomId());
-            if (tr.isEmpty()) {
-                throw new ValidationException("Loại phòng với ID " + tr_atrmodel.getTypeRoomId() + " không tồn tại.");
-            }
-            tr_atr.setTypeRoom(tr.get());
-
-            Optional<AmenitiesTypeRoom> atr = atrrep.findById(tr_atrmodel.getAmenitiesTypeRoomId());
-            if (atr.isEmpty()) {
-                throw new ValidationException("Tiện nghi phòng với ID " + tr_atrmodel.getAmenitiesTypeRoomId() + " không tồn tại.");
-            }
-            tr_atr.setAmenitiesTypeRoom(atr.get());
-
-            // Lưu thông tin loại phòng vào cơ sở dữ liệu
-            TypeRoomAmenitiesTypeRoom savedTrAtr = tr_atr_rep.save(tr_atr);
-
-            // Chuyển đổi và trả về DTO
-            return convertToDto(savedTrAtr);
-        } catch (DataIntegrityViolationException e) {
-            throw new RuntimeException("Có lỗi xảy ra do vi phạm tính toàn vẹn dữ liệu", e);
-        } catch (ValidationException e) {
-            throw new RuntimeException("Dữ liệu không hợp lệ: " + e.getMessage(), e);
-        } catch (Exception e) {
-            throw new RuntimeException("Có lỗi xảy ra khi thêm vào!", e);
-        }
-    }
+//    public TypeRoomAmenitiesTypeRoomDto addTypeRoomAmenitiesTypeRoom(TypeRoomAmenitiesTypeRoomModel tr_atrmodel) {
+//        try {
+//            TypeRoomAmenitiesTypeRoom tr_atr = new TypeRoomAmenitiesTypeRoom();
+//
+//            // Đặt thông tin loại phòng
+//            Optional<TypeRoom> tr = trrep.findById(tr_atrmodel.getTypeRoomId());
+//            if (tr.isEmpty()) {
+//                throw new ValidationException("Loại phòng với ID " + tr_atrmodel.getTypeRoomId() + " không tồn tại.");
+//            }
+//            tr_atr.setTypeRoom(tr.get());
+//
+//            Optional<AmenitiesTypeRoom> atr = atrrep.findById(tr_atrmodel.getAmenitiesTypeRoomId());
+//            if (atr.isEmpty()) {
+//                throw new ValidationException("Tiện nghi phòng với ID " + tr_atrmodel.getAmenitiesTypeRoomId() + " không tồn tại.");
+//            }
+//            tr_atr.setAmenitiesTypeRoom(atr.get());
+//
+//            // Lưu thông tin loại phòng vào cơ sở dữ liệu
+//            TypeRoomAmenitiesTypeRoom savedTrAtr = tr_atr_rep.save(tr_atr);
+//
+//            // Chuyển đổi và trả về DTO
+//            return convertToDto(savedTrAtr);
+//        } catch (DataIntegrityViolationException e) {
+//            throw new RuntimeException("Có lỗi xảy ra do vi phạm tính toàn vẹn dữ liệu", e);
+//        } catch (ValidationException e) {
+//            throw new RuntimeException("Dữ liệu không hợp lệ: " + e.getMessage(), e);
+//        } catch (Exception e) {
+//            throw new RuntimeException("Có lỗi xảy ra khi thêm vào!", e);
+//        }
+//    }
 
     // Cập nhật thông tin dịch vụ phòng
-    public TypeRoomAmenitiesTypeRoomDto updateTypeRoomAmenitiesTypeRoom(Integer id, TypeRoomAmenitiesTypeRoomModel tr_atrModel) {
-        try {
-            Optional<TypeRoomAmenitiesTypeRoom> existingTrAtr = tr_atr_rep.findById(id);
-            if (existingTrAtr.isEmpty()) {
-                throw new ValidationException("Dịch vụ phòng với ID " + id + " không tồn tại.");
-            }
-
-            TypeRoomAmenitiesTypeRoom tr_atr = existingTrAtr.get();
-
-            // Kiểm tra và cập nhật loại phòng
-            Optional<TypeRoom> tr = trrep.findById(tr_atrModel.getTypeRoomId());
-            if (tr.isEmpty()) {
-                throw new ValidationException("Loại phòng với ID " + tr_atrModel.getTypeRoomId() + " không tồn tại.");
-            }
-            tr_atr.setTypeRoom(tr.get());
-
-            // Kiểm tra và cập nhật tiện nghi phòng
-            Optional<AmenitiesTypeRoom> atr = atrrep.findById(tr_atrModel.getAmenitiesTypeRoomId());
-            if (atr.isEmpty()) {
-                throw new ValidationException("Tiện nghi phòng với ID " + tr_atrModel.getAmenitiesTypeRoomId() + " không tồn tại.");
-            }
-            tr_atr.setAmenitiesTypeRoom(atr.get());
-
-            // Lưu thông tin cập nhật vào cơ sở dữ liệu
-            TypeRoomAmenitiesTypeRoom updatedTrAtr = tr_atr_rep.save(tr_atr);
-
-            // Chuyển đổi và trả về DTO
-            return convertToDto(updatedTrAtr);
-        } catch (ValidationException e) {
-            throw new RuntimeException("Dữ liệu không hợp lệ: " + e.getMessage(), e);
-        } catch (Exception e) {
-            throw new RuntimeException("Có lỗi xảy ra khi cập nhật!", e);
-        }
-    }
+//    public TypeRoomAmenitiesTypeRoomDto updateTypeRoomAmenitiesTypeRoom(Integer id, TypeRoomAmenitiesTypeRoomModel tr_atrModel) {
+//        try {
+//            Optional<TypeRoomAmenitiesTypeRoom> existingTrAtr = tr_atr_rep.findById(id);
+//            if (existingTrAtr.isEmpty()) {
+//                throw new ValidationException("Dịch vụ phòng với ID " + id + " không tồn tại.");
+//            }
+//
+//            TypeRoomAmenitiesTypeRoom tr_atr = existingTrAtr.get();
+//
+//            // Kiểm tra và cập nhật loại phòng
+//            Optional<TypeRoom> tr = trrep.findById(tr_atrModel.getTypeRoomId());
+//            if (tr.isEmpty()) {
+//                throw new ValidationException("Loại phòng với ID " + tr_atrModel.getTypeRoomId() + " không tồn tại.");
+//            }
+//            tr_atr.setTypeRoom(tr.get());
+//
+//            // Kiểm tra và cập nhật tiện nghi phòng
+//            Optional<AmenitiesTypeRoom> atr = atrrep.findById(tr_atrModel.getAmenitiesTypeRoomId());
+//            if (atr.isEmpty()) {
+//                throw new ValidationException("Tiện nghi phòng với ID " + tr_atrModel.getAmenitiesTypeRoomId() + " không tồn tại.");
+//            }
+//            tr_atr.setAmenitiesTypeRoom(atr.get());
+//
+//            // Lưu thông tin cập nhật vào cơ sở dữ liệu
+//            TypeRoomAmenitiesTypeRoom updatedTrAtr = tr_atr_rep.save(tr_atr);
+//
+//            // Chuyển đổi và trả về DTO
+//            return convertToDto(updatedTrAtr);
+//        } catch (ValidationException e) {
+//            throw new RuntimeException("Dữ liệu không hợp lệ: " + e.getMessage(), e);
+//        } catch (Exception e) {
+//            throw new RuntimeException("Có lỗi xảy ra khi cập nhật!", e);
+//        }
+//    }
 
     // Xóa dịch vụ phòng
     public void deleteTypeRoomAmenitiesTypeRoom(Integer id) {

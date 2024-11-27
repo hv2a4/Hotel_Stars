@@ -1,5 +1,6 @@
 package com.hotel.hotel_stars.DTO;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,5 +18,7 @@ import java.io.Serializable;
 public class TypeRoomImageDto implements Serializable {
     Integer id;
     String imageName;
+    
+    @JsonIgnore
     TypeRoomDto typeRoomDto;
 }

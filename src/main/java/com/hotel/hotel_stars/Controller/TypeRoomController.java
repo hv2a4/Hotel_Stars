@@ -1,10 +1,18 @@
 package com.hotel.hotel_stars.Controller;
 
+import com.hotel.hotel_stars.DTO.Select.PaginatedResponse;
+import com.hotel.hotel_stars.DTO.Select.BookingDetailDTO;
+import com.hotel.hotel_stars.DTO.Select.RoomTypeDetail;
 import com.hotel.hotel_stars.DTO.Select.TypeRoomBookingCountDto;
 import com.hotel.hotel_stars.DTO.TypeRoomDto;
+import com.hotel.hotel_stars.DTO.selectDTO.FindTypeRoomDto;
 import com.hotel.hotel_stars.Entity.TypeRoom;
+import com.hotel.hotel_stars.Entity.TypeRoomAmenitiesTypeRoom;
 import com.hotel.hotel_stars.Exception.CustomValidationException;
+import com.hotel.hotel_stars.Models.TypeRoomAmenitiesTypeRoomModel;
 import com.hotel.hotel_stars.Models.typeRoomModel;
+import com.hotel.hotel_stars.Service.AccountService;
+import com.hotel.hotel_stars.Service.BookingService;
 import com.hotel.hotel_stars.Service.TypeRoomService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +32,20 @@ import java.util.NoSuchElementException;
 public class TypeRoomController {
     @Autowired
     TypeRoomService trservice;
+    @Autowired
+    private AccountService accountService;
+
+    @Autowired
+    BookingService bookingService;
 
     @GetMapping("/getAll")
     public ResponseEntity<?> getAllTypeRooms() {
         return ResponseEntity.ok(trservice.getAllTypeRooms());
+    }
+
+    @GetMapping("/account/{accountId}")
+    public ResponseEntity<List<BookingDetailDTO>> getBookingDetails(@PathVariable Integer accountId) {
+        return ResponseEntity.ok(bookingService.getBookingDetailsByAccountId(accountId));
     }
 
     @PostMapping("/add")
@@ -47,11 +65,17 @@ public class TypeRoomController {
             response.put("errors", ex.getErrorMessages());
             return ResponseEntity.badRequest().body(response); // Mã 400
         } catch (RuntimeException ex) {
-            if (ex.getMessage().contains("Tên loại phòng này đã tồn tại")) {
+            if (ex.getMessage().contains("409")) {
                 Map<String, Object> response = new HashMap<>();
                 response.put("code", 409);
                 response.put("message", "Tên loại phòng này đã tồn tại.");
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(response); // Mã 409
+            }
+            if (ex.getMessage().contains("422")) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("code", 422);
+                response.put("message", "Vui lòng chọn ít nhất một hình ảnh!");
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(response); // Mã 422
             }
             Map<String, Object> response = new HashMap<>();
             response.put("code", 500);
@@ -59,7 +83,6 @@ public class TypeRoomController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response); // Mã 500
         }
     }
-
 
     @PutMapping("update")
     public ResponseEntity<?> updateTypeRoom(@Valid @RequestBody typeRoomModel trmodel) {
@@ -88,7 +111,6 @@ public class TypeRoomController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response); // Mã 500
         }
     }
-
 
     @DeleteMapping("delete/{id}")
     public ResponseEntity<?> deleteTypeRoom(@PathVariable Integer id) {
@@ -119,25 +141,62 @@ public class TypeRoomController {
         }
     }
 
-
-
     @GetMapping("/top3")
-    public ResponseEntity<List<TypeRoomDto>> getTop3TypeRooms() {
+    public ResponseEntity<?> getTop3TypeRooms() {
         return ResponseEntity.ok(trservice.getTypeRooms());
+    }
+
+    @GetMapping("/find-amenities-type-rom/{idTypeRoom}")
+    public ResponseEntity<List<TypeRoomAmenitiesTypeRoomModel>> getTypeRoomAmenitiesTypeRoom(
+            @PathVariable Integer idTypeRoom) {
+        return ResponseEntity.ok(trservice.getTypeRoomAmenitiesTypeRoom(idTypeRoom));
     }
 
     @GetMapping("/find-by-id")
     public ResponseEntity<TypeRoomDto> getTypeRoomById(@RequestParam Integer id) {
         TypeRoomDto typeRoomDto = trservice.getTypeRoomsById(id);
-        return ResponseEntity.ok(typeRoomDto);  // Trả về ResponseEntity với dữ liệu và mã trạng thái OK (200)
+        return ResponseEntity.ok(typeRoomDto); // Trả về ResponseEntity với dữ liệu và mã trạng thái OK (200)
     }
+
+    // @GetMapping("/find-type-room")
+    // public ResponseEntity<?> findTypeRoom(
+    // @RequestParam String startDate,
+    // @RequestParam String endDate,
+    // @RequestParam Integer guestLimit) {
+    //
+    // return ResponseEntity.ok(trservice.getRoom(startDate, endDate, guestLimit));
+    // // Trả về ResponseEntity với dữ
+    // }
+    
     @GetMapping("/find-type-room")
     public ResponseEntity<?> findTypeRoom(
             @RequestParam String startDate,
             @RequestParam String endDate,
-            @RequestParam Integer guestLimit) {
+            @RequestParam Integer guestLimit,
+            @RequestParam(defaultValue = "1") Integer page, // Mặc định là trang 1
+            @RequestParam(defaultValue = "10") Integer size // Mặc định là 10 bản ghi/trang
+    ) {
+        // Fetch dữ liệu phòng với phân trang
+        List<FindTypeRoomDto> rooms = trservice.getRoom(startDate, endDate, guestLimit, page, size);
 
-        return ResponseEntity.ok( trservice.getRoom(startDate,endDate,guestLimit));  // Trả về ResponseEntity với dữ liệu và mã trạng thái OK (200)
+        // Lấy tổng số phòng để tính toán tổng số trang
+        long totalItems = trservice.getTotalRoomCount(startDate, endDate, guestLimit);
+        int totalPages = (int) Math.ceil((double) totalItems / size);
+
+        // Tạo đối tượng response chứa dữ liệu phân trang
+        PaginatedResponse<FindTypeRoomDto> response = new PaginatedResponse<>(rooms, totalItems, totalPages, page,
+                size);
+        return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/detail-type-room")
+    public ResponseEntity<?> getTypeRoomDetail(@RequestParam Integer id) {
+        List<RoomTypeDetail> typeRoomDto = trservice.getRoomTypeDetailById(id);
+        return ResponseEntity.ok(typeRoomDto);
+    }
+
+    @GetMapping("/accountId/{id}")
+    public ResponseEntity<?> getBookingByAccount(@PathVariable("id") Integer id) {
+        return ResponseEntity.ok(bookingService.getListByAccountId(id));
+    }
 }

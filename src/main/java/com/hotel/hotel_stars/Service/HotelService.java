@@ -21,7 +21,7 @@ public class HotelService {
 
     public HotelDto convertHotelDto(Hotel hotel) {
         return new HotelDto(hotel.getId(), hotel.getHotelName(), hotel.getDescriptions(),
-                hotel.getProvince(), hotel.getDistrict(), hotel.getWard(), hotel.getAddress());
+                hotel.getProvince(), hotel.getDistrict(), hotel.getWard(), hotel.getAddress(), hotel.getHotelPhone());
     }
 
     public HotelDto getAllHotels() {

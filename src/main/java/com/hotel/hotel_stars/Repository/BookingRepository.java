@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,8 +46,8 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
             "booking.start_at, " +
             "booking.end_at, " +
             "accounts.fullname, " +
-            "roles.role_name, " +  // Sửa lỗi ở đây: thêm dấu phẩy
-            "type_room.type_room_name, " +  // Không cần dấu phẩy ở cuối dòng này
+            "roles.role_name, " + // Sửa lỗi ở đây: thêm dấu phẩy
+            "type_room.type_room_name, " + // Không cần dấu phẩy ở cuối dòng này
             "invoice.total_amount, " +
             "type_room.guest_limit AS max_guests " +
             "FROM accounts " +
@@ -61,7 +62,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
             "JOIN roles ON accounts.role_id = roles.id", nativeQuery = true)
     List<Object[]> findAllBookingDetailsUsingSQL();
 
-    @Query("SELECT new com.hotel.hotel_stars.DTO.Select.CustomerReservation(" +
+    @Query("SELECT DISTINCT new com.hotel.hotel_stars.DTO.Select.CustomerReservation(" +
             "a.id, a.fullname, a.phone, a.email, " +
             "b.id, b.startAt, b.endAt, " +
             "tr.guestLimit, tr.typeRoomName, r.roomName, " +
@@ -76,8 +77,56 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
             "JOIN Room r ON br.room.id = r.id " +
             "JOIN TypeRoom tr ON r.typeRoom.id = tr.id " +
             "JOIN Role role ON a.role.id = role.id " +
-            "WHERE b.id = :bookingId")
-    Optional<CustomerReservation> findBookingDetailsById(@Param("bookingId") Integer bookingId);
+            "WHERE b.id = :bookingId and r.roomName = :roomName")
+    Optional<CustomerReservation> findBookingDetailsById(@Param("bookingId") Integer bookingId, @Param("roomName") String roomName);
 
+
+    @Query(value = """
+            SELECT
+                room.id AS roomId,
+                room.room_name AS roomName,
+                type_room.type_room_name AS typeRoomName,
+                type_room.guest_limit AS guestLimit,
+                type_room.bed_count AS bedCount,
+                type_room.acreage AS acreage,
+                type_room.describes AS describes,
+                type_room_image.id AS imageId,
+                status_room.status_room_name AS statusRoomName,
+                type_room.id AS typeRoomId,
+                type_room.price AS price,
+                type_room_amenities_type_room.id AS amenitiesId
+            FROM
+                room
+                JOIN type_room ON room.type_room_id = type_room.id
+                JOIN type_room_image ON type_room.id = type_room_image.type_room_id
+                JOIN status_room ON room.status_room_id = status_room.id
+                JOIN type_room_amenities_type_room ON type_room.id = type_room_amenities_type_room.type_room_id
+                JOIN booking_room ON room.id = booking_room.room_id
+                JOIN booking ON booking_room.booking_id = booking.id
+            WHERE
+                status_room.status_room_name = 'phòng trống'
+            ORDER BY
+                room.room_name
+            """, nativeQuery = true)
+    List<Object[]> findAvailableRooms();
+
+    List<Booking> findByAccount_Id(Integer accountId);
+    
+    @Query(value = """
+    	    SELECT b 
+    	    FROM Booking b
+    	    WHERE 
+    	        (:filterType = '1' AND DATE(b.startAt) BETWEEN :startDate AND :endDate)
+    	        OR (:filterType = '2' AND WEEK(b.startAt) = WEEK(:startDate) AND WEEK(b.startAt) = WEEK(:endDate))
+    	        OR (:filterType = '3' AND MONTH(b.startAt) = MONTH(:startDate) AND MONTH(b.startAt) = MONTH(:endDate))
+    	        OR (:filterType IS NULL AND DATE(b.startAt) BETWEEN :startDate AND :endDate)
+    	        OR (:startDate IS NULL AND :endDate IS NULL)
+    	    ORDER BY b.createAt DESC
+    	    """)
+    	List<Booking> findBookingsByTime(
+    	        @Param("filterType") String filterType,
+    	        @Param("startDate") LocalDate startDate,
+    	        @Param("endDate") LocalDate endDate
+    	);
 
 }

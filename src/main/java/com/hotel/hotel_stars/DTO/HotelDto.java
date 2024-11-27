@@ -21,4 +21,5 @@ public class HotelDto implements Serializable {
     String district;
     String ward;
     String address;
+    String hotelPhone;
 }

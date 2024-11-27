@@ -20,8 +20,8 @@ public class ReservationController {
     }
 
     @GetMapping("selectBookingById")
-    public ResponseEntity<?> selectBookingById(@RequestParam Integer bookingId) {
-        return ResponseEntity.ok(bookingService.mapToCustomerReservation(bookingId));
+    public ResponseEntity<?> selectBookingById(@RequestParam Integer bookingId, @RequestParam String roomName) {
+        return ResponseEntity.ok(bookingService.mapToCustomerReservation(bookingId, roomName));
     }
 
     @PutMapping("statusBooking")

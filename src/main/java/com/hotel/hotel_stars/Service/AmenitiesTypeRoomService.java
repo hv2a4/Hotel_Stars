@@ -23,6 +23,7 @@ public class AmenitiesTypeRoomService {
         return new AmenitiesTypeRoomDto(
                 atr.getId(),
                 atr.getAmenitiesTypeRoomName()
+//                atr.getIcon()
         );
     }
 
@@ -33,47 +34,58 @@ public class AmenitiesTypeRoomService {
                 .toList();
     }
 
+    public boolean checkIfExistsByName(String name) {
+        return atrrep.existsByAmenitiesTypeRoomName(name);
+    }
+
+    public AmenitiesTypeRoomDto getAmenitiesTypeRoomById(Integer id) {
+        Optional<AmenitiesTypeRoom> atrOpt = atrrep.findById(id);
+        if (atrOpt.isEmpty()) {
+            throw new NoSuchElementException("Dịch vụ phòng này không tồn tại"); // Ném ngoại lệ nếu không tìm thấy
+        }
+        return convertToDto(atrOpt.get()); // Trả về đối tượng DTO sau khi tìm thấy
+    }
+
     public AmenitiesTypeRoomDto addAmenitiesTypeRoom(amenitiesTypeRoomModel atrmodel) {
         List<String> errorMessages = new ArrayList<>(); // Danh sách lưu trữ các thông báo lỗi
 
         // Kiểm tra tên
         if (atrmodel.getAmenitiesTypeRoomName() == null || atrmodel.getAmenitiesTypeRoomName().isEmpty()) {
-            errorMessages.add("Tên dịch vụ phòng không được để trống");
+            errorMessages.add("Tên tiện nghi loại phòng phòng không được để trống");
         } else if (atrrep.existsByAmenitiesTypeRoomName(atrmodel.getAmenitiesTypeRoomName())) {
-            errorMessages.add("Tên này đã tồn tại");
+            errorMessages.add("Tên tiện nghi loại phòng này đã tồn tại");
+        }
+        if (!errorMessages.isEmpty()) {
+            throw new ValidationException(String.join(", ", errorMessages));
         }
 
         try {
             AmenitiesTypeRoom atr = new AmenitiesTypeRoom();
             // In ra màn hình
-            System.out.println("ID: " + atr.getId());
-            System.out.println("Tên loại tiện phòng: " + atrmodel.getAmenitiesTypeRoomName());
-
             atr.setAmenitiesTypeRoomName(atrmodel.getAmenitiesTypeRoomName());
-
             // Lưu tài khoản vào cơ sở dữ liệu và chuyển đổi sang DTO
             AmenitiesTypeRoom savedAtr = atrrep.save(atr);
             return convertToDto(savedAtr);
         } catch (DataIntegrityViolationException e) {
             throw new RuntimeException("Có lỗi xảy ra do vi phạm tính toàn vẹn dữ liệu", e);
         } catch (Exception e) {
-            throw new RuntimeException("Có lỗi xảy ra khi thêm dịch vụ phòng!", e);
+            throw new RuntimeException("Có lỗi xảy ra khi thêm!", e);
         }
     }
 
-    public AmenitiesTypeRoomDto updateAmenitiesTypeRoom(Integer atrId, amenitiesTypeRoomModel atrmodel) {
+    public AmenitiesTypeRoomDto updateAmenitiesTypeRoom(amenitiesTypeRoomModel atrmodel) {
         List<String> errorMessages = new ArrayList<>(); // Danh sách lưu trữ các thông báo lỗi
 
         // Kiểm tra xem tài khoản có tồn tại hay không
-        Optional<AmenitiesTypeRoom> existingAtrOpt = atrrep.findById(atrId);
+        Optional<AmenitiesTypeRoom> existingAtrOpt = atrrep.findById(atrmodel.getId());
 
         AmenitiesTypeRoom existingAtr = existingAtrOpt.get();
 
         // kiểm tra tên dịch vụ phòng
         if (atrmodel.getAmenitiesTypeRoomName() == null || atrmodel.getAmenitiesTypeRoomName().isEmpty()) {
-            errorMessages.add("Tên dịch vụ phòng không được để trống");
+            errorMessages.add("Tên tiện nghi loại phòng không được để trống");
         } else if (!existingAtr.getAmenitiesTypeRoomName().equals(atrmodel.getAmenitiesTypeRoomName()) && atrrep.existsByAmenitiesTypeRoomName(atrmodel.getAmenitiesTypeRoomName())) {
-            errorMessages.add("Dịch vụ của phòng này đã tồn tại");
+            errorMessages.add("Tên tiện nghi loại phòng này đã tồn tại");
         }
 
 

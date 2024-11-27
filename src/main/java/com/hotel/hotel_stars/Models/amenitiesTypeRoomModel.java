@@ -11,4 +11,6 @@ public class amenitiesTypeRoomModel {
 
     @NotBlank(message = "Tên loại tiện nghi phòng không được để trống")
     private String amenitiesTypeRoomName;
+
+//    private String icon;
 }

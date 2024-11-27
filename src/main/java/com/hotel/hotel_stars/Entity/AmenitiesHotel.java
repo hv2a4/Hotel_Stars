@@ -10,14 +10,12 @@ import lombok.Setter;
 @Table(name = "amenities_hotel", schema = "hotel_manager")
 public class AmenitiesHotel {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 
     @Column(name = "amenities_hotel_name")
     private String amenitiesHotelName;
-
-    @Column(name = "icon")
-    private String icon;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hotel_id")

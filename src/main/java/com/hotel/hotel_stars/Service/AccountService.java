@@ -3,6 +3,7 @@ package com.hotel.hotel_stars.Service;
 import com.hotel.hotel_stars.Config.UserInfoService;
 import com.hotel.hotel_stars.DTO.AccountDto;
 import com.hotel.hotel_stars.DTO.BookingDto;
+import com.hotel.hotel_stars.DTO.MethodPaymentDto;
 import com.hotel.hotel_stars.DTO.RoleDto;
 import com.hotel.hotel_stars.DTO.Select.AccountBookingDTO;
 import com.hotel.hotel_stars.Config.JwtService;
@@ -71,10 +72,21 @@ public class AccountService {
         RoleDto roleDto = new RoleDto(account.getRole().getId(), account.getRole().getRoleName());
 
         // Chuyển đổi danh sách Booking sang BookingDto
-        List<BookingDto> bookingDtoList = account.getBookingList().stream()
-                .map(booking -> new BookingDto(booking.getId(), booking.getCreateAt(), booking.getStartAt(),
-                        booking.getEndAt(), booking.getStatusPayment(), new AccountDto())) // Cần xử lý accountDto trong BookingDto
-                .collect(Collectors.toList());
+        List<BookingDto> bookingDtoList = account.getBookingList() != null
+        	    ? account.getBookingList().stream()
+        	        .map(booking -> new BookingDto(
+        	            booking.getId(),
+        	            booking.getCreateAt(),
+        	            booking.getStartAt(),
+        	            booking.getEndAt(),
+        	            booking.getStatusPayment(),
+        	            new AccountDto(), // Chỗ này có thể cần xử lý chính xác hơn
+        	            booking.getMethodPayment() != null 
+        	                ? new MethodPaymentDto(booking.getMethodPayment().getId(), booking.getMethodPayment().getMethodPaymentName())
+        	                : null
+        	        ))
+        	        .collect(Collectors.toList())
+        	    : Collections.emptyList();
 
         // Trả về AccountDto
         return new AccountDto(
@@ -119,7 +131,6 @@ public class AccountService {
         Account accounts = new Account();
 
         if (accountModels == null) {
-            System.out.println("fffff");
             return false;
         }
         try {
@@ -294,8 +305,8 @@ public class AccountService {
             account.setAvatar(accountModel.getAvatar());
             // Lưu tài khoản vào cơ sở dữ liệu và chuyển đổi sang DTO
             Account savedAccount = accountRepository.save(account);
-            return convertToDto(savedAccount); // Chuyển đổi tài khoản đã lưu sang DTO
-
+            AccountDto dto = convertToDto(savedAccount);
+            return dto;
         } catch (DataIntegrityViolationException e) {
             // Xử lý lỗi vi phạm tính toàn vẹn dữ liệu (VD: trùng lặp tài khoản)
             throw new RuntimeException("Có lỗi xảy ra do vi phạm tính toàn vẹn dữ liệu", e);
@@ -420,6 +431,10 @@ public class AccountService {
         return accountRepository.findByUsername(username)
                 .map(this::convertDT)
                 .orElse(null);
+    }
+    public AccountDto getAccountId(Integer id) {
+    	Account ac = accountRepository.findById(id).get();
+    	return convertToDto(ac);
     }
 
     public AccountInfo convertDT(Account account) {

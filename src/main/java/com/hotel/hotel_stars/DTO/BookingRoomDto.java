@@ -29,4 +29,5 @@ public class BookingRoomDto implements Serializable {
     Boolean statusPayment;
     BookingDto booking;
     RoomDto room;
+    AccountDto accountDto;
 }

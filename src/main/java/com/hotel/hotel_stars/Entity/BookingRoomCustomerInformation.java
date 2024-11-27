@@ -10,6 +10,7 @@ import lombok.Setter;
 @Table(name = "booking_room_customer_information", schema = "hotel_manager")
 public class BookingRoomCustomerInformation {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 
