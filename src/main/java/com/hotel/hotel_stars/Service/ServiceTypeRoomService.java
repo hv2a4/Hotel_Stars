@@ -25,10 +25,28 @@ public class ServiceTypeRoomService {
 	ServiceRoomRepository serviceRoomRepository;
 
 	public TypeServiceRoomDto convertToDto(TypeServiceRoom typeServiceRoom) {
-		TypeServiceRoomDto dto = new TypeServiceRoomDto();
-		dto.setId(typeServiceRoom.getId());
-		dto.setServiceRoomName(typeServiceRoom.getServiceRoomName());
-		return dto;
+	    TypeServiceRoomDto dto = new TypeServiceRoomDto();
+	    dto.setId(typeServiceRoom.getId());
+	    dto.setServiceRoomName(typeServiceRoom.getServiceRoomName());
+
+	    // Chuyển đổi danh sách ServiceRoom -> ServiceRoomDto
+	    if (typeServiceRoom.getServiceRooms() != null) {
+	        dto.setServiceRoomDtos(
+	            typeServiceRoom.getServiceRooms().stream().map(serviceRoom -> {
+	                ServiceRoomDto serviceRoomDto = new ServiceRoomDto();
+	                serviceRoomDto.setId(serviceRoom.getId());
+	                serviceRoomDto.setServiceRoomName(serviceRoom.getServiceRoomName());
+	                serviceRoomDto.setPrice(serviceRoom.getPrice());
+	                serviceRoomDto.setImageName(serviceRoom.getImageName());
+	                // Không ánh xạ vòng lặp ngược để tránh lỗi stackoverflow
+	                serviceRoomDto.setTypeServiceRoomDto(null);
+	                return serviceRoomDto;
+	            }).collect(Collectors.toSet())
+	        );
+	    } else {
+	        dto.setServiceRoomDtos(null);
+	    }
+	    return dto;
 	}
 
 	public List<TypeServiceRoomDto> convertToDtoList(List<TypeServiceRoom> typeServiceRooms) {

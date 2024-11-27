@@ -10,4 +10,5 @@ import org.springframework.data.jpa.repository.Query;
 public interface BookingRoomCustomerInformationRepository
 		extends JpaRepository<BookingRoomCustomerInformation, Integer> {
 	List<BookingRoomCustomerInformation> findByBookingRoom_IdIn(List<Integer> bookingRoomIds);
+	BookingRoomCustomerInformation findByBookingRoomIdAndCustomerInformationId(Integer bookingRoomId, Integer customerInformationId);
 }

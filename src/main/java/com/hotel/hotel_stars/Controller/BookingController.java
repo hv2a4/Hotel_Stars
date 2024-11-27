@@ -92,6 +92,12 @@ public class BookingController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 	}
+	
+	@GetMapping("/getById/{id}")
+	public ResponseEntity<?> getById(@PathVariable("id") Integer id){
+		return ResponseEntity.ok(bookingService.getByIdBooking(id));
+	}
+	
 
 	// khoi
 

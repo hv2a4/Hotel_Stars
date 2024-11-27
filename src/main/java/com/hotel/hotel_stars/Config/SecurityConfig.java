@@ -221,7 +221,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/service-hotel/delete-data-service-hotel/**")
                         .hasAnyAuthority("HotelOwner")
                         //.requestMatchers("/api/booking-infomation/booking-room").hasAnyAuthority("HotelOwner")
-                        .requestMatchers("/api/booking-room-service-room/service").hasAnyAuthority("HotelOwner")
+//                        .requestMatchers("/api/booking-room-service-room/service").hasAnyAuthority("HotelOwner")
                         .requestMatchers("/api/booking-room/room").hasAnyAuthority("Staff", "HotelOwner")
                         .requestMatchers("/api/status-room/get-status-excluding/**").permitAll()
                         .requestMatchers("/api/room/update-active").hasAnyAuthority("Staff", "HotelOwner")
@@ -233,6 +233,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/booking-infomation/booking-room").permitAll()
                         .requestMatchers("/api/booking-room/list-booking-room").permitAll()
                         .requestMatchers("/api/customer-info/add").permitAll()
+                        .requestMatchers("/api/customer-info/update/**").permitAll()
+                        .requestMatchers("/api/booking-infomation").permitAll()
+                        .requestMatchers("/api/booking/getById/**").permitAll()
+                        .requestMatchers("/api/booking-room/getById/**").permitAll()
+                        .requestMatchers("/api/booking-room-service-room/booking-room-id").permitAll()
+                        .requestMatchers("/api/booking-room-service-room/service").permitAll()
                 // khoi
                         //vu
                         

@@ -540,8 +540,6 @@ public class BookingService {
                     System.out.println("Room or StatusRoom is null");
                     return false; // Trả về false nếu có phòng hoặc trạng thái phòng bị null
                 }
-                // Kiểm tra trạng thái phòng
-                System.out.println("Room ID: " + room.getRoom().getId() + " Status ID: " + room.getRoom().getStatusRoom().getId());
                 return room.getRoom().getStatusRoom().getId() == 2; // Kiểm tra trạng thái "đang sử dụng"
             });
 
@@ -559,5 +557,13 @@ public class BookingService {
     }
 
 
-
+// khoi
+    
+    public accountHistoryDto getByIdBooking(Integer id) {
+    	Booking booking = bookingRepository.findById(id).get();
+    	return convertToDto(booking);
+    }
+    
+    
+//khôi
 }
