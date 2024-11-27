@@ -39,18 +39,18 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    @Lazy
-    @Autowired
-    private JwtAuthFilter authFilter;
+        @Lazy
+        @Autowired
+        private JwtAuthFilter authFilter;
 
-    @Autowired
-    private CustomAccessDeniedHandler accessDeniedHandler;
+        @Autowired
+        private CustomAccessDeniedHandler accessDeniedHandler;
 
-    // User Creation
-    @Bean
-    public UserDetailsService userDetailsService() {
-        return new UserInfoService();
-    }
+        // User Creation
+        @Bean
+        public UserDetailsService userDetailsService() {
+                return new UserInfoService();
+        }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -155,7 +155,8 @@ public class SecurityConfig {
 
                                 // .requestMatchers("/api/booking/sendBooking").hasAnyAuthority("Customer")
                                 //vu
-                                .requestMatchers("api/discount/**").hasAnyAuthority("Customer")
+//                                .requestMatchers("api/discount/**").hasAnyAuthority("Customer")
+                                 // tuong cmt
                                 //vu
 
                                 //--------------------------- api cần token có phân quyền Staff  ( nhân viên )
@@ -171,11 +172,14 @@ public class SecurityConfig {
                                 .hasAnyAuthority("Customer")
                                 // Các endpoint yêu cầu quyền "Staff" hoặc "HotelOwner"
                                 .requestMatchers(
+                                        "/api/booking/sendBooking")
+                                        .hasAnyAuthority("Customer")
+                                
+                                .requestMatchers(
                                         "/api/hotel/login",
                                         "/api/hotel/getAll")
-                                .hasAnyAuthority("Staff", "HotelOwner")
-
-                                // Các endpoint yêu cầu quyền "HotelOwner"
+                                        .hasAnyAuthority("Staff", "HotelOwner")
+                                
                                 .requestMatchers(
                                         "/api/account/login",
                                         "api/discount/**",
@@ -202,7 +206,8 @@ public class SecurityConfig {
                                         "/api/type-room-service/update/**",
                                         "/api/type-room-service/create",
                                         "/api/type-room-service/delete/**")
-                                .hasAuthority("HotelOwner")
+                                        .hasAuthority("HotelOwner")
+                                
 
                                 // khoi
                                 .requestMatchers("/api/service-room/update-service-room/**").hasAnyAuthority("HotelOwner")
@@ -241,23 +246,23 @@ public class SecurityConfig {
                 .build();
     }
 
-    // Password Encoding
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+        // Password Encoding
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
 
-    @Bean
-    public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(userDetailsService());
-        authenticationProvider.setPasswordEncoder(passwordEncoder());
-        return authenticationProvider;
-    }
+        @Bean
+        public AuthenticationProvider authenticationProvider() {
+                DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+                authenticationProvider.setUserDetailsService(userDetailsService());
+                authenticationProvider.setPasswordEncoder(passwordEncoder());
+                return authenticationProvider;
+        }
 
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
-    }
+        @Bean
+        public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+                return config.getAuthenticationManager();
+        }
 
 }
