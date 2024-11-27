@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,5 +25,16 @@ public class BookingRoomCustomerInformationController {
 	@GetMapping("/booking-room")
 	public ResponseEntity<?> getBookingRoomId(@RequestParam("bookingroom") List<Integer> id){
 		return ResponseEntity.ok(bookingRoomCustomerInfomationService.getListBookingRoom_Id(id));
+	}
+	
+	@DeleteMapping
+	public boolean deleteCustomer(@RequestParam("idBookingRoom") Integer idBookingRoom, @RequestParam("idCustomer") Integer idCustomer){
+		boolean flag = bookingRoomCustomerInfomationService.deleteCustomer(idCustomer, idBookingRoom);
+		if (flag) {
+			return true;
+		} else {
+			return false;
+		}
+		
 	}
 }

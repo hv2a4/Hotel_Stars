@@ -78,7 +78,7 @@ public class CustomerInformationService {
     // Cập nhật khách hàng
     public CustomerInformationDto updateCustomerInformation(Integer customerId, customerInformationModel customerInformationModel) {
         List<String> errorMessages = new ArrayList<>(); // Danh sách lưu trữ các thông báo lỗi
-
+        System.out.println(customerInformationModel);
         // Kiểm tra xem khách hàng có tồn tại không
         Optional<CustomerInformation> existingCustomerOpt = customerInformationRepository.findById(customerId);
 
@@ -94,7 +94,7 @@ public class CustomerInformationService {
 
         // Lấy khách hàng đã tồn tại
         CustomerInformation existingCustomer = existingCustomerOpt.get();
-
+        System.out.println(customerInformationModel);
         try {
             // Cập nhật thông tin khách hàng
             existingCustomer.setPhone(customerInformationModel.getPhone());

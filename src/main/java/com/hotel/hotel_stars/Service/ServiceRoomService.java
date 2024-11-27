@@ -1,7 +1,9 @@
 package com.hotel.hotel_stars.Service;
 
+import com.hotel.hotel_stars.DTO.BookingRoomServiceRoomDto;
 import com.hotel.hotel_stars.DTO.ServiceRoomDto;
 import com.hotel.hotel_stars.DTO.TypeServiceRoomDto;
+import com.hotel.hotel_stars.Entity.BookingRoomServiceRoom;
 import com.hotel.hotel_stars.Entity.ServiceRoom;
 import com.hotel.hotel_stars.Entity.TypeServiceRoom;
 import com.hotel.hotel_stars.Exception.CustomValidationException;
@@ -26,11 +28,34 @@ public class ServiceRoomService {
     private ServiceRoomRepository srrep;
     @Autowired
     TypeRoomServiceRepository typeRoomServiceRepository;
-
+    @Autowired
+	BookingRoomService bookingRoomService;
+    
+    public BookingRoomServiceRoomDto convertDto(BookingRoomServiceRoom bookingRoomServiceRoom) {
+		BookingRoomServiceRoomDto dto = new BookingRoomServiceRoomDto();
+		dto.setCreateAt(bookingRoomServiceRoom.getCreateAt());
+		dto.setId(bookingRoomServiceRoom.getId());
+		dto.setPrice(bookingRoomServiceRoom.getPrice());
+		dto.setQuantity(bookingRoomServiceRoom.getQuantity());
+		dto.setBookingRoomDto(bookingRoomService.toDTO(bookingRoomServiceRoom.getBookingRoom()));
+		dto.setServiceRoomDto(null);
+		return dto;
+	}
+	
     // chuyển đổi entity sang dto (đổ dữ liệu lên web)
     public ServiceRoomDto convertToDto(ServiceRoom sr) {
-//        TypeServiceRoomDto typeServiceRoomDto = new TypeServiceRoomDto(sr.getId(), sr.getServiceRoomName());
-        ServiceRoomDto serviceRoomDto = modelMapper.map(sr, ServiceRoomDto.class);
+        ServiceRoomDto serviceRoomDto = new ServiceRoomDto();
+        List<BookingRoomServiceRoomDto> bookingRoomServiceRoomDtos = sr.getBookingRoomServiceRooms().stream().map(this::convertDto).toList();
+        serviceRoomDto.setBookingRoomServiceRooms(bookingRoomServiceRoomDtos);
+        serviceRoomDto.setId(sr.getId());
+        serviceRoomDto.setImageName(sr.getImageName());
+        serviceRoomDto.setPrice(sr.getPrice());
+        serviceRoomDto.setServiceRoomName(sr.getServiceRoomName());
+        TypeServiceRoomDto typeServiceRoom = new TypeServiceRoomDto();
+        typeServiceRoom.setDuration(sr.getTypeServiceRoomId().getDuration());
+        typeServiceRoom.setId(sr.getTypeServiceRoomId().getId());
+        typeServiceRoom.setServiceRoomName(sr.getTypeServiceRoomId().getServiceRoomName());
+        serviceRoomDto.setTypeServiceRoomDto(typeServiceRoom);
         return serviceRoomDto;
     }
 

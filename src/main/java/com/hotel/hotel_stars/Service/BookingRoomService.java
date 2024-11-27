@@ -112,4 +112,10 @@ public class BookingRoomService {
     	List<BookingRoom> bookingRooms = bookingRoomRepository.findByIdIn(ids);
     	return bookingRooms.stream().map(this::toDTO).toList();
     }
+    //khôi
+    public BookingRoomDto getByIdBookingRoom(Integer id) {
+    	BookingRoom bookingRoom = bookingRoomRepository.findById(id).get();
+    	return toDTO(bookingRoom);
+    }
+    //khôi
 }

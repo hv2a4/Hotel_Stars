@@ -26,7 +26,6 @@ public class BookingRoomDto implements Serializable {
     Instant checkIn;
     Instant checkOut;
     Double price;
-    Boolean statusPayment;
     BookingDto booking;
     RoomDto room;
     AccountDto accountDto;

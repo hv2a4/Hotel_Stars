@@ -34,4 +34,21 @@ public class BookingRoomCustomerInfomationService {
 	    List<BookingRoomCustomerInformation> list = bookingRoomCustomerInformationRepository.findByBookingRoom_IdIn(bookingRoomIds);
 	    return list.stream().map(this::convertDto).collect(Collectors.toList());
 	}
+	
+	public boolean deleteCustomer(Integer idCustomer, Integer idBookingRoom) {
+	    try {
+	    	System.out.println("mã khách hàng: "+idCustomer+" mã booking: "+idBookingRoom);
+	        BookingRoomCustomerInformation customer = bookingRoomCustomerInformationRepository
+	                .findByBookingRoomIdAndCustomerInformationId(idBookingRoom, idCustomer);
+	        
+	        if (customer == null) {
+	            return false;
+	        }
+	        bookingRoomCustomerInformationRepository.deleteById(customer.getId());
+	        return true;
+	    } catch (Exception e) {
+	        return false;
+	    }
+	}
+
 }
