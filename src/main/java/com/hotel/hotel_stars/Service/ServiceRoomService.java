@@ -30,7 +30,7 @@ public class ServiceRoomService {
     TypeRoomServiceRepository typeRoomServiceRepository;
     @Autowired
 	BookingRoomService bookingRoomService;
-    
+    //khôi
     public BookingRoomServiceRoomDto convertDto(BookingRoomServiceRoom bookingRoomServiceRoom) {
 		BookingRoomServiceRoomDto dto = new BookingRoomServiceRoomDto();
 		dto.setCreateAt(bookingRoomServiceRoom.getCreateAt());
@@ -55,10 +55,11 @@ public class ServiceRoomService {
         typeServiceRoom.setDuration(sr.getTypeServiceRoomId().getDuration());
         typeServiceRoom.setId(sr.getTypeServiceRoomId().getId());
         typeServiceRoom.setServiceRoomName(sr.getTypeServiceRoomId().getServiceRoomName());
+        typeServiceRoom.setDuration(sr.getTypeServiceRoomId().getDuration());
         serviceRoomDto.setTypeServiceRoomDto(typeServiceRoom);
         return serviceRoomDto;
     }
-
+//khôi
     // Hiển thị danh sách dịch vụ phòng
     public List<ServiceRoomDto> getAllServiceRooms() {
         List<ServiceRoom> srs = srrep.findAll();
@@ -190,6 +191,11 @@ public class ServiceRoomService {
         }
 
         return true; // Nếu tất cả các kiểm tra đều hợp lệ
+    }
+    
+    public List<ServiceRoomDto> getServiceRoomsByBookingRoomId(Integer bookingRoomId) {
+    	List<ServiceRoom> serviceRoom = srrep.findServiceRoomsByBookingRoomId(bookingRoomId);
+        return serviceRoom.stream().map(this::convertToDto).toList();
     }
 
 }
