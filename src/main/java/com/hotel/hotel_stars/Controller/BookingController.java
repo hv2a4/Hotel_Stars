@@ -1,6 +1,7 @@
 package com.hotel.hotel_stars.Controller;
 
 import com.hotel.hotel_stars.Config.JwtService;
+import com.hotel.hotel_stars.Config.VNPayService;
 import com.hotel.hotel_stars.DTO.accountHistoryDto;
 import com.hotel.hotel_stars.DTO.Select.BookingDetailDTO;
 import com.hotel.hotel_stars.DTO.Select.PaymentInfoDTO;
@@ -16,18 +17,30 @@ import com.hotel.hotel_stars.Repository.BookingRepository;
 import com.hotel.hotel_stars.Repository.BookingRoomRepository;
 import com.hotel.hotel_stars.Repository.StatusBookingRepository;
 import com.hotel.hotel_stars.Service.BookingService;
+import com.hotel.hotel_stars.utils.SessionService;
 import com.hotel.hotel_stars.utils.paramService;
 import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+
+import java.io.IOException;
+import java.net.URLEncoder;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin("*")
@@ -48,7 +61,10 @@ public class BookingController {
 	private JwtService jwtService;
 	@Autowired
 	private BookingRepository bookingRepository;
-
+	@Autowired
+	VNPayService vnPayService;
+    @Autowired
+	SessionService sessionService;
 	// khoi
 	@GetMapping("")
 	public ResponseEntity<List<accountHistoryDto>> getBookings(
@@ -107,15 +123,27 @@ public class BookingController {
 	}
 
 	@PostMapping("/sendBooking")
-	public ResponseEntity<?> postBooking(@Valid @RequestBody bookingModel bookingModels) {
+	public ResponseEntity<?> postBooking(@Valid @RequestBody bookingModel bookingModels, HttpServletRequest request) {
 		Map<String, String> response = new HashMap<String, String>();
-		System.out.println("mảng được tìm thấy: " + bookingModels.getRoomId());
+
+		errorsServices.errorBooking(bookingModels);
+
 		try {
-			errorsServices.errorBooking(bookingModels);
-			Boolean flag = bookingService.sendBookingEmail(bookingModels);
-			if (flag) {
+			Booking bookings = bookingService.sendBookingEmail(bookingModels);
+			if (bookings!=null) {
 				response = paramServices.messageSuccessApi(201, "success",
 						"Đặt phòng thành công, vui lòng vào email để xác nhận");
+				if(bookings.getMethodPayment().getId()==1){
+					response.put("vnPayURL", null);
+				}else {
+					List<BookingRoom> bookingRoomList = bookings.getBookingRooms();
+					double total = bookingRoomList.stream().mapToDouble(BookingRoom::getPrice).sum();
+					int totalAsInt = (int) total;
+					System.out.println("session được lưu: "+Optional.ofNullable(sessionService.get("booking")));
+					System.out.println("Session ID1: " + sessionService.getIdSession());
+					String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+					response.put("vnPayURL", vnPayService.createOrder(totalAsInt,String.valueOf(bookings.getId()), baseUrl));
+				}
 				return ResponseEntity.status(HttpStatus.CREATED).body(response);
 			} else {
 				response = paramServices.messageSuccessApi(400, "error", "Đặt phòng thất bại");
@@ -151,15 +179,20 @@ public class BookingController {
 			List<BookingRoom> bookingRoomList = booking.getBookingRooms();
 			double total = bookingRoomList.stream().mapToDouble(BookingRoom::getPrice).sum();
 			String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
+			LocalDate startDate=paramServices.convertInstallToLocalDate(booking.getStartAt());
+			LocalDate endDate=paramServices.convertInstallToLocalDate(booking.getEndAt());
 			booking.setStatus(statusBooking.get());
-
+			String roomsString = bookingRoomList.stream()
+					.map(bookingRoom -> bookingRoom.getRoom().getRoomName())  // Extract roomName from each BookingRoom
+					.collect(Collectors.joining(", "));
+			String idBk = "Bk" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "" + booking.getId();
+			System.out.println("chuỗi: "+roomsString);
 			try {
 				bookingRepository.save(booking);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-
-			return ResponseEntity.ok(paramServices.confirmBookings(booking, formattedAmount));
+			return ResponseEntity.ok(paramServices.confirmBookings(idBk,booking,startDate,endDate ,formattedAmount,roomsString));
 		} catch (ExpiredJwtException e) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 					.body("Token đã hết hạn. Vui lòng liên lạc qua số điện thoại 1900 6522");
@@ -178,5 +211,8 @@ public class BookingController {
 	public ResponseEntity<?> getBookingByAccount(@PathVariable("id") Integer id) {
 		return ResponseEntity.ok(bookingService.getListByAccountId(id));
 	}
+
+
+
 
 }

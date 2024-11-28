@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 
 import static java.util.Collections.*;
@@ -36,10 +37,9 @@ public class ErrorsService {
 
     private RoomAvailabilityResponse isRoomAvailable(List<Integer> roomIds, String startDate, String endDate) {
         // Convert the start and end dates to Instant
-        Instant start = paramServices.stringToInstant(startDate);
-        Instant end = paramServices.stringToInstant(endDate);
+        LocalDate start = paramServices.convertStringToLocalDate(startDate);
+        LocalDate end = paramServices.convertStringToLocalDate(endDate);
 
-        // Iterate through each room ID to check availability
         for (Integer roomId : roomIds) {
             Long count = typeRoomRepository.countAvailableRoom(roomId, start, end);
             // If the count is 0, the room is not available
@@ -49,8 +49,6 @@ public class ErrorsService {
                 return new RoomAvailabilityResponse(false, roomId);
             }
         }
-
-        // If all rooms are available (count > 0), return true with null for unavailableRoomId
         return new RoomAvailabilityResponse(true, null);
     }
 
@@ -73,7 +71,8 @@ public class ErrorsService {
         }
         if (startInstant.isAfter(endInstant)) {
             errors.add(new ValidationError("startdate", "Ngày Bắt đầu không nhỏ hơn ngày kết thúc"));
-        } else if (response.isAllRoomsAvailable() == false) {
+        }
+        if (response.isAllRoomsAvailable() == false) {
             Room rooms = roomRepository.findById(response.getUnavailableRoomId()).get();
             errors.add(new ValidationError("room", "Id: " + rooms.getId() + ", " + "Phòng: " + rooms.getRoomName() + ", Loại phòng: " + rooms.getTypeRoom().getTypeRoomName() + ", Đã có người đặt rồi"));
         }

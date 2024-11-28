@@ -47,4 +47,12 @@ public class BookingRoom {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_staff")
     private Account account;
+
+    @Override
+    public String toString() {
+        return "BookingRoom{" +
+                "room=" + (room != null ? room.getId() : "null") + ", " + // or any meaningful property
+                "price=" + price +
+                '}';
+    }
 }

@@ -120,8 +120,12 @@ public class BookingService {
         if (discount == null) {
             return typeRoomPrice;
         }
+
         if (room.getTypeRoom().getId() == discount.getTypeRoom().getId()) {
-            if (!current.isBefore(discount.getStartDate()) && !current.isAfter(discount.getEndDate())) {
+            LocalDate currentDate = current.atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate discountStartDate = discount.getStartDate().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate discountEndDate = discount.getEndDate().atZone(ZoneId.systemDefault()).toLocalDate();
+            if (!currentDate.isBefore(discountStartDate) && !currentDate.isAfter(discountEndDate)) {
                 double discountRate = discount.getPercent() / 100.0;
                 typeRoomPrice = typeRoomPrice * (1 - discountRate);
                 booking.setDiscountName(discount.getDiscountName());
@@ -138,7 +142,7 @@ public class BookingService {
     }
 
     public Boolean checkCreatbkRoom(Integer bookingId, List<Integer> roomId, String discountName) {
-        Booking booking = bookingRepository.findById(bookingId).get();
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow();
         Discount discount = (discountRepository.findByDiscountName(discountName)!=null)?discountRepository.findByDiscountName(discountName):null;
         Long days = Duration.between(booking.getStartAt(), booking.getEndAt()).toDays();
 
@@ -153,13 +157,18 @@ public class BookingService {
             System.out.println("chưa set: " + room.getTypeRoom().getPrice());
             bookingRoom.setPrice(priceFind * days);
             System.out.println("set rồi: " + bookingRoom.getPrice());
+            booking.getBookingRooms().add(bookingRoom);
             try {
+                System.out.println("lỗi 1");
                 bookingRoomRepository.save(bookingRoom);
+                bookingRepository.save(booking);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
             }
         }
+
+        System.out.println("mảng: "+booking.getBookingRooms());
         return true;
     }
 
@@ -185,11 +194,12 @@ public class BookingService {
         return true;
     }
 
-    public Boolean sendBookingEmail(bookingModel bookingModels) {
+    public Booking sendBookingEmail(bookingModel bookingModels) {
         Booking booking = new Booking();
         Optional<Account> accounts = accountRepository.findByUsername(bookingModels.getUserName());
-        Optional<MethodPayment> payment = methodPaymentRepository.findById(1);
-        Optional<StatusBooking> statusBooking = statusBookingRepository.findById(1);
+        MethodPayment payment = methodPaymentRepository.findById(bookingModels.getMethodPayment()).get();
+        Optional<StatusBooking> statusBooking =
+                (payment.getId()==1)?statusBookingRepository.findById(1):statusBookingRepository.findById(3);
         Instant starDateIns = paramServices.stringToInstant(bookingModels.getStartDate());
         Instant endDateIns = paramServices.stringToInstant(bookingModels.getEndDate());
         booking.setAccount(accounts.get());
@@ -197,23 +207,26 @@ public class BookingService {
         booking.setEndAt(endDateIns);
         booking.setStatus(statusBooking.get());
         booking.setStatusPayment(false);
-        booking.setMethodPayment(payment.get());
+        booking.setMethodPayment(payment);
         System.out.println(LocalDateTime.now());
         booking.setCreateAt(LocalDateTime.now());
         try {
             bookingRepository.save(booking);
             if (checkCreatbkRoom(booking.getId(), bookingModels.getRoomId(), bookingModels.getDiscountName())) {
                 System.out.println(jwtService.generateBoking(booking.getId()));
-                Boolean flag = paramServices.sendEmails(booking.getAccount().getEmail(), "Xác nhận đặt phòng",
+                double total = booking.getBookingRooms().stream().mapToDouble(BookingRoom::getPrice).sum();
+                System.out.println(total);
+                Boolean flag = (payment.getId()==1)? paramServices.sendEmails(booking.getAccount().getEmail(), "Xác nhận đặt phòng",
                         paramServices.generateBooking(booking.getAccount().getFullname(),
-                                jwtService.generateBoking(booking.getId())));
-                return (flag == true) ? true : false;
+                                jwtService.generateBoking(booking.getId()))):false;
+
+                return booking;
             }
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
-        return false;
+        return null;
     }
 
     public Boolean addBookingOffline(bookingModel bookingModels) {

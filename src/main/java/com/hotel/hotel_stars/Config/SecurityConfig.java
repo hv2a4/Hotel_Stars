@@ -62,21 +62,21 @@ public class SecurityConfig {
                     configuration.setAllowedMethods(
                             Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+                    configuration.setAllowCredentials(true);
                     return configuration;
                 }))
                 .authorizeHttpRequests(auth -> auth
-                                .requestMatchers("/api/account/login").authenticated()
-                                // -------------------------- code này dành cho mấy cái api không cần
-                                // token
+                        .requestMatchers("/api/account/login").authenticated()
+                                .requestMatchers("/api/account/changepassword").authenticated()
+                        // -------------------------- code này dành cho mấy cái api không cần token
 
-                                // All
-                                .requestMatchers("/api/service-package/post-service-package")
-                                .permitAll()
-                                .requestMatchers("/api/service-package/put-service-package").permitAll()
-                                .requestMatchers("/api/service-package/delete-service-package/**")
-                                .permitAll()
-                                // All
-                                // khoi
+                        // All
+                        .requestMatchers("/api/service-package/post-service-package").permitAll()
+                        .requestMatchers("/api/service-package/put-service-package").permitAll()
+                        .requestMatchers("/api/service-package/delete-service-package/**").permitAll()
+                                .requestMatchers("/vnpay-payment").permitAll()
+                        // All
+                                //khoi
                                 .requestMatchers("/api/account/getAll").permitAll()
                                 .requestMatchers("/api/account/add-account-staff").permitAll()
                                 // khoi
@@ -140,6 +140,8 @@ public class SecurityConfig {
 
                                 // nghia
                                 .requestMatchers("/api/account/sendEmail").permitAll()
+                                .requestMatchers("/api/discount/getAll").permitAll()
+                                .requestMatchers("/api/discount/getAllDiscountTR").permitAll()
                                 .requestMatchers("/api/account/getAll").permitAll()
                                 .requestMatchers("/api/booking/sendBooking").permitAll()
                                 .requestMatchers("/api/account/updateAccount").permitAll()

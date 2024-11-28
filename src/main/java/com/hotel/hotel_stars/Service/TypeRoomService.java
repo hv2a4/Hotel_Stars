@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -346,8 +347,8 @@ public class TypeRoomService {
 //    }
 
 public List<FindTypeRoomDto> getRoom(String startDates, String endDates, Integer guestLimit, Integer page, Integer size) {
-    Instant startDate = paramServices.stringToInstant(startDates);
-    Instant endDate = paramServices.stringToInstant(endDates);
+    LocalDate startDate = paramServices.convertStringToLocalDate(startDates);
+    LocalDate endDate = paramServices.convertStringToLocalDate(endDates);
 
     // Tính toán limit và offset cho phân trang
     int limit = size;
@@ -397,7 +398,7 @@ public List<FindTypeRoomDto> getRoom(String startDates, String endDates, Integer
         // Gọi repository để đếm tổng số phòng có sẵn
         return typeRoomRepository.countAvailableRooms(startDate, endDate, guestLimit);
     }
-    
+
     public List<RoomTypeDetail> getRoomTypeDetailById(Integer roomId) {
         List<Object[]> results = typeRoomRepository.findTypeRoomDetailsById(roomId); // Adjust the method call if needed
         List<RoomTypeDetail> dtos = new ArrayList<>();

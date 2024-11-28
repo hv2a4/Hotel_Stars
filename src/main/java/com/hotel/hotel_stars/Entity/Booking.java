@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -50,8 +51,8 @@ public class Booking {
     @JoinColumn(name = "status_id")
     private StatusBooking status;
 
-    @OneToMany(mappedBy = "booking")
-    List<BookingRoom> bookingRooms;
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
+    List<BookingRoom> bookingRooms  = new ArrayList<>(); ;
     
     @OneToMany(mappedBy = "booking")
     @JsonManagedReference
@@ -60,8 +61,5 @@ public class Booking {
     @OneToMany(mappedBy = "booking")
     List<Invoice> invoices;
 
-    @Override
-    public String toString() {
-        return "Booking{id=" + id + ", StDate=" + startAt + "}";
-    }
+
 }

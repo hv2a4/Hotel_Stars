@@ -119,8 +119,8 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
             LIMIT :limit OFFSET :offset
             """, nativeQuery = true)
     List<Object[]> findAvailableRoomsWithPagination(
-            @Param("startDate") Instant startDate,
-            @Param("endDate") Instant endDate,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
             @Param("guestLimit") Integer guestLimit,
             @Param("limit") Integer limit,
             @Param("offset") Integer offset);
@@ -261,6 +261,6 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
             "    AND b_inner.status_id != 6 " +
             ")", nativeQuery = true)
     Long countAvailableRoom(@Param("roomId") Integer roomId,
-                            @Param("startDate") Instant startDate,
-                            @Param("endDate") Instant endDate);
+                            @Param("startDate") LocalDate startDate,
+                            @Param("endDate") LocalDate endDate);
 }

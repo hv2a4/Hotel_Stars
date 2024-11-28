@@ -102,7 +102,7 @@ public class paramService {
             return true;
         } catch (MessagingException e) {
             e.printStackTrace();
-            return false;
+            return null;
         }
     }
 
@@ -110,6 +110,10 @@ public class paramService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDate localDate = LocalDate.parse(dateString, formatter);
         return localDate.atStartOfDay(ZoneId.of("UTC")).toInstant();
+    }
+    public LocalDate convertStringToLocalDate(String dateStr) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        return LocalDate.parse(dateStr, formatter);
     }
     public Instant localdatetimeToInsant(LocalDateTime localDateTime) {
         ZoneId zoneId = ZoneId.of("UTC");
@@ -122,7 +126,10 @@ public class paramService {
         System.out.println("thời gian1: " + instantNow);
         return instantNow;
     }
-
+    public LocalDate convertInstallToLocalDate(Instant install) {
+        // Convert Instant to LocalDate using the system default timezone
+        return install.atZone(ZoneId.systemDefault()).toLocalDate();
+    }
     public String generateHtml(String title, String message, String content) {
         return "<!DOCTYPE html>" +
                 "<html lang=\"vi\">" +
@@ -184,7 +191,7 @@ public class paramService {
     }
 
 
-    public String confirmBookings(Booking booking, String total) {
+    public String confirmBookings(String id,Booking booking,LocalDate startDate,LocalDate endDate, String total,String rooms) {
 
         return "<!DOCTYPE html>\n" +
                 "<html>\n" +
@@ -238,16 +245,16 @@ public class paramService {
                 "                            </h2>\n" +
                 "                        </td>\n" +
                 "                    </tr>\n" +
-                "                    \n" +
+                "                    \n            " +
                 "                    <tr>\n" +
                 "                        <td align=\"left\" style=\"padding-top: 30px;\">\n" +
                 "                            <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\">\n" +
                 "                                <tr>\n" +
-                "                                    <td width=\"75%\" align=\"left\" bgcolor=\"#eeeeee\" style=\"font-family: Verdana, sans-serif;; font-size: 16px; font-weight: 800; line-height: 24px; padding: 10px;\">\n" +
+                "                                    <td width=\"75%\" align=\"left\" bgcolor=\"#eeeeee\" style=\"font-family: Verdana, sans-serif; font-size: 16px; font-weight: 800; line-height: 24px; padding: 10px;\">\n" +
                 "                                       Mã đặt phòng\n" +
                 "                                    </td>\n" +
                 "                                    <td width=\"25%\" align=\"left\" bgcolor=\"#eeeeee\" style=\"font-family: Open Sans, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 800; line-height: 24px; padding: 10px;\">\n" +
-                "                                       " + booking.getId() + "\n" +
+                "                                       " + id + "\n" +
                 "                                    </td>\n" +
                 "                                </tr>\n" +
                 "                                <tr>\n" +
@@ -279,7 +286,7 @@ public class paramService {
                 "                                        Ngày nhận\n" +
                 "                                    </td>\n" +
                 "                                    <td width=\"25%\" align=\"left\" style=\"font-family: Open Sans, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; padding: 5px 10px;\">\n" +
-                "                                        " + booking.getStartAt() + "\n" +
+                "                                        " + startDate + "\n" +
                 "                                    </td>\n" +
                 "                                </tr>\n" +
                 "                                <tr>\n" +
@@ -287,15 +294,23 @@ public class paramService {
                 "                                        Ngày trả\n" +
                 "                                    </td>\n" +
                 "                                    <td width=\"25%\" align=\"left\" style=\"font-family: Open Sans, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; padding: 5px 10px;\">\n" +
-                "                                        " + booking.getEndAt() + "\n" +
+                "                                        " + endDate + "\n" +
                 "                                    </td>\n" +
                 "                                </tr>\n" +
                 "                                <tr>\n" +
                 "                                    <td width=\"75%\" align=\"left\" style=\"font-family: Open Sans, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; padding: 5px 10px;\">\n" +
-                "                                        Số Lượng Phòng\n" +
+                "                                         Phòng\n" +
                 "                                    </td>\n" +
                 "                                    <td width=\"25%\" align=\"left\" style=\"font-family: Open Sans, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; padding: 5px 10px;\">\n" +
-                "                                        " + booking.getBookingRooms().size() + "\n" +
+                "                                        " + rooms + "\n" +
+                "                                    </td>\n" +
+                "                                </tr>\n" +
+                "                                <tr>\n" +
+                "                                    <td width=\"75%\" align=\"left\" style=\"font-family: Open Sans, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; padding: 5px 10px;\">\n" +
+                "                                        Trạng thái thanh toán\n" +
+                "                                    </td>\n" +
+                "                                    <td width=\"25%\" align=\"left\" style=\"font-family: Open Sans, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; padding: 5px 10px;\">\n" +
+                "                                        " +(booking.getStatusPayment() ? "Đã thanh toán" : "Chưa thanh toán") + "\n" +
                 "                                    </td>\n" +
                 "                                </tr>\n" +
                 "                            </table>\n" +
@@ -345,5 +360,40 @@ public class paramService {
                 "    \n" +
                 "</body>\n" +
                 "</html>";
+    }
+    public String contentEmail(String token){
+        return  "<!DOCTYPE html>\n"
+                + "<html lang=\"vi\">\n"
+                + "<head>\n"
+                + "    <meta charset=\"UTF-8\">\n"
+                + "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
+                + "    <title>Xác Nhận Đổi Mật Khẩu</title>\n"
+                + "    <style>\n"
+                + "        .button {\n"
+                + "            background-color: #4CAF50;\n"
+                + "            color: white;\n"
+                + "            padding: 10px 15px;\n"
+                + "            text-decoration: none;\n"
+                + "            border-radius: 5px;\n"
+                + "            display: inline-block;\n" // Để nút có thể được căn giữa
+                + "            margin-top: 10px;\n" // Khoảng cách trên nút
+                + "        }\n"
+                + "        p {\n"
+                + "            color: #000; /* Màu chữ cho các đoạn văn */\n"
+                + "        }\n"
+                + "    </style>\n"
+                + "</head>\n"
+                + "<body>\n"
+                + "<div class=\"container\">\n"
+                + "    <h2 style=\"color: #000;\">Xác Nhận Đổi Mật Khẩu</h2>\n" // Màu chữ cho tiêu đề
+                + "    <p>Xin chào Bạn</p>\n"
+                + "    <p>Bạn đã yêu cầu thay đổi mật khẩu cho tài khoản của mình tại Hotel Start.</p>\n"
+                + "    <p>Để xác nhận việc thay đổi mật khẩu, vui lòng nhấp vào liên kết bên dưới:</p>\n"
+                + "    <p><a href=\"http://localhost:8080/api/account/updatePassword?token="+token+"\" class=\"button\" style=\"color: white;\">Xác Nhận Đổi Mật Khẩu</a></p>\n"
+                + "    <p>Nếu bạn không yêu cầu thay đổi mật khẩu, xin vui lòng bỏ qua email này hoặc liên hệ với chúng tôi để được hỗ trợ.</p>\n"
+                + "    <p>Trân trọng,<br>Hotel Start</p>\n"
+                + "</div>\n"
+                + "</body>\n"
+                + "</html>";
     }
 }

@@ -13,4 +13,7 @@ public interface DiscountRepository extends JpaRepository<Discount, Integer> {
 
     @Query("SELECT d FROM Discount d WHERE d.typeRoom = :typeRoom")
     List<Discount> findByRoomTypeId(@Param("typeRoom") TypeRoom typeRoom);
+    @Query(value = "SELECT * FROM discount WHERE NOW() BETWEEN start_date AND end_date AND type_room_id = :typeRoomId", nativeQuery = true)
+    List<Discount> findActiveDiscountsForTypeRoom(@Param("typeRoomId") Integer typeRoomId);
+
 }
