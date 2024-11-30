@@ -38,8 +38,6 @@ import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -215,7 +213,7 @@ public class BookingService {
         Optional<Account> accounts = accountRepository.findByUsername(bookingModels.getUserName());
         MethodPayment payment = methodPaymentRepository.findById(bookingModels.getMethodPayment()).get();
         Optional<StatusBooking> statusBooking =
-                (payment.getId() == 1) ? statusBookingRepository.findById(1) : statusBookingRepository.findById(3);
+                (payment.getId()==1)?statusBookingRepository.findById(1):statusBookingRepository.findById(3);
         Instant starDateIns = paramServices.stringToInstant(bookingModels.getStartDate());
         Instant endDateIns = paramServices.stringToInstant(bookingModels.getEndDate());
         booking.setAccount(accounts.get());

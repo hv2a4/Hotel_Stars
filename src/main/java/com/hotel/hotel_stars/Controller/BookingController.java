@@ -125,43 +125,6 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getPaymentInfoByAccountId(id));
     }
 
-    @PostMapping("/sendBooking")
-    public ResponseEntity<?> postBooking(@Valid @RequestBody bookingModel bookingModels, HttpServletRequest request) {
-        Map<String, String> response = new HashMap<String, String>();
-
-        errorsServices.errorBooking(bookingModels);
-
-        try {
-            Booking bookings = bookingService.sendBookingEmail(bookingModels);
-            if (bookings != null) {
-                response = paramServices.messageSuccessApi(201, "success",
-                        "Đặt phòng thành công, vui lòng vào email để xác nhận");
-                if (bookings.getMethodPayment().getId() == 1) {
-                    response.put("vnPayURL", null);
-                } else {
-                    List<BookingRoom> bookingRoomList = bookings.getBookingRooms();
-                    double total = bookingRoomList.stream().mapToDouble(BookingRoom::getPrice).sum();
-                    int totalAsInt = (int) total;
-
-                    String baseUrl = request.getScheme() + "://" + request.getServerName() + ":"
-                            + request.getServerPort();
-                    response = paramServices.messageSuccessApi(201, "success",
-                            "Đặt phòng thành công");
-                    response.put("vnPayURL",
-                            vnPayService.createOrder(totalAsInt, String.valueOf(bookings.getId()), baseUrl));
-
-                }
-                return ResponseEntity.status(HttpStatus.CREATED).body(response);
-            } else {
-                response = paramServices.messageSuccessApi(400, "error", "Đặt phòng thất bại");
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-            }
-        } catch (Exception e) {
-            response.put("error", e.getMessage()); // Thêm thông tin lỗi ở đây
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
-    }
-
     @PostMapping("/booking-offline")
     public ResponseEntity<?> postBookingOffline(@Valid @RequestBody bookingModel bookingModels) {
         Map<String, String> response = new HashMap<String, String>();
@@ -274,14 +237,14 @@ public class BookingController {
                     List<BookingRoom> bookingRoomList = bookings.getBookingRooms();
                     double total = bookingRoomList.stream().mapToDouble(BookingRoom::getPrice).sum();
                     int totalAsInt = (int) total;
-                    System.out.println("session được lưu: " + Optional.ofNullable(sessionService.get("booking")));
-                    System.out.println("Session ID1: " + sessionService.getIdSession());
+
                     String baseUrl = request.getScheme() + "://" + request.getServerName() + ":"
                             + request.getServerPort();
                     response = paramServices.messageSuccessApi(201, "success",
                             "Đặt phòng thành công");
                     response.put("vnPayURL",
                             vnPayService.createOrder(totalAsInt, String.valueOf(bookings.getId()), baseUrl));
+
                 }
                 return ResponseEntity.status(HttpStatus.CREATED).body(response);
             } else {
@@ -291,20 +254,6 @@ public class BookingController {
         } catch (Exception e) {
             response.put("error", e.getMessage()); // Thêm thông tin lỗi ở đây
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
-    }
-
-    @PostMapping("/booking-offline")
-    public ResponseEntity<?> postBookingOffline(@Valid @RequestBody bookingModel bookingModels) {
-        Map<String, String> response = new HashMap<String, String>();
-        errorsServices.errorBooking(bookingModels);
-        Boolean flag = bookingService.addBookingOffline(bookingModels);
-        if (flag == true) {
-            response = paramServices.messageSuccessApi(201, "success", "Đặt phòng thành công");
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } else {
-            response = paramServices.messageSuccessApi(400, "error", "Đặt phòng thất bại");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 }
