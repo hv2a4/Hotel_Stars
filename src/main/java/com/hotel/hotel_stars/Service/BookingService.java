@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.List;
 import java.util.Optional;
@@ -173,28 +174,41 @@ public class BookingService {
     }
 
     public Boolean checkCreatbkOffRoom(Integer bookingId, List<Integer> roomId, String discountName) {
-        Booking booking = bookingRepository.findById(bookingId).get();
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new RuntimeException("Booking not found"));
         Discount discount = discountRepository.findByDiscountName(discountName);
-        Long days = Duration.between(booking.getStartAt(), booking.getEndAt()).toDays();
 
-        for (int i = 0; i < roomId.size(); i++) {
-            Room room = roomRepository.findById(roomId.get(i)).get();
+        // Tính số ngày chính xác
+        LocalDate startDate = booking.getStartAt().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate endDate = booking.getEndAt().atZone(ZoneId.systemDefault()).toLocalDate();
+        Long days = ChronoUnit.DAYS.between(startDate, endDate);
+        if (days == 0) {
+            days = 1L;
+        }
+
+        for (Integer id : roomId) {
+            Room room = roomRepository.findById(id).orElseThrow(() -> new RuntimeException("Room not found"));
             BookingRoom bookingRoom = new BookingRoom();
+
+            // Tính giá đã áp dụng khuyến mãi
             Double priceFind = calculateDiscountedPrice(room, booking.getCreateAt(), discount, booking);
+
+            // Thiết lập giá tổng (giá mỗi ngày * số ngày)
             bookingRoom.setBooking(booking);
             bookingRoom.setRoom(room);
             bookingRoom.setPrice(priceFind * days);
+
             try {
                 bookingRoomRepository.save(bookingRoom);
             } catch (Exception e) {
                 e.printStackTrace();
-                throw new RuntimeException(e);
+                throw new RuntimeException("Error saving BookingRoom", e);
             }
         }
         return true;
     }
 
-    public Booking sendBookingEmail(bookingModel bookingModels) {
+
+    public Boolean sendBookingEmail(bookingModel bookingModels) {
         Booking booking = new Booking();
         Optional<Account> accounts = accountRepository.findByUsername(bookingModels.getUserName());
         MethodPayment payment = methodPaymentRepository.findById(bookingModels.getMethodPayment()).get();
@@ -233,14 +247,18 @@ public class BookingService {
         Booking booking = new Booking();
         Optional<Account> accounts = accountRepository.findByUsername(bookingModels.getUserName());
         Optional<StatusBooking> statusBooking = statusBookingRepository.findById(4);
-        Instant starDateIns = paramServices.stringToInstant(bookingModels.getStartDate());
-        Instant endDateIns = paramServices.stringToInstant(bookingModels.getEndDate());
+        MethodPayment methodPayment = methodPaymentRepository.findById(1).get();
+        String startDateWithFixedTime = bookingModels.getStartDate().split("T")[0] + "T14:00:00Z";
+        String endDateWithFixedTime = bookingModels.getEndDate().split("T")[0] + "T12:00:00Z";
+        Instant starDateIns = paramServices.stringToInstant(startDateWithFixedTime).minus(7, ChronoUnit.HOURS);
+        Instant endDateIns = paramServices.stringToInstant(endDateWithFixedTime).minus(7, ChronoUnit.HOURS);
+
         booking.setAccount(accounts.get());
         booking.setStartAt(starDateIns);
         booking.setEndAt(endDateIns);
         booking.setStatus(statusBooking.get());
         booking.setStatusPayment(false);
-        booking.setMethodPayment(null);
+        booking.setMethodPayment(methodPayment);
         booking.setCreateAt(LocalDateTime.now());
         try {
             bookingRepository.save(booking);
