@@ -42,11 +42,11 @@ public class vnPayController {
     @Autowired
     SessionService sessionService;
     @GetMapping("/vnpay-payment")
-    public void handleVNPayPayment(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void handleVNPayPayment(HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException {
         String orderInfo = request.getParameter("vnp_OrderInfo");
         StatusBooking statusBooking= statusBookingRepository.findById(2).get();
         int paymentStatus = vnPayService.orderReturn(request);
-        Booking booking=bookingRepository.findById(Integer.valueOf(orderInfo)).get();
+        Booking booking = bookingRepository.findById(Integer.valueOf(orderInfo)).get();
         if( paymentStatus == 1){
             try {
                 if (orderInfo != null) {
@@ -71,6 +71,8 @@ public class vnPayController {
 
             paramServices.sendEmails(booking.getAccount().getEmail(),"thông tin đơn hàng",
                     paramServices.confirmBookings(idBk,booking,startDate,endDate ,formattedAmount,roomsString));
+
+
             try {
                 bookingRepository.save(booking);
             } catch (Exception e) {
@@ -79,7 +81,7 @@ public class vnPayController {
             String redirectUrl = null;
             try {
                 String paymentStatuss = "success";
-                String messages = "Bạn đã đặt phòng thành công vui lòng vào email để xem chi tiết";
+                String messages = "Bạn đã đặt phòng thành công vui lòng vào email để xem chi tiết đơn đặt hàng và file pdf đã được lưu vào máy của quý khách";
                 redirectUrl = String.format(
                         "http://localhost:3000/client/booking-room?status=%s&message=%s",
                         URLEncoder.encode(paymentStatuss, "UTF-8"),
@@ -116,7 +118,6 @@ public class vnPayController {
 
                 throw new RuntimeException(e);
             }
-            System.out.println("thanh toán lỗi rồi");
         }
 
     }

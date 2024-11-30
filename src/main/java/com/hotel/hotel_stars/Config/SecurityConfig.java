@@ -58,7 +58,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration configuration = new CorsConfiguration();
-                    configuration.setAllowedOrigins(List.of("*")); // Thay đổi miền nếu cần
+                    configuration.setAllowedOriginPatterns(List.of("http://localhost:*"));
                     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
                     configuration.setAllowCredentials(true);
@@ -73,6 +73,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/service-package/post-service-package").permitAll()
                         .requestMatchers("/api/service-package/put-service-package").permitAll()
                         .requestMatchers("/api/service-package/delete-service-package/**").permitAll()
+                                .requestMatchers("/api/booking/downloadPdf").permitAll()
                                 .requestMatchers("/vnpay-payment").permitAll()
                         // All
                                 //khoi

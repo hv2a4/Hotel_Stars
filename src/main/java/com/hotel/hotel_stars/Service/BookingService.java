@@ -33,7 +33,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.text.NumberFormat;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 import java.util.Optional;
@@ -214,11 +216,20 @@ public class BookingService {
             bookingRepository.save(booking);
             if (checkCreatbkRoom(booking.getId(), bookingModels.getRoomId(), bookingModels.getDiscountName())) {
                 System.out.println(jwtService.generateBoking(booking.getId()));
-                double total = booking.getBookingRooms().stream().mapToDouble(BookingRoom::getPrice).sum();
-                System.out.println(total);
+                List<BookingRoom> bookingRoomList = booking.getBookingRooms();
+                double total = bookingRoomList.stream().mapToDouble(BookingRoom::getPrice).sum();
+                System.out.println();
+                String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
+                LocalDate startDate=paramServices.convertInstallToLocalDate(booking.getStartAt());
+                LocalDate endDate=paramServices.convertInstallToLocalDate(booking.getEndAt());
+                String roomsString = bookingRoomList.stream()
+                        .map(bookingRoom -> bookingRoom.getRoom().getRoomName())  // Extract roomName from each BookingRoom
+                        .collect(Collectors.joining(", "));
+
+                String idBk = "Bk" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "" + booking.getId();
                 Boolean flag = (payment.getId()==1)? paramServices.sendEmails(booking.getAccount().getEmail(), "Xác nhận đặt phòng",
-                        paramServices.generateBooking(booking.getAccount().getFullname(),
-                                jwtService.generateBoking(booking.getId()))):false;
+                        paramServices.generateBookingEmail(idBk, booking.getAccount().getFullname(), jwtService.generateBoking(booking.getId())
+                                ,startDate,endDate , formattedAmount,roomsString  )):false;
 
                 return booking;
             }

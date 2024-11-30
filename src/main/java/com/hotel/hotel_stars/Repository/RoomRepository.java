@@ -143,7 +143,7 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
                         AND (
                             DATE(b_inner.start_at) <= DATE_ADD(CURDATE(), INTERVAL 1 DAY)
                             AND DATE(b_inner.end_at) >= CURDATE()
-                        )
+                        ) AND b_inner.status_id NOT IN (1, 6)
                 )
             GROUP BY 
                 r.id, 
@@ -172,7 +172,7 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
                                 AND (
                                     DATE(b_inner.start_at) <= DATE_ADD(CURDATE(), INTERVAL 1 DAY)
                                     AND DATE(b_inner.end_at) >= CURDATE()
-                                )
+                                ) AND b_inner.status_id NOT IN (1, 6)
                         )
                     """,
             nativeQuery = true)

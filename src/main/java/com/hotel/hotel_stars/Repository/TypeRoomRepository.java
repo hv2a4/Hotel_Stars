@@ -111,7 +111,7 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
                     AND (
                         DATE(b_inner.start_at) <= :endDate
                         AND DATE(b_inner.end_at) >= :startDate
-                    ) AND b_inner.status_id != 6
+                    )  AND b_inner.status_id NOT IN (1, 6)
                 )
                 AND tr.guest_limit <= :guestLimit
             GROUP BY
@@ -258,7 +258,7 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
             "        DATE(b_inner.start_at) <= :endDate " +
             "        AND DATE(b_inner.end_at) >= :startDate " +
             "    ) " + // Removed the `+` sign here
-            "    AND b_inner.status_id != 6 " +
+            "    AND b_inner.status_id NOT IN (1, 6) " +
             ")", nativeQuery = true)
     Long countAvailableRoom(@Param("roomId") Integer roomId,
                             @Param("startDate") LocalDate startDate,
