@@ -70,6 +70,11 @@ public class paramService {
         return accounts;
     }
 
+    public LocalDate convertStringToLocalDate(String dateStr) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        return LocalDate.parse(dateStr, formatter);
+    }
+
     public Map<String, String> messageSuccessApi(Integer code, String status, String message) {
         Map<String, String> response = new HashMap<String, String>();
         response.put("code", "" + code);

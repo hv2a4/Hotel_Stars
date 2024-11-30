@@ -165,7 +165,8 @@ public class SecurityConfig {
                                 .requestMatchers("/api/hotel/login")
                                 .hasAnyAuthority("Staff", "HotelOwner")
                                 .requestMatchers("/api/hotel/getAll", "/api/amenitiesHotel/getById/**",
-                                        "/api/amenitiesHotel/update", "/api/amenitiesHotel/delete/**", "/api/amenitiesHotel/add")
+                                        "/api/amenitiesHotel/update", "/api/amenitiesHotel/delete/**", "/api/amenitiesHotel/add" ,
+                                                "/api/discount/post-discount")
                                 .hasAnyAuthority("Staff", "HotelOwner")
                                 // --------------------------- api cần token có phân quyền HotelOwner
                                 // (chủ khách sạn )

@@ -144,7 +144,7 @@ public class BookingService {
 
     public Boolean checkCreatbkRoom(Integer bookingId, List<Integer> roomId, String discountName) {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow();
-        Discount discount = (discountRepository.findByDiscountName(discountName)!=null)?discountRepository.findByDiscountName(discountName):null;
+        Discount discount = (discountRepository.findByDiscountName(discountName) != null) ? discountRepository.findByDiscountName(discountName) : null;
         Long days = Duration.between(booking.getStartAt(), booking.getEndAt()).toDays();
 
         for (int i = 0; i < roomId.size(); i++) {
@@ -169,7 +169,7 @@ public class BookingService {
             }
         }
 
-        System.out.println("mảng: "+booking.getBookingRooms());
+        System.out.println("mảng: " + booking.getBookingRooms());
         return true;
     }
 
@@ -208,12 +208,12 @@ public class BookingService {
     }
 
 
-    public Boolean sendBookingEmail(bookingModel bookingModels) {
+    public Booking sendBookingEmail(bookingModel bookingModels) {
         Booking booking = new Booking();
         Optional<Account> accounts = accountRepository.findByUsername(bookingModels.getUserName());
         MethodPayment payment = methodPaymentRepository.findById(bookingModels.getMethodPayment()).get();
         Optional<StatusBooking> statusBooking =
-                (payment.getId()==1)?statusBookingRepository.findById(1):statusBookingRepository.findById(3);
+                (payment.getId() == 1) ? statusBookingRepository.findById(1) : statusBookingRepository.findById(3);
         Instant starDateIns = paramServices.stringToInstant(bookingModels.getStartDate());
         Instant endDateIns = paramServices.stringToInstant(bookingModels.getEndDate());
         booking.setAccount(accounts.get());
@@ -230,9 +230,9 @@ public class BookingService {
                 System.out.println(jwtService.generateBoking(booking.getId()));
                 double total = booking.getBookingRooms().stream().mapToDouble(BookingRoom::getPrice).sum();
                 System.out.println(total);
-                Boolean flag = (payment.getId()==1)? paramServices.sendEmails(booking.getAccount().getEmail(), "Xác nhận đặt phòng",
+                Boolean flag = (payment.getId() == 1) ? paramServices.sendEmails(booking.getAccount().getEmail(), "Xác nhận đặt phòng",
                         paramServices.generateBooking(booking.getAccount().getFullname(),
-                                jwtService.generateBoking(booking.getId()))):false;
+                                jwtService.generateBoking(booking.getId()))) : false;
 
                 return booking;
             }
@@ -425,7 +425,7 @@ public class BookingService {
                         booking.getEndAt(), booking.getStatusPayment(), new AccountDto(),
                         new MethodPaymentDto(booking.getMethodPayment().getId(),
                                 booking.getMethodPayment().getMethodPaymentName()))) // Cần xử lý accountDto trong
-                                                                                     // BookingDto
+                // BookingDto
                 .collect(Collectors.toList());
 
         // Trả về AccountDto
@@ -473,8 +473,8 @@ public class BookingService {
         // Kiểm tra null trước khi tạo MethodPaymentDto
         if (booking.getMethodPayment() != null) {
             dto.setMethodPaymentDto(new MethodPaymentDto(
-                booking.getMethodPayment().getId(),
-                booking.getMethodPayment().getMethodPaymentName()
+                    booking.getMethodPayment().getId(),
+                    booking.getMethodPayment().getMethodPaymentName()
             ));
         } else {
             dto.setMethodPaymentDto(null); // Hoặc tạo một DTO mặc định
@@ -483,7 +483,7 @@ public class BookingService {
         return dto;
     }
 
-    
+
     public List<accountHistoryDto> getAllBooking(String filterType, LocalDate startDate, LocalDate endDate) {
         // Nếu không có filterType, startDate, hoặc endDate, trả về toàn bộ danh sách
         if (filterType == null && startDate == null && endDate == null) {
@@ -510,7 +510,7 @@ public class BookingService {
         List<Booking> bookings = bookingRepository.findByAccount_Id(id);
         return bookings.stream().map(this::convertToDto).collect(Collectors.toList());
     }
-    
+
     public boolean updateStatusBooking(Integer idBooking, Integer idStatus, bookingModelNew bookingModel) {
         Optional<Booking> bookingOptional = bookingRepository.findById(idBooking);
         if (!bookingOptional.isPresent()) {
@@ -529,10 +529,10 @@ public class BookingService {
         booking.setStartAt(bookingModel.getStartDate());
         booking.setEndAt(bookingModel.getEndDate());
         bookingRepository.save(booking);
-        
+
         return true;
     }
-    
+
     public boolean updateStatusCheckInBooking(Integer idBooking, List<Integer> idBookingRoom, List<bookingRoomModel> model) {
         // Kiểm tra booking tồn tại
         Optional<Booking> bookingOptional = bookingRepository.findById(idBooking);
@@ -548,13 +548,13 @@ public class BookingService {
                     System.out.println(bookingRoom.getId());
                     bookingRoom.setCheckIn(br.getCheckIn());
                     bookingRoom.setCheckOut(br.getCheckOut());
-                    
+
                     bookingRoomRepository.save(bookingRoom);
 
                     // Cập nhật trạng thái phòng
                     Room room = roomRepository.findById(br.getRoomId()).get();
                     StatusRoom statusRoom = statusRoomRepository.findById(2).get(); // Đang sử dụng
-                    
+
                     room.setStatusRoom(statusRoom);
                     System.out.println(room.getStatusRoom().getStatusRoomName());
                     roomRepository.save(room);
@@ -565,14 +565,14 @@ public class BookingService {
         // Kiểm tra trạng thái tổng thể của booking
         Booking booking = bookingOptional.get();
         boolean allRoomsCheckedIn = booking.getBookingRooms().stream()
-            .allMatch(room -> {
-                // Kiểm tra null trước khi lấy trạng thái phòng
-                if (room.getRoom() == null || room.getRoom().getStatusRoom() == null) {
-                    System.out.println("Room or StatusRoom is null");
-                    return false; // Trả về false nếu có phòng hoặc trạng thái phòng bị null
-                }
-                return room.getRoom().getStatusRoom().getId() == 2; // Kiểm tra trạng thái "đang sử dụng"
-            });
+                .allMatch(room -> {
+                    // Kiểm tra null trước khi lấy trạng thái phòng
+                    if (room.getRoom() == null || room.getRoom().getStatusRoom() == null) {
+                        System.out.println("Room or StatusRoom is null");
+                        return false; // Trả về false nếu có phòng hoặc trạng thái phòng bị null
+                    }
+                    return room.getRoom().getStatusRoom().getId() == 2; // Kiểm tra trạng thái "đang sử dụng"
+                });
 
         if (allRoomsCheckedIn) {
             Optional<StatusBooking> optionalStatusBooking = statusBookingRepository.findById(7); // Đang sử dụng
@@ -581,20 +581,20 @@ public class BookingService {
             }
             StatusBooking statusBooking = optionalStatusBooking.get();
             booking.setStatus(statusBooking);
-            bookingRepository.save(booking); 
-        } 
+            bookingRepository.save(booking);
+        }
 
         return true;
     }
 
 
 // khoi
-    
+
     public accountHistoryDto getByIdBooking(Integer id) {
-    	Booking booking = bookingRepository.findById(id).get();
-    	return convertToDto(booking);
+        Booking booking = bookingRepository.findById(id).get();
+        return convertToDto(booking);
     }
-    
-    
+
+
 //khôi
 }
