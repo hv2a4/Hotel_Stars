@@ -205,15 +205,26 @@ public class RoomService {
         LocalDate localDate = LocalDate.parse(dateString, formatter);
         return java.sql.Date.valueOf(localDate); // Trả về java.sql.Date
     }
-
-    public PaginatedResponseDto<RoomDto> getAll(int page, int size, String sortBy, Date startDates, Date endDates,
-                                                Integer guestLimit) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-        Page<Room> roomPage = roomRepository.findAvailableRoomsWithPagination(startDates, endDates, guestLimit,
-                pageable);
-        List<RoomDto> roomDtos = roomPage.stream().map(this::convertToDto).collect(Collectors.toList());
-        return new PaginatedResponseDto<>(roomDtos, page, roomPage.getTotalPages(), roomPage.getTotalElements());
+    public LocalDate stringToLocalDate(String dateStr) {
+        return LocalDate.parse(dateStr, DateTimeFormatter.ISO_DATE);
     }
+
+    public PaginatedResponseDto<RoomDto> getAll(int page, int size, String sortBy, LocalDate startDate, LocalDate endDate,
+            Integer guestLimit) {
+Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+
+// Chuyển đổi LocalDate thành Date hoặc Instant khi truyền vào JPA Query
+Instant startInstant = startDate != null ? startDate.atStartOfDay(ZoneId.systemDefault()).toInstant() : null;
+Instant endInstant = endDate != null ? endDate.atStartOfDay(ZoneId.systemDefault()).toInstant() : null;
+
+Page<Room> roomPage = roomRepository.findAvailableRoomsWithPagination(
+startInstant, endInstant, guestLimit, pageable
+);
+
+List<RoomDto> roomDtos = roomPage.stream().map(this::convertToDto).collect(Collectors.toList());
+return new PaginatedResponseDto<>(roomDtos, page, roomPage.getTotalPages(), roomPage.getTotalElements());
+}
+
     // public PaginatedResponseDto<RoomDto> getAll(int page, int size, String
     // sortBy, Instant startDate, Instant endDate, Integer guestLimit) {
     // int offset = (page - 1) * size;

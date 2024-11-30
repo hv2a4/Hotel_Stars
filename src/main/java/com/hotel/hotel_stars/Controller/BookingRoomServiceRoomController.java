@@ -24,4 +24,10 @@ public class BookingRoomServiceRoomController {
 	public ResponseEntity<?> getServiceRoom(@RequestParam("bookingRoom") List<Integer> id){
 		return ResponseEntity.ok(bookingRoomServiceRoomService.listBookingRoomService(id));
 	}
+	//khôi
+	@GetMapping("booking-room-id")
+	public ResponseEntity<?> getBookingRoomIdService(@RequestParam("bookingRoom") Integer id){
+		return ResponseEntity.ok(bookingRoomServiceRoomService.getBookingRoomByIdService(id));
+	}
+	//khôi
 }

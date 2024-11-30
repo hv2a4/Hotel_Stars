@@ -34,4 +34,9 @@ public class BookingRoomServiceRoomService {
 		List<BookingRoomServiceRoom> list = bookingRoomServiceRoomRepository.findByBookingRoomIdIn(id);
 		return list.stream().map(this::convertDto).toList();
 	}
+	
+	public List<BookingRoomServiceRoomDto> getBookingRoomByIdService(Integer id){
+		List<BookingRoomServiceRoom> service = bookingRoomServiceRoomRepository.findByBookingRoomId(id);
+		return service.stream().map(this::convertDto).toList();
+	}
 }

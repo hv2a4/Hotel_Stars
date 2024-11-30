@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.Date;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -156,12 +157,12 @@ public class RoomController {
             @RequestParam(required = false) String endDate,
             @RequestParam(required = false) Integer guestLimit
     ) {
-        Date startInstant = startDate != null ? roomService.stringToSqlDate(startDate) : null;
-        Date endInstant = endDate != null ? roomService.stringToSqlDate(endDate) : null;
-        System.out.println(startInstant);
-        System.out.println(endInstant);
-        return ResponseEntity.ok(roomService.getAll(page, size, sortBy, startInstant, endInstant, guestLimit));
+        LocalDate startLocalDate = startDate != null ? roomService.stringToLocalDate(startDate) : null;
+        LocalDate endLocalDate = endDate != null ? roomService.stringToLocalDate(endDate) : null;
+
+        return ResponseEntity.ok(roomService.getAll(page, size, sortBy, startLocalDate, endLocalDate, guestLimit));
     }
+
 
     @GetMapping("list-room")
     public ResponseEntity<?> getListRoomBookingId(@RequestParam List<Integer> roomId) {

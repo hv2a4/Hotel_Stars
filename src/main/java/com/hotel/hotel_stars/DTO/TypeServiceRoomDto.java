@@ -22,4 +22,6 @@ public class TypeServiceRoomDto implements Serializable {
     Integer id;
     @Size(max = 255)
     String serviceRoomName;
+    String duration;
+    Set<ServiceRoomDto> serviceRoomDtos;
 }

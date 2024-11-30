@@ -120,5 +120,10 @@ public class ServiceRoomController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response); // Mã 500
 		}
 	}
+	
+	@GetMapping("/booking-room")
+	public ResponseEntity<?> BookingRoomServiceRoomService(@RequestParam("idBookingRoom") Integer idBookingRoom){
+		return ResponseEntity.ok(srservice.getServiceRoomsByBookingRoomId(idBookingRoom));
+	}
 
 }

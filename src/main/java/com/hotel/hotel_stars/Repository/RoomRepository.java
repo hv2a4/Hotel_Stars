@@ -256,22 +256,28 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
 
     // khôi
     @Query(value = """
-                SELECT r
-                FROM Room r
-                LEFT JOIN BookingRoom br ON br.room.id = r.id
-                LEFT JOIN Booking b ON br.booking.id = b.id 
-                    AND (:startDate <= DATE(b.endAt) AND :endDate >= DATE(b.startAt)) 
-                WHERE b.id IS NULL  
-                    AND r.statusRoom.id = 1
-                    AND EXISTS (
-                        SELECT 1
-                        FROM TypeRoom tr 
-                        WHERE tr.id = r.typeRoom.id AND tr.guestLimit >= :guestLimit
-                    )
-                ORDER BY r.roomName
-            """)
-    Page<Room> findAvailableRoomsWithPagination(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("guestLimit") Integer guestLimit, Pageable pageable);
-    //khôi
+            SELECT r
+            FROM Room r
+            WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM BookingRoom br
+                    JOIN Booking b ON br.booking.id = b.id
+                    WHERE br.room.id = r.id
+                        AND (:startDate <= b.endAt AND :endDate >= b.startAt)
+                )
+                AND EXISTS (
+                    SELECT 1
+                    FROM TypeRoom tr
+                    WHERE tr.id = r.typeRoom.id AND tr.guestLimit >= :guestLimit
+                )
+            ORDER BY r.roomName
+        """)
+    Page<Room> findAvailableRoomsWithPagination(@Param("startDate") Instant startDate, 
+                                                @Param("endDate") Instant endDate, 
+                                                @Param("guestLimit") Integer guestLimit, 
+                                                Pageable pageable);
+
+  //khôi
 
     @Query(value = """
             SELECT 
