@@ -107,10 +107,20 @@ public class paramService {
     }
 
     public Instant stringToInstant(String dateString) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate localDate = LocalDate.parse(dateString, formatter);
-        return localDate.atStartOfDay(ZoneId.of("UTC")).toInstant();
+        try {
+            // Định dạng đầy đủ với thời gian và múi giờ
+            DateTimeFormatter fullFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+                                                                .withZone(ZoneId.of("UTC"));
+            return Instant.from(fullFormatter.parse(dateString));
+        } catch (Exception e) {
+            DateTimeFormatter dateOnlyFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                                                                    .withZone(ZoneId.of("UTC"));
+            LocalDate localDate = LocalDate.parse(dateString, dateOnlyFormatter);
+            return localDate.atStartOfDay(ZoneId.of("UTC")).toInstant();
+        }
     }
+
+
     public Instant localdatetimeToInsant(LocalDateTime localDateTime) {
         ZoneId zoneId = ZoneId.of("UTC");
         return localDateTime.atZone(zoneId).toInstant();

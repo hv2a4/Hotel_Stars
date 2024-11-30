@@ -240,6 +240,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/booking-room-service-room/booking-room-id").permitAll()
                         .requestMatchers("/api/booking-room-service-room/service").permitAll()
                         .requestMatchers("/api/service-room/booking-room").permitAll()
+                        .requestMatchers("/api/booking-room-service-room/**").permitAll()
                 // khoi
                         //vu
                         
