@@ -58,7 +58,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration configuration = new CorsConfiguration();
-                    configuration.setAllowedOrigins(List.of("*")); // Thay đổi miền nếu cần
+                    configuration.setAllowedOriginPatterns(List.of("http://localhost:*")); // Mẫu miền// Thay đổi miền nếu cần
                     configuration.setAllowedMethods(
                             Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
@@ -214,7 +214,13 @@ public class SecurityConfig {
                                         "/api/service-room/delete-service-room/**",
                                         "/api/type-room-service/update/**",
                                         "/api/type-room-service/create",
-                                        "/api/type-room-service/delete/**"
+                                        "/api/type-room-service/delete/**",
+                                        //tuong
+                                        "/api/floor/add",
+                                        "/api/floor/update",
+                                        "/api/floor/delete/**",
+                                        "/api/room/delete/**"
+                                        //tuong
 
                                 )
                                 .hasAuthority("HotelOwner")
