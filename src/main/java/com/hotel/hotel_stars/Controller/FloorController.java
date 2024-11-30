@@ -48,16 +48,16 @@ public class FloorController {
             // Trả về lỗi máy chủ nội bộ với mã lỗi 500
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("code", 500);
-            errorResponse.put("message", "Có lỗi xảy ra khi thêm vào: " + ex.getMessage());
+            errorResponse.put("message", "" + ex.getMessage());
             errorResponse.put("status", "error");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 
-    @PutMapping("update/{id}")
-    public ResponseEntity<?> updateFloor(@PathVariable Integer id, @Valid @RequestBody floorModel flmodel) {
+    @PutMapping("update")
+    public ResponseEntity<?> updateFloor(@Valid @RequestBody floorModel flmodel) {
         try {
-            FloorDto updatedFl = flservice.updateFloor(id, flmodel);
+            FloorDto updatedFl = flservice.updateFloor(flmodel);
             // tạo thông báo
             Map<String, Object> response = new HashMap<>();
             response.put("code", 200);
@@ -75,7 +75,7 @@ public class FloorController {
         } catch (RuntimeException ex) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("code", 500);
-            errorResponse.put("message", "Có lỗi xảy ra khi cập nhật vào: " + ex.getMessage());
+            errorResponse.put("message", "" + ex.getMessage());
             errorResponse.put("status", "error");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
@@ -85,8 +85,12 @@ public class FloorController {
     public ResponseEntity<?> deleteAmenitiesTypeRoom(@PathVariable Integer id) {
         try {
             // Gọi phương thức trong service để xóa tài khoản
-            flservice.deleteAmenitiesTypeRoom(id);
-            return ResponseEntity.ok("Đã xóa thành công."); // Phản hồi thành công
+            flservice.deleteFloor(id);
+            Map<String, Object> response = new HashMap<>();
+            response.put("code", 200);
+            response.put("message", "Xóa thành công");
+            response.put("status", "success");
+            return ResponseEntity.ok(response);
         } catch (NoSuchElementException ex) {
             // Trả về lỗi nếu tài khoản không tồn tại
             Map<String, Object> errorResponse = new HashMap<>();
@@ -98,7 +102,7 @@ public class FloorController {
             // Xử lý lỗi xung đột khóa ngoại
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("code", 409); // Mã lỗi cho xung đột
-            errorResponse.put("message", "Không thể xóa vì có dữ liệu liên quan.");
+            errorResponse.put("message", "Không thể xóa tầng này đang được sử dụng.");
             errorResponse.put("status", "error");
             return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
         } catch (CustomValidationException ex) {

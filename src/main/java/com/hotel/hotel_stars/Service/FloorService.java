@@ -83,7 +83,7 @@ public class FloorService {
 
         // Kiểm tra tên
         if (flmodel.getFloorName() == null || flmodel.getFloorName().isEmpty()) {
-            errorMessages.add("Tên dịch vụ phòng không được để trống");
+            errorMessages.add("Tên tầng không được để trống");
         } else if (floorrep.existsByFloorName(flmodel.getFloorName())) {
             errorMessages.add("Tên này đã tồn tại");
         }
@@ -94,9 +94,6 @@ public class FloorService {
 
         try {
             Floor fl = new Floor();
-            // In ra màn hình
-            System.out.println("ID: " + fl.getId());
-            System.out.println("Tên loại tiện phòng: " + fl.getFloorName());
 
             fl.setFloorName(flmodel.getFloorName());
 
@@ -110,11 +107,11 @@ public class FloorService {
         }
     }
 
-    public FloorDto updateFloor(Integer flId, floorModel flmodel) {
+    public FloorDto updateFloor(floorModel flmodel) {
         List<String> errorMessages = new ArrayList<>(); // Danh sách lưu trữ các thông báo lỗi
 
         // Kiểm tra xem tài khoản có tồn tại hay không
-        Optional<Floor> existingFlOpt = floorrep.findById(flId);
+        Optional<Floor> existingFlOpt = floorrep.findById(flmodel.getId());
 
         Floor existingFl = existingFlOpt.get();
 
@@ -146,10 +143,10 @@ public class FloorService {
         }
     }
 
-    public void deleteAmenitiesTypeRoom(Integer id) {
+    public void deleteFloor(Integer id) {
         if (!floorrep.existsById(id)) {
-            throw new NoSuchElementException("Dịch vụ phòng này không tồn tại"); // Ném ngoại lệ nếu không tồn tại
+            throw new NoSuchElementException("Tầng này không tồn tại"); // Ném ngoại lệ nếu không tồn tại
         }
         floorrep.deleteById(id);
-    }
+    }   
 }

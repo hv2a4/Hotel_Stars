@@ -209,7 +209,13 @@ public class SecurityConfig {
                                         "/api/service-room/delete-service-room/**",
                                         "/api/type-room-service/update/**",
                                         "/api/type-room-service/create",
-                                        "/api/type-room-service/delete/**"
+                                        "/api/type-room-service/delete/**",
+                                        //tuong
+                                        "/api/floor/add",
+                                        "/api/floor/update",
+                                        "/api/floor/delete/**",
+                                        "/api/room/delete/**"
+                                        //tuong
 
                                 )
                                 .hasAuthority("HotelOwner")
