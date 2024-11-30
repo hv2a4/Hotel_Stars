@@ -17,8 +17,7 @@ import com.hotel.hotel_stars.Repository.BookingRepository;
 import com.hotel.hotel_stars.Repository.BookingRoomRepository;
 import com.hotel.hotel_stars.Repository.StatusBookingRepository;
 import com.hotel.hotel_stars.Service.BookingService;
-import com.hotel.hotel_stars.utils.SessionService;
-import com.hotel.hotel_stars.utils.paramService;
+
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -61,7 +60,7 @@ public class BookingController {
     @Autowired
     private StatusBookingRepository statusBookingRepository;
     @Autowired
-    private paramService paramServices;
+    private com.hotel.hotel_stars.utils.paramService paramServices;
     @Autowired
     private JwtService jwtService;
     @Autowired
@@ -69,7 +68,7 @@ public class BookingController {
     @Autowired
     VNPayService vnPayService;
     @Autowired
-    SessionService sessionService;
+    com.hotel.hotel_stars.Utils.SessionService sessionService;
 
     // khoi
     @GetMapping("")
