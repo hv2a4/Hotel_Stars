@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.util.List;
 
 @Getter
 @Setter
@@ -31,5 +32,8 @@ public class Discount {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "type_room_id")
     private TypeRoom typeRoom;
+
+    @OneToMany(mappedBy = "discount")
+    List<DiscountAccount> discountAccounts;
 
 }

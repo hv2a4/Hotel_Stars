@@ -51,4 +51,7 @@ public class Account {
 
     @OneToMany(mappedBy = "account")
     List<BookingRoom> bookingRooms;
+
+    @OneToMany(mappedBy = "account")
+    List<DiscountAccount> discountAccounts;
 }

@@ -26,22 +26,26 @@ public class BookingRoomController {
     public ResponseEntity<?> getAllBookingRoom() {
         return ResponseEntity.ok(bookingRoomService.getAllBookingRooms());
     }
+
     @GetMapping("/account/{id}")
     public ResponseEntity<?> getBookingRoomAccount(@PathVariable("id") Integer id) {
-    	return ResponseEntity.ok(bookingRoomService.getBookingRoomAccount(id));
+        return ResponseEntity.ok(bookingRoomService.getBookingRoomAccount(id));
     }
+
     @GetMapping("/room")
-    public ResponseEntity<?> getBookingRoomByRoom(@RequestParam("roomId") Integer roomId, @RequestParam("statusId") Integer statusId){
-    	return ResponseEntity.ok(bookingRoomService.getByRoom(roomId, statusId));
+    public ResponseEntity<?> getBookingRoomByRoom(@RequestParam("roomId") Integer roomId, @RequestParam("statusId") Integer statusId) {
+        return ResponseEntity.ok(bookingRoomService.getByRoom(roomId, statusId));
     }
+
     @GetMapping("/list-booking-room")
-    public ResponseEntity<?> getBookingRoomInIds(@RequestParam("bookingRoomId") List<Integer> roomId){
-    	return ResponseEntity.ok(bookingRoomService.getBookingRoomIds(roomId));
+    public ResponseEntity<?> getBookingRoomInIds(@RequestParam("bookingRoomId") List<Integer> roomId) {
+        return ResponseEntity.ok(bookingRoomService.getBookingRoomIds(roomId));
     }
+
     //khoi
     @GetMapping("/getById/{id}")
-    public ResponseEntity<?> getById(@PathVariable("id") Integer id){
-    	return ResponseEntity.ok(bookingRoomService.getByIdBookingRoom(id));
+    public ResponseEntity<?> getById(@PathVariable("id") Integer id) {
+        return ResponseEntity.ok(bookingRoomService.getByIdBookingRoom(id));
     }
     //khoi
 }

@@ -1,15 +1,10 @@
 package com.hotel.hotel_stars.Config;
 
 import com.hotel.hotel_stars.filter.JwtAuthFilter;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -23,14 +18,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import org.springframework.web.cors.CorsConfiguration;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
@@ -58,7 +49,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration configuration = new CorsConfiguration();
-                    configuration.setAllowedOrigins(List.of("*")); // Thay đổi miền nếu cần
+                    configuration.setAllowedOriginPatterns(List.of("http://localhost:*")); // Mẫu miền// Thay đổi miền nếu cần
                     configuration.setAllowedMethods(
                             Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
@@ -135,7 +126,11 @@ public class SecurityConfig {
                                         "api/room/put-room",
                                         "api/room/list-room",
                                         "api/amenities-type-room/getAll",
-                                        "api/room/getById/**")
+                                        "api/room/getById/**",
+                                        "/api/image/getAll",
+                                        "/api/service-hotel/getAll",
+                                        "/api/discount-accounts/getAll"
+                                )
                                 .permitAll()
 
                                 // nghia
