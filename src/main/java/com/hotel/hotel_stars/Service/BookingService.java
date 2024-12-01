@@ -16,20 +16,17 @@ import com.hotel.hotel_stars.DTO.BookingDto;
 import com.hotel.hotel_stars.DTO.MethodPaymentDto;
 import com.hotel.hotel_stars.DTO.RoleDto;
 import com.hotel.hotel_stars.DTO.StatusBookingDto;
-import com.hotel.hotel_stars.DTO.StatusResponseDto;
 import com.hotel.hotel_stars.DTO.accountHistoryDto;
 import com.hotel.hotel_stars.Entity.*;
-import com.hotel.hotel_stars.Exception.CustomValidationException;
 import com.hotel.hotel_stars.Exception.ErrorsService;
 import com.hotel.hotel_stars.Models.bookingModel;
 import com.hotel.hotel_stars.Models.bookingModelNew;
 import com.hotel.hotel_stars.Models.bookingRoomModel;
 import com.hotel.hotel_stars.Repository.*;
-import com.hotel.hotel_stars.utils.paramService;
+import com.hotel.hotel_stars.Utils.paramService;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;

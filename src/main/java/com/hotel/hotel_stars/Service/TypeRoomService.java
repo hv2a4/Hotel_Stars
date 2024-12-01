@@ -8,7 +8,7 @@ import com.hotel.hotel_stars.Models.typeRoomModel;
 import com.hotel.hotel_stars.Repository.*;
 import com.hotel.hotel_stars.Repository.TypeBedRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomImageRepository;
-import com.hotel.hotel_stars.utils.paramService;
+import com.hotel.hotel_stars.Utils.paramService;
 import com.hotel.hotel_stars.Models.TypeRoomAmenitiesTypeRoomModel;
 import com.hotel.hotel_stars.Models.amenitiesTypeRoomModel;
 import jakarta.persistence.EntityNotFoundException;

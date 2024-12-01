@@ -60,7 +60,7 @@ public class BookingController {
     @Autowired
     private StatusBookingRepository statusBookingRepository;
     @Autowired
-    private com.hotel.hotel_stars.utils.paramService paramServices;
+    private com.hotel.hotel_stars.Utils.paramService paramServices;
     @Autowired
     private JwtService jwtService;
     @Autowired
@@ -196,7 +196,6 @@ public class BookingController {
                     .map(bookingRoom -> bookingRoom.getRoom().getRoomName()) // Extract roomName from each BookingRoom
                     .collect(Collectors.joining(", "));
             String idBk = "Bk" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "" + booking.getId();
-
             paramServices.sendEmails(booking.getAccount().getEmail(), "thông tin đơn hàng",
                     paramServices.confirmBookings(idBk, booking, startDate, endDate, formattedAmount, roomsString));
 

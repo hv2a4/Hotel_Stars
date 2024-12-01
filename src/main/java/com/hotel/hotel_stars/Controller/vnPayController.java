@@ -33,7 +33,7 @@ public class vnPayController {
     @Autowired
     VNPayService vnPayService;
     @Autowired
-    private com.hotel.hotel_stars.utils.paramService paramServices;
+    private com.hotel.hotel_stars.Utils.paramService paramServices;
     @Autowired
     private StatusBookingRepository statusBookingRepository;
     @Autowired

@@ -9,7 +9,7 @@ import com.hotel.hotel_stars.Models.changePasswordModel;
 import com.hotel.hotel_stars.Repository.AccountRepository;
 import com.hotel.hotel_stars.Service.AccountService;
 import com.hotel.hotel_stars.Service.TypeRoomService;
-import com.hotel.hotel_stars.utils.paramService;
+import com.hotel.hotel_stars.Utils.paramService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,15 +17,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 @RestController
 @CrossOrigin("*")

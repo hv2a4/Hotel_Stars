@@ -308,5 +308,6 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
             """, nativeQuery = true)
     List<Object[]> findRoomsDetailsByIds(List<Integer> roomIds);
 
-
+    @Query("SELECT r FROM Room r JOIN r.typeRoom t WHERE t.id = ?1")
+    List<Room> findRoomsByTypeId(Integer typeRoomId);
 }

@@ -4,10 +4,9 @@ import com.hotel.hotel_stars.DTO.RoomDto;
 import com.hotel.hotel_stars.DTO.Select.PaginatedResponseDto;
 import com.hotel.hotel_stars.DTO.Select.RoomAvailabilityInfo;
 import com.hotel.hotel_stars.DTO.StatusResponseDto;
-import com.hotel.hotel_stars.Entity.Room;
 import com.hotel.hotel_stars.Models.RoomModel;
 import com.hotel.hotel_stars.Service.RoomService;
-import com.hotel.hotel_stars.utils.paramService;
+import com.hotel.hotel_stars.Utils.paramService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -15,9 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.sql.Date;
-import java.time.Instant;
+    
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
