@@ -2,6 +2,7 @@ package com.hotel.hotel_stars.Repository;
 
 import com.hotel.hotel_stars.DTO.Select.RoomDetailResponseDTO;
 import com.hotel.hotel_stars.DTO.Select.RoomListBooking;
+import com.hotel.hotel_stars.DTO.Select.RoomListDTO;
 import com.hotel.hotel_stars.Entity.Room;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -95,8 +96,8 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
 
     @Query(value = """
             SELECT 
-                r.id AS roomId, 
-                r.room_name, 
+                GROUP_CONCAT(DISTINCT r.id ORDER BY r.id ASC) AS room_ids,
+                GROUP_CONCAT(DISTINCT r.room_name ORDER BY r.room_name ASC) AS room_names,               
                 tr.id AS typeRoomId, 
                 tr.type_room_name, 
                 tr.price, 
@@ -146,18 +147,16 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
                         ) AND b_inner.status_id NOT IN (1, 6)
                 )
             GROUP BY 
-                r.id, 
-                r.room_name, 
                 tr.id, 
-                tr.type_room_name, 
-                tr.price, 
-                tr.acreage, 
-                tr.guest_limit, 
-                tr.describes, 
-                discount.id
+                tr.type_room_name,
+                tr.price,
+                tr.acreage,
+                tr.guest_limit,
+                tr.describes,
+                discount.id;
             """,
             countQuery = """
-                    SELECT COUNT(DISTINCT r.id) 
+                    SELECT COUNT(DISTINCT tr.id) 
                     FROM 
                         type_room tr 
                     JOIN 
@@ -177,6 +176,7 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
                     """,
             nativeQuery = true)
     Page<Object[]> findAvailableRooms(Pageable pageable);
+
 
     @Query(value = "SELECT r.id AS roomId, r.room_name, tr.id AS typeRoomId, tr.type_room_name, tr.price, tr.acreage, tr.guest_limit, "
             + "GROUP_CONCAT(DISTINCT CONCAT(atr.amenities_type_room_name) SEPARATOR ', ') AS amenitiesTypeRoomDetails, "
@@ -234,7 +234,7 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
             "JOIN amenities_type_room ON type_room_amenities_type_room.amenities_type_room_id = amenities_type_room.id " +
             "JOIN room ON type_room.id = room.type_room_id " +
             "LEFT JOIN discount ON type_room.id = discount.type_room_id " +
-            "WHERE room.id = ?1 " +
+            "WHERE type_room.id = ?1  " +
             "GROUP BY room.id, " +
             "type_room.id, " +
             "type_room.type_room_name, " +
@@ -256,28 +256,28 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
 
     // khôi
     @Query(value = """
-            SELECT r
-            FROM Room r
-            WHERE NOT EXISTS (
-                    SELECT 1
-                    FROM BookingRoom br
-                    JOIN Booking b ON br.booking.id = b.id
-                    WHERE br.room.id = r.id
-                        AND (:startDate <= b.endAt AND :endDate >= b.startAt)
-                )
-                AND EXISTS (
-                    SELECT 1
-                    FROM TypeRoom tr
-                    WHERE tr.id = r.typeRoom.id AND tr.guestLimit >= :guestLimit
-                )
-            ORDER BY r.roomName
-        """)
-    Page<Room> findAvailableRoomsWithPagination(@Param("startDate") Instant startDate, 
-                                                @Param("endDate") Instant endDate, 
-                                                @Param("guestLimit") Integer guestLimit, 
+                SELECT r
+                FROM Room r
+                WHERE NOT EXISTS (
+                        SELECT 1
+                        FROM BookingRoom br
+                        JOIN Booking b ON br.booking.id = b.id
+                        WHERE br.room.id = r.id
+                            AND (:startDate <= b.endAt AND :endDate >= b.startAt)
+                    )
+                    AND EXISTS (
+                        SELECT 1
+                        FROM TypeRoom tr
+                        WHERE tr.id = r.typeRoom.id AND tr.guestLimit >= :guestLimit
+                    )
+                ORDER BY r.roomName
+            """)
+    Page<Room> findAvailableRoomsWithPagination(@Param("startDate") Instant startDate,
+                                                @Param("endDate") Instant endDate,
+                                                @Param("guestLimit") Integer guestLimit,
                                                 Pageable pageable);
 
-  //khôi
+    //khôi
 
     @Query(value = """
             SELECT 
@@ -308,6 +308,7 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
             """, nativeQuery = true)
     List<Object[]> findRoomsDetailsByIds(List<Integer> roomIds);
 
-    @Query("SELECT r FROM Room r JOIN r.typeRoom t WHERE t.id = ?1")
-    List<Room> findRoomsByTypeId(Integer typeRoomId);
+    @Query("SELECT new com.hotel.hotel_stars.DTO.Select.RoomListDTO(r.id, r.roomName) " +
+            "FROM Room r JOIN r.typeRoom t WHERE t.id = ?1")
+    List<RoomListDTO> findRoomsByTypeId(Integer typeRoomId);
 }

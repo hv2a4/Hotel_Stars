@@ -14,7 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-    
+
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -164,5 +164,10 @@ public class RoomController {
     @GetMapping("list-room")
     public ResponseEntity<?> getListRoomBookingId(@RequestParam List<Integer> roomId) {
         return ResponseEntity.ok(roomService.getRoomInBookingId(roomId));
+    }
+
+    @GetMapping("list-room-id")
+    public ResponseEntity<?> getListRoomId(@RequestParam Integer roomId) {
+        return ResponseEntity.ok(roomService.getListById(roomId));
     }
 }

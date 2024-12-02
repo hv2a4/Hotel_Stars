@@ -1,10 +1,7 @@
 package com.hotel.hotel_stars.Service;
 
 import com.hotel.hotel_stars.DTO.*;
-import com.hotel.hotel_stars.DTO.Select.RoomAvailabilityInfo;
-import com.hotel.hotel_stars.DTO.Select.RoomDetailResponseDTO;
-import com.hotel.hotel_stars.DTO.Select.PaginatedResponseDto;
-import com.hotel.hotel_stars.DTO.Select.RoomListBooking;
+import com.hotel.hotel_stars.DTO.Select.*;
 import com.hotel.hotel_stars.DTO.selectDTO.countDto;
 import com.hotel.hotel_stars.Entity.*;
 import com.hotel.hotel_stars.Models.RoomModel;
@@ -262,8 +259,11 @@ public class RoomService {
     public Page<RoomAvailabilityInfo> getAvailableRooms(Pageable pageable) {
         Page<Object[]> result = roomRepository.findAvailableRooms(pageable);
         return result.map(row -> {
-            Integer roomId = (Integer) row[0];
+            String roomId = (String) row[0];
+            System.out.println(roomId);
+            List<Integer> IdRoom = Arrays.stream(String.valueOf(roomId).split(",")).map(String::trim).map(Integer::parseInt).toList();
             String roomName = (String) row[1];
+            List<String> listRoom = Arrays.stream(String.valueOf(roomName).split(",")).map(String::trim).toList();
             Integer typeRoomId = (Integer) row[2];
             String typeRoomName = (String) row[3];
             Double price = (Double) row[4];
@@ -276,18 +276,16 @@ public class RoomService {
             String amenitiesIds = (String) row[11];
             Double finalPrice = (Double) row[12]; // finalPrice from SQL query
             Double estCost = (Double) row[13]; // estCost from SQL query
-            Double percent = (Double) row[14]; // percent from SQL query
 
             RoomAvailabilityInfo roomAvailabilityInfo = new RoomAvailabilityInfo();
-            roomAvailabilityInfo.setRoomId(roomId);
-            roomAvailabilityInfo.setRoomName(roomName);
+            roomAvailabilityInfo.setRoomId(IdRoom);
+            roomAvailabilityInfo.setRoomName(listRoom);
             roomAvailabilityInfo.setTypeRoomId(typeRoomId);
             roomAvailabilityInfo.setTypeRoomName(typeRoomName);
             roomAvailabilityInfo.setPrice(price);
             roomAvailabilityInfo.setAcreage(acreage);
             roomAvailabilityInfo.setGuestLimit(guestLimit);
-            roomAvailabilityInfo
-                    .setAmenitiesDetails(Arrays.stream(amenitiesDetails.split(",")).map(String::trim).toList());
+            roomAvailabilityInfo.setAmenitiesDetails(Arrays.stream(amenitiesDetails.split(",")).map(String::trim).toList());
             roomAvailabilityInfo.setImageList(Arrays.asList(imageList.split(",")));
             roomAvailabilityInfo.setDescription(description);
             roomAvailabilityInfo.setBedNames(Arrays.asList(bedNames.split(",")));
@@ -297,7 +295,7 @@ public class RoomService {
             // Setting the additional fields
             roomAvailabilityInfo.setFinalPrice(finalPrice);
             roomAvailabilityInfo.setEstCost(estCost);
-            roomAvailabilityInfo.setPercent(percent);
+
 
             return roomAvailabilityInfo;
         });
@@ -393,8 +391,8 @@ public class RoomService {
         return roomListBookings;
     }
 
-    public List<RoomDto> getListById(Integer id) {
-
-        return null;
+    public List<RoomListDTO> getListById(Integer id) {
+        List<RoomListDTO> roomListDTOS = roomRepository.findRoomsByTypeId(id);
+        return roomListDTOS;
     }
 }

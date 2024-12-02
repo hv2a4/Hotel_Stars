@@ -14,13 +14,19 @@ import com.hotel.hotel_stars.Models.typeRoomModel;
 import com.hotel.hotel_stars.Service.AccountService;
 import com.hotel.hotel_stars.Service.BookingService;
 import com.hotel.hotel_stars.Service.TypeRoomService;
+import com.hotel.hotel_stars.Utils.paramService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +43,9 @@ public class TypeRoomController {
 
     @Autowired
     BookingService bookingService;
+
+    @Autowired
+    paramService paramService;
 
     @GetMapping("/getAll")
     public ResponseEntity<?> getAllTypeRooms() {
@@ -167,7 +176,7 @@ public class TypeRoomController {
     // return ResponseEntity.ok(trservice.getRoom(startDate, endDate, guestLimit));
     // // Trả về ResponseEntity với dữ
     // }
-    
+
     @GetMapping("/find-type-room")
     public ResponseEntity<?> findTypeRoom(
             @RequestParam String startDate,
@@ -176,19 +185,23 @@ public class TypeRoomController {
             @RequestParam(defaultValue = "1") Integer page, // Mặc định là trang 1
             @RequestParam(defaultValue = "10") Integer size // Mặc định là 10 bản ghi/trang
     ) {
-        // Fetch dữ liệu phòng với phân trang
-        List<FindTypeRoomDto> rooms = trservice.getRoom(startDate, endDate, guestLimit, page, size);
 
-        // Lấy tổng số phòng để tính toán tổng số trang
-        long totalItems = trservice.getTotalRoomCount(startDate, endDate, guestLimit);
-        int totalPages = (int) Math.ceil((double) totalItems / size);
+        // Tạo Pageable từ page và size
+        Pageable pageable = PageRequest.of(page - 1, size);
+
+        // Fetch dữ liệu phòng với phân trang từ service
+        Page<FindTypeRoomDto> rooms = trservice.getRoom(startDate, endDate, guestLimit, pageable);
+
+        // Lấy tổng số phòng và tổng số trang từ Page object
+        long totalItems = rooms.getTotalElements();
+        int totalPages = rooms.getTotalPages();
 
         // Tạo đối tượng response chứa dữ liệu phân trang
-        PaginatedResponse<FindTypeRoomDto> response = new PaginatedResponse<>(rooms, totalItems, totalPages, page,
-                size);
+        PaginatedResponse<FindTypeRoomDto> response = new PaginatedResponse<>(rooms.getContent(), totalItems, totalPages, page, size);
+
         return ResponseEntity.ok(response);
     }
-
+        
     @GetMapping("/detail-type-room")
     public ResponseEntity<?> getTypeRoomDetail(@RequestParam Integer id) {
         List<RoomTypeDetail> typeRoomDto = trservice.getRoomTypeDetailById(id);
