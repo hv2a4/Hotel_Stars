@@ -2,6 +2,7 @@ package com.hotel.hotel_stars.Controller;
 
 import com.hotel.hotel_stars.Config.JwtService;
 import com.hotel.hotel_stars.Config.VNPayService;
+import com.hotel.hotel_stars.DTO.StatusResponseDto;
 import com.hotel.hotel_stars.DTO.accountHistoryDto;
 import com.hotel.hotel_stars.DTO.Select.BookingDetailDTO;
 import com.hotel.hotel_stars.DTO.Select.PaymentInfoDTO;
@@ -147,6 +148,10 @@ public class BookingController {
             Booking booking = bookingRepository.findById(id).get();
             List<BookingRoom> bookingRoomList = booking.getBookingRooms();
             double total = bookingRoomList.stream().mapToDouble(BookingRoom::getPrice).sum();
+            if(booking.getDiscountPercent()!=null && booking.getDiscountPercent()!=null){
+                double discountAmount = total * (booking.getDiscountPercent() / 100);
+                total=total-discountAmount;
+            }
             String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
             LocalDate startDate = paramServices.convertInstallToLocalDate(booking.getStartAt());
             LocalDate endDate = paramServices.convertInstallToLocalDate(booking.getEndAt());
@@ -161,8 +166,10 @@ public class BookingController {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            paramServices.sendEmails(booking.getAccount().getEmail(),"thông tin đơn hàng",
+                    paramServices.pdfDownload(idBk,booking,startDate,endDate ,formattedAmount,roomsString, paramServices.getImage()));
             return ResponseEntity
-                    .ok(paramServices.confirmBookings(idBk, booking, startDate, endDate, formattedAmount, roomsString));
+                    .ok(paramServices.confirmBookings(idBk, booking, startDate, endDate, formattedAmount, roomsString, paramServices.getImage()));
         } catch (ExpiredJwtException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Token đã hết hạn. Vui lòng liên lạc qua số điện thoại 1900 6522");
@@ -184,27 +191,28 @@ public class BookingController {
 
     @GetMapping("/downloadPdf")
     public ResponseEntity<?> downloadPdf(@RequestParam String id) {
+
         try {
             Booking booking = bookingRepository.findById(Integer.parseInt(id)).get();
             List<BookingRoom> bookingRoomList = booking.getBookingRooms();
             double total = bookingRoomList.stream().mapToDouble(BookingRoom::getPrice).sum();
-            System.out.println();
             String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
             LocalDate startDate = paramServices.convertInstallToLocalDate(booking.getStartAt());
             LocalDate endDate = paramServices.convertInstallToLocalDate(booking.getEndAt());
             String roomsString = bookingRoomList.stream()
                     .map(bookingRoom -> bookingRoom.getRoom().getRoomName()) // Extract roomName from each BookingRoom
                     .collect(Collectors.joining(", "));
-            String idBk = "Bk" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "" + booking.getId();
+            String idBk = "Bk" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + "" + booking.getId();
+
             paramServices.sendEmails(booking.getAccount().getEmail(), "thông tin đơn hàng",
-                    paramServices.confirmBookings(idBk, booking, startDate, endDate, formattedAmount, roomsString));
+                    paramServices.confirmBookings(idBk, booking, startDate, endDate, formattedAmount, roomsString,paramServices.getImage()));
 
             String filePath = paramServices.generatePdf(
-                    paramServices.pdfDowload(idBk, booking, startDate, endDate, formattedAmount, roomsString),
+                    paramServices.pdfDownload(idBk, booking, startDate, endDate, formattedAmount, roomsString,paramServices.getImage()),
                     booking.getAccount().getFullname(), idBk);
 
-            // Tạo ResponseEntity để trả về file PDF
             File file = new File(filePath);
+            System.out.println(file);
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + file.getName());
 
@@ -222,26 +230,30 @@ public class BookingController {
     public ResponseEntity<?> postBooking(@Valid @RequestBody bookingModel bookingModels, HttpServletRequest request) {
         Map<String, String> response = new HashMap<String, String>();
 
-        errorsServices.errorBooking(bookingModels);
-
+        StatusResponseDto statusResponseDto = errorsServices.errorBooking(bookingModels);
+        if(statusResponseDto!=null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(statusResponseDto);
+        }
         try {
             Booking bookings = bookingService.sendBookingEmail(bookingModels);
-            if (bookings != null) {
+            if (bookings!=null) {
                 response = paramServices.messageSuccessApi(201, "success",
                         "Đặt phòng thành công, vui lòng vào email để xác nhận");
-                if (bookings.getMethodPayment().getId() == 1) {
+                if(bookings.getMethodPayment().getId()==1){
                     response.put("vnPayURL", null);
-                } else {
+                }else {
                     List<BookingRoom> bookingRoomList = bookings.getBookingRooms();
                     double total = bookingRoomList.stream().mapToDouble(BookingRoom::getPrice).sum();
+                    if(bookings.getDiscountPercent()!=null && bookings.getDiscountPercent()!=null){
+                        double discountAmount = total * (bookings.getDiscountPercent() / 100);
+                        total=total-discountAmount;
+                    }
                     int totalAsInt = (int) total;
 
-                    String baseUrl = request.getScheme() + "://" + request.getServerName() + ":"
-                            + request.getServerPort();
+                    String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
                     response = paramServices.messageSuccessApi(201, "success",
                             "Đặt phòng thành công");
-                    response.put("vnPayURL",
-                            vnPayService.createOrder(totalAsInt, String.valueOf(bookings.getId()), baseUrl));
+                    response.put("vnPayURL", vnPayService.createOrder(totalAsInt,String.valueOf(bookings.getId()), baseUrl));
 
                 }
                 return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -254,4 +266,5 @@ public class BookingController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
 }

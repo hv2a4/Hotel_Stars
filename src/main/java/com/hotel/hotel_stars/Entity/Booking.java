@@ -39,6 +39,9 @@ public class Booking {
     @Column(name = "discount_percent")
     private Double discountPercent;
 
+    @Column(name = "descriptions")
+    private String descriptions;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "method_payment_id")
     private MethodPayment methodPayment;

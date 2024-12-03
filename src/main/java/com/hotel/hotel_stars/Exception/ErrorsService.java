@@ -1,5 +1,6 @@
 package com.hotel.hotel_stars.Exception;
 
+import com.hotel.hotel_stars.DTO.StatusResponseDto;
 import com.hotel.hotel_stars.DTO.selectDTO.RoomAvailabilityResponse;
 import com.hotel.hotel_stars.Entity.*;
 import com.hotel.hotel_stars.Models.bookingModel;
@@ -52,8 +53,9 @@ public class ErrorsService {
         return new RoomAvailabilityResponse(true, null);
     }
 
-    public void errorBooking(bookingModel bookingModels) throws CustomValidationException {
+    public StatusResponseDto errorBooking(bookingModel bookingModels) throws CustomValidationException {
         List<ValidationError> errors = new ArrayList<>();
+        StatusResponseDto responseDto = new StatusResponseDto();
         Instant startInstant = paramServices.stringToInstant(bookingModels.getStartDate());
         Instant endInstant = paramServices.stringToInstant(bookingModels.getEndDate());
         Optional<Account> account = accountRepository.findByUsername(bookingModels.getUserName());
@@ -61,24 +63,39 @@ public class ErrorsService {
         System.out.println(response.isAllRoomsAvailable());
 
         if (!account.isPresent()) {
-            errors.add(new ValidationError("username", "người dùng này không tồn tại"));
+            responseDto.setCode("400");
+            responseDto.setStatus("error");
+            responseDto.setMessage("Người dùng này không tồn tại");
+            return responseDto;
         }
         if (account.get().getPhone() == null || account.get().getPhone().isEmpty()) {
-            errors.add(new ValidationError("phone", "Người dùng chưa có số điện thoại"));
+            responseDto.setCode("400");
+            responseDto.setStatus("error");
+            responseDto.setMessage("Người dùng chưa có số điện thoại");
+            return responseDto;
         }
         if (bookingModels.getRoomId().size() <= 0) {
-            errors.add(new ValidationError("quantityroom", "số lượng phòng không được bé hơn hoặc bằng 0"));
+            responseDto.setCode("400");
+            responseDto.setStatus("error");
+            responseDto.setMessage("Số lượng phòng không được bé hơn hoặc bằng 0");
+            return responseDto;
         }
         if (startInstant.isAfter(endInstant)) {
-            errors.add(new ValidationError("startdate", "Ngày Bắt đầu không nhỏ hơn ngày kết thúc"));
+            responseDto.setCode("400");
+            responseDto.setStatus("error");
+            responseDto.setMessage("Ngày Bắt đầu không nhỏ hơn ngày kết thúc");
+            return responseDto;
         }
         if (response.isAllRoomsAvailable() == false) {
             Room rooms = roomRepository.findById(response.getUnavailableRoomId()).get();
             errors.add(new ValidationError("room", "Id: " + rooms.getId() + ", " + "Phòng: " + rooms.getRoomName() + ", Loại phòng: " + rooms.getTypeRoom().getTypeRoomName() + ", Đã có người đặt rồi"));
+            responseDto.setCode("400");
+            responseDto.setStatus("error");
+            responseDto.setMessage("Id: " + rooms.getId() + ", " + "Phòng: " + rooms.getRoomName() + ", Loại phòng: " + rooms.getTypeRoom().getTypeRoomName() + ", Đã có người đặt rồi");
+            return responseDto;
         }
-        if (!errors.isEmpty()) {
-            throw new CustomValidationException(errors);
-        }
+
+        return null;
     }
 
 }

@@ -29,6 +29,14 @@ public class DiscountService {
     @Autowired
     TypeRoomRepository typeRoomRepository;
 
+    public List<DiscountDto> getDiscountByAccount(String userName) {
+        List<Discount> discounts = discountRepository.findDiscountsByUsername(userName);
+       if(discounts == null || discounts.isEmpty()){
+           return null;
+       }
+        return discounts.stream().map(this::convertToDto).toList();
+    }
+
     public DiscountDto convertToDto(Discount discount) {
         DiscountDto discountDto = modelMapper.map(discount, DiscountDto.class);
         return discountDto;

@@ -31,6 +31,7 @@ import java.nio.file.Files;
 import java.security.GeneralSecurityException;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
@@ -81,11 +82,6 @@ public class paramService {
         return accounts;
     }
 
-    public LocalDate convertStringToLocalDate(String dateStr) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        return LocalDate.parse(dateStr, formatter);
-    }
-
     public Map<String, String> messageSuccessApi(Integer code, String status, String message) {
         Map<String, String> response = new HashMap<String, String>();
         response.put("code", "" + code);
@@ -123,20 +119,27 @@ public class paramService {
     }
 
     public Instant stringToInstant(String dateString) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate localDate = LocalDate.parse(dateString, formatter);
+        return localDate.atStartOfDay(ZoneId.of("UTC")).toInstant();
+    }
+    public Instant stringToInstantBK(String dateString, int hour, int minute) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         try {
-            // Định dạng đầy đủ với thời gian và múi giờ
-            DateTimeFormatter fullFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
-                                                                .withZone(ZoneId.of("UTC"));
-            return Instant.from(fullFormatter.parse(dateString));
-        } catch (Exception e) {
-            DateTimeFormatter dateOnlyFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                                                                    .withZone(ZoneId.of("UTC"));
-            LocalDate localDate = LocalDate.parse(dateString, dateOnlyFormatter);
-            return localDate.atStartOfDay(ZoneId.of("UTC")).toInstant();
+            // Parse date string to LocalDate
+            LocalDate localDate = LocalDate.parse(dateString, formatter);
+            // Add default time (hour, minute)
+            LocalDateTime localDateTime = localDate.atTime(hour, minute);
+            // Convert to Instant in UTC
+            return localDateTime.atZone(ZoneId.of("UTC")).toInstant();
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Invalid date format: " + dateString, e);
         }
     }
-
-
+    public LocalDate convertStringToLocalDate(String dateStr) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        return LocalDate.parse(dateStr, formatter);
+    }
     public Instant localdatetimeToInsant(LocalDateTime localDateTime) {
         ZoneId zoneId = ZoneId.of("UTC");
         return localDateTime.atZone(zoneId).toInstant();
@@ -152,7 +155,31 @@ public class paramService {
         // Convert Instant to LocalDate using the system default timezone
         return install.atZone(ZoneId.systemDefault()).toLocalDate();
     }
+    public BufferedImage getImageFromUrl(String imageUrl) {
+        try {
+            // Mở kết nối tới URL
+            URL url = new URL(imageUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.connect();
 
+            // Kiểm tra mã phản hồi HTTP
+            int responseCode = connection.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                // Đọc ảnh từ luồng dữ liệu
+                InputStream inputStream = connection.getInputStream();
+                BufferedImage image = ImageIO.read(inputStream);
+                inputStream.close();
+                return image;
+            } else {
+                System.err.println("Không thể tải ảnh. Mã phản hồi: " + responseCode);
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tải ảnh: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return null;
+    }
     public String generateHtml(String title, String message, String content) {
         return "<!DOCTYPE html>" +
                 "<html lang=\"vi\">" +
@@ -180,138 +207,108 @@ public class paramService {
 
 
 
-    public String confirmBookings(String id, Booking booking, LocalDate startDate, LocalDate endDate, String total, String rooms) {
-        return "<!DOCTYPE html>\n" +
-                "<html lang=\"vi\">\n" +
-                "<head>\n" +
-                "    <meta charset=\"UTF-8\" />\n" +
-                "    <title>Xác Nhận Đặt Phòng PDF</title>\n" +
-                "    <style>\n" +
-                "        * {\n" +
-                "            margin: 0;\n" +
-                "            padding: 0;\n" +
-                "            box-sizing: border-box;\n" +
-                "        }\n" +
-                "        body {\n" +
-                "            background-color: #eeeeee;\n" +
-                "            font-family: 'Roboto', sans-serif;\n" +
-                "            height: 100vh;\n" +
-                "            display: flex;\n" +
-                "            align-items: center;\n" +
-                "            justify-content: center;\n" +
-                "        }\n" +
-                "        .container {\n" +
-                "            max-width: 600px;\n" +
-                "            background-color: #ffffff;\n" +
-                "            padding: 20px;\n" +
-                "            border-radius: 8px;\n" +
-                "            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);\n" +
-                "        }\n" +
-                "        .header {\n" +
-                "            background-color: #F44336;\n" +
-                "            padding: 28px;\n" +
-                "            text-align: center;\n" +
-                "            color: #ffffff;\n" +
-                "        }\n" +
-                "        h1 {\n" +
-                "            font-size: 36px;\n" +
-                "            font-weight: 800;\n" +
-                "        }\n" +
-                "        h2 {\n" +
-                "            font-size: 30px;\n" +
-                "            font-weight: 800;\n" +
-                "            color: #333333;\n" +
-                "            margin: 20px 0;\n" +
-                "            text-align: center;\n" +
-                "        }\n" +
-                "        table {\n" +
-                "            width: 100%;\n" +
-                "            border-collapse: collapse;\n" +
-                "            margin: 15px 0;\n" +
-                "        }\n" +
-                "        th, td {\n" +
-                "            padding: 10px;\n" +
-                "            text-align: left;\n" +
-                "            border-bottom: 1px solid #eeeeee;\n" +
-                "        }\n" +
-                "        th {\n" +
-                "            background-color: #eeeeee;\n" +
-                "            font-weight: bold;\n" +
-                "        }\n" +
-                "        .total {\n" +
-                "            font-size: 17px;\n" +
-                "            font-weight: 800;\n" +
-                "            border-top: 3px solid #eeeeee;\n" +
-                "            border-bottom: 3px solid #eeeeee;\n" +
-                "            margin: 20px 0;\n" +
-                "        }\n" +
-                "        .footer {\n" +
-                "            text-align: center;\n" +
-                "            font-weight: 200;\n" +
-                "            margin: 20px 0 0 0;\n" +
-                "            color: #666666;\n" +
-                "        }\n" +
-                "        .download-link {\n" +
-                "            display: block;\n" +
-                "            text-align: center;\n" +
-                "            margin: 20px 0;\n" +
-                "            text-decoration: none;\n" +
-                "            color: #F44336;\n" +
-                "            font-weight: bold;\n" +
-                "        }\n" +
-                "    </style>\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "    <div class=\"container\">\n" +
-                "        <div class=\"header\">\n" +
-                "            <h1>Hotel Start</h1>\n" +
-                "        </div>\n" +
-                "        <h2>Đơn Đặt Phòng</h2>\n" +
-                "        <table>\n" +
-                "            <tr>\n" +
-                "                <th>Mã đặt phòng</th>\n" +
-                "                <td>" + id + "</td>\n" +
-                "            </tr>\n" +
-                "            <tr>\n" +
-                "                <th>Tên khách hàng</th>\n" +
-                "                <td>" + booking.getAccount().getFullname() + "</td>\n" +
-                "            </tr>\n" +
-                "            <tr>\n" +
-                "                <th>Tên tài khoản</th>\n" +
-                "                <td>" + booking.getAccount().getUsername() + "</td>\n" +
-                "            </tr>\n" +
-                "            <tr>\n" +
-                "                <th>Số điện thoại</th>\n" +
-                "                <td>" + booking.getAccount().getPhone() + "</td>\n" +
-                "            </tr>\n" +
-                "            <tr>\n" +
-                "                <th>Ngày nhận</th>\n" +
-                "                <td>" + startDate + "</td>\n" +
-                "            </tr>\n" +
-                "            <tr>\n" +
-                "                <th>Ngày trả</th>\n" +
-                "                <td>" + endDate + "</td>\n" +
-                "            </tr>\n" +
-                "            <tr>\n" +
-                "                <th>Phòng</th>\n" +
-                "                <td>" + rooms + "</td>\n" +
-                "            </tr>\n" +
-                "            <tr>\n" +
-                "                <th>Trạng thái thanh toán</th>\n" +
-                "                <td>" + (booking.getStatusPayment() ? "Đã thanh toán" : "Chưa thanh toán") + "</td>\n" +
-                "            </tr>\n" +
-                "        </table>\n" +
-                "        <div class=\"total\">\n" +
-                "            <span>Tổng tiền</span>\n" +
-                "            <span>" + total + "</span>\n" +
-                "        </div>\n" +
-                "        <a href=\"http://localhost:8080/api/booking/downloadPdf?id=" + booking.getId() + "\" class=\"download-link\">Tải xuống PDF</a>\n" +
-                "        <div class=\"footer\">\n" +
-                "            <p>Cảm ơn quý khách đã sử dụng dịch vụ của chúng tôi</p>\n" +
-                "        </div>\n" +
-                "    </div>\n" +
-                "</body>\n" +
-                "</html>";
+    public String confirmBookings(String id, Booking booking, LocalDate startDate, LocalDate endDate, String total, String rooms,String image) {
+        return "<!DOCTYPE html>\n"
+                + "<html lang=\"en\">\n"
+                + "<head>\n"
+                + "    <meta charset=\"UTF-8\">\n"
+                + "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
+                + "    <title>Document</title>\n"
+                + "    <style>\n"
+                + "        body {\n"
+                + "            font-family: 'Roboto', sans-serif;\n"
+                + "            background-color: #f5f5f5;\n"
+                + "            display: flex;\n"
+                + "            justify-content: center;\n"
+                + "            align-items: center;\n"
+                + "            height: 100vh;\n"
+                + "            margin: 0;\n"
+                + "        }\n"
+                + "        .ticket {\n"
+                + "            display: flex;\n"
+                + "            border: 2px dashed #444;\n"
+                + "            border-radius: 10px;\n"
+                + "            width: 690px;\n"
+                + "            background: linear-gradient(to right, #1e293b, #64748b);\n"
+                + "            color: #cac6c6;\n"
+                + "        }\n"
+                + "        .ticket-left {\n"
+                + "            flex: 3;\n"
+                + "            padding: 20px;\n"
+                + "        }\n"
+                + "        .ticket-right {\n"
+                + "            flex: 1;\n"
+                + "            padding: 20px;\n"
+                + "        }\n"
+                + "        .ticket-right .qr-code {\n"
+                + "            display: flex;\n"
+                + "            align-items: center;\n"
+                + "        }\n"
+                + "        .ticket-right .qr-code img {\n"
+                + "            margin-top: 108px;\n"
+                + "        }\n"
+                + "        .card .pdf {\n"
+                + "            display: flex;\n"
+                + "            justify-content: center;\n"
+                + "            margin-top: 10px;\n"
+                + "        }\n"
+                + "        .card .pdf a {\n"
+                + "            text-decoration: none;\n"
+                + "            font-weight: 600;\n"
+                + "        }\n"
+                + "        h1, h2, h3 {\n"
+                + "            margin: 0;\n"
+                + "            text-transform: uppercase;\n"
+                + "        }\n"
+                + "        h1 {\n"
+                + "            font-size: 48px;\n"
+                + "            margin-top: 10px;\n"
+                + "        }\n"
+                + "        h2 {\n"
+                + "            font-size: 20px;\n"
+                + "        }\n"
+                + "        h3 {\n"
+                + "            text-align: center;\n"
+                + "            background-color: #444;\n"
+                + "            padding: 10px 0;\n"
+                + "            border-radius: 5px;\n"
+                + "        }\n"
+                + "        p {\n"
+                + "            margin: 5px 0;\n"
+                + "            font-size: 16px;\n"
+                + "        }\n"
+                + "        .ticket-right p:last-child {\n"
+                + "            text-align: center;\n"
+                + "        }\n"
+                + "    </style>\n"
+                + "</head>\n"
+                + "<body>\n"
+                + "    <div class=\"card\">\n"
+                + "        <div class=\"ticket\">\n"
+                + "            <div class=\"ticket-left\">\n"
+                + "                <h2>Đơn đặt phòng</h2>\n"
+                + "                <h1>Hotel Stars</h1>\n"
+                + "                <p>Mã đơn: <strong>" + id + "</strong></p>\n"
+                + "                <p>Tên khách hàng: <strong>"+booking.getAccount().getUsername()+"</strong></p>\n"
+                + "                <p>Số điện thoại: <strong>"+booking.getAccount().getPhone()+"</strong></p>\n"
+                + "                <p>Ngày nhận: <strong>"+startDate+"</strong></p>\n"
+                + "                <p>Ngày trả: <strong>"+endDate+"</strong></p>\n"
+                + "                <p>Phòng: <strong>"+rooms+"</strong></p>\n"
+                + "                <p>Tổng tiền: <strong>"+total+"</strong></p>\n"
+                + "                <p>Trạng thái thanh toán: <strong>"+(booking.getStatusPayment() ? "Đã thanh toán" : "Chưa thanh toán")+"</strong></p>\n"
+                + "            </div>\n"
+                + "            <div class=\"ticket-right\">\n"
+                + "                <div class=\"qr-code\">\n"
+                + "                    <img src="+image+" alt width=\"150\">\n"
+                + "                </div>\n"
+                + "            </div>\n"
+                + "        </div>\n"
+                + "        <div class=\"pdf\">\n"
+                + "            <a href=\"http://localhost:8080/api/booking/downloadPdf?id="+booking.getId()+"\">Tải xuống pdf</a>\n"
+                + "        </div>\n"
+                + "    </div>\n"
+                + "</body>\n"
+                + "</html>";
     }
     public String generateBookingEmail(String id, String fullName, String token, LocalDate startDate, LocalDate endDate, String total, String rooms) {
         return "<!DOCTYPE html>\n"
@@ -367,137 +364,103 @@ public class paramService {
                 + "</body>\n"
                 + "</html>";
     }
-    public String pdfDowload(String id, Booking booking, LocalDate startDate, LocalDate endDate, String total, String rooms) {
-        return "<!DOCTYPE html>\n" +
-                "<html lang=\"vi\">\n" +
-                "<head>\n" +
-                "    <meta charset=\"UTF-8\" />\n" +
-                "    <title>Xác Nhận Đặt Phòng PDF</title>\n" +
-                "    <style>\n" +
-                "        * {\n" +
-                "            margin: 0;\n" +
-                "            padding: 0;\n" +
-                "            box-sizing: border-box;\n" +
-                "        }\n" +
-                "        body {\n" +
-                "            background-color: #fff;\n" +
-                "            font-family: 'Roboto', sans-serif;\n" +
-                "            height: 100vh;\n" +
-                "            display: flex;\n" +
-                "            align-items: center;\n" +
-                "            justify-content: center;\n" +
-                "        }\n" +
-                "        .container {\n" +
-                "            max-width: 600px;\n" +
-                "            background-color: #ffffff;\n" +
-                "            padding: 20px;\n" +
-                "            border-radius: 8px;\n" +
-                "            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);\n" +
-                "        }\n" +
-                "        .header {\n" +
-                "            background-color: #F44336;\n" +
-                "            padding: 28px;\n" +
-                "            text-align: center;\n" +
-                "            color: #ffffff;\n" +
-                "        }\n" +
-                "        h1 {\n" +
-                "            font-size: 36px;\n" +
-                "            font-weight: 800;\n" +
-                "        }\n" +
-                "        h2 {\n" +
-                "            font-size: 30px;\n" +
-                "            font-weight: 800;\n" +
-                "            color: #333333;\n" +
-                "            margin: 20px 0;\n" +
-                "            text-align: center;\n" +
-                "        }\n" +
-                "        table {\n" +
-                "            width: 100%;\n" +
-                "            border-collapse: collapse;\n" +
-                "            margin: 15px 0;\n" +
-                "        }\n" +
-                "        th, td {\n" +
-                "            padding: 10px;\n" +
-                "            text-align: left;\n" +
-                "            border-bottom: 1px solid #eeeeee;\n" +
-                "        }\n" +
-                "        th {\n" +
-                "            background-color: #eeeeee;\n" +
-                "            font-weight: bold;\n" +
-                "        }\n" +
-                "        .total {\n" +
-                "            font-size: 17px;\n" +
-                "            font-weight: 800;\n" +
-                "            border-top: 3px solid #eeeeee;\n" +
-                "            border-bottom: 3px solid #eeeeee;\n" +
-                "            margin: 20px 0;\n" +
-                "        }\n" +
-                "        .footer {\n" +
-                "            text-align: center;\n" +
-                "            font-weight: 200;\n" +
-                "            margin: 40px 0 0 0;\n" +
-                "            color: #666666;\n" +
-                "        }\n" +
-                "        .download-link {\n" +
-                "            display: block;\n" +
-                "            text-align: center;\n" +
-                "            margin: 20px 0;\n" +
-                "            text-decoration: none;\n" +
-                "            color: #F44336;\n" +
-                "            font-weight: bold;\n" +
-                "        }\n" +
-                "    </style>\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "    <div class=\"container\">\n" +
-                "        <div class=\"header\">\n" +
-                "            <h1>Hotel Start</h1>\n" +
-                "        </div>\n" +
-                "        <h2>Đơn Đặt Phòng</h2>\n" +
-                "        <table>\n" +
-                "            <tr>\n" +
-                "                <th>Mã đặt phòng</th>\n" +
-                "                <td>" + id + "</td>\n" +
-                "            </tr>\n" +
-                "            <tr>\n" +
-                "                <th>Tên khách hàng</th>\n" +
-                "                <td>" + booking.getAccount().getFullname() + "</td>\n" +
-                "            </tr>\n" +
-                "            <tr>\n" +
-                "                <th>Tên tài khoản</th>\n" +
-                "                <td>" + booking.getAccount().getUsername() + "</td>\n" +
-                "            </tr>\n" +
-                "            <tr>\n" +
-                "                <th>Số điện thoại</th>\n" +
-                "                <td>" + booking.getAccount().getPhone() + "</td>\n" +
-                "            </tr>\n" +
-                "            <tr>\n" +
-                "                <th>Ngày nhận</th>\n" +
-                "                <td>" + startDate + "</td>\n" +
-                "            </tr>\n" +
-                "            <tr>\n" +
-                "                <th>Ngày trả</th>\n" +
-                "                <td>" + endDate + "</td>\n" +
-                "            </tr>\n" +
-                "            <tr>\n" +
-                "                <th>Phòng</th>\n" +
-                "                <td>" + rooms + "</td>\n" +
-                "            </tr>\n" +
-                "            <tr>\n" +
-                "                <th>Trạng thái thanh toán</th>\n" +
-                "                <td>" + (booking.getStatusPayment() ? "Đã thanh toán" : "Chưa thanh toán") + "</td>\n" +
-                "            </tr>\n" +
-                "        </table>\n" +
-                "        <div class=\"total\">\n" +
-                "            <span>Tổng tiền</span>\n" +
-                "            <span>" + total + "</span>\n" +
-                "        </div>\n" +
-                "        <div class=\"footer\">\n" +
-                "            <p>Cảm ơn quý khách đã sử dụng dịch vụ của chúng tôi</p>\n" +
-                "        </div>\n" +
-                "    </div>\n" +
-                "</body>\n" +
-                "</html>";
+    public String pdfDownload(String id, Booking booking, LocalDate startDate, LocalDate endDate, String total, String rooms, String image) {
+          return  "<!DOCTYPE html>\n"
+                  + "<html lang=\"vi\">\n"
+                  + "<head>\n"
+                  + "    <meta charset=\"UTF-8\" />\n"
+                  + "    <title>Đơn đặt phòng</title>\n"
+                  + "    <style>\n"
+                  + "        body {\n"
+                  + "            font-family: 'Roboto', sans-serif;\n"
+                  + "            background-color: #fff;\n"
+                  + "            display: flex;\n"
+                  + "            justify-content: center;\n"
+                  + "            align-items: center;\n"
+                  + "            height: 100vh;\n"
+                  + "            margin: 0;\n"
+                  + "        }\n"
+                  + "        .ticket {\n"
+                  + "            display: flex;\n"
+                  + "            border: 2px dashed #444;\n"
+                  + "            border-radius: 15px;\n"
+                  + "            width: 600px;\n"
+                  + "            background-color: #1e293b;\n"
+                  + "            color: #cac6c6;\n"
+                  + "        }\n"
+                  + "        .ticket-left {\n"
+                  + "            flex: 3;\n"
+                  + "            padding: 20px;\n"
+                  + "        }\n"
+                  + "        .ticket-right {\n"
+                  + "            flex: 1;\n"
+                  + "            padding: 20px;\n"
+                  + "        }\n"
+                  + "        .ticket-right .qr-code {\n"
+                  + "            display: flex;\n"
+                  + "            align-items: center;\n"
+                  + "        }\n"
+                  + "        .ticket-right .qr-code img {\n"
+                  + "            margin-top: 108px;\n"
+                  + "        }\n"
+                  + "        .card .pdf {\n"
+                  + "            display: flex;\n"
+                  + "            justify-content: center;\n"
+                  + "            margin-top: 10px;\n"
+                  + "        }\n"
+                  + "        .card .pdf a {\n"
+                  + "            text-decoration: none;\n"
+                  + "            font-weight: 600;\n"
+                  + "        }\n"
+                  + "        h1, h2, h3 {\n"
+                  + "            margin: 0;\n"
+                  + "            text-transform: uppercase;\n"
+                  + "        }\n"
+                  + "        h1 {\n"
+                  + "            font-size: 48px;\n"
+                  + "            margin-top: 10px;\n"
+                  + "        }\n"
+                  + "        h2 {\n"
+                  + "            font-size: 20px;\n"
+                  + "        }\n"
+                  + "        h3 {\n"
+                  + "            text-align: center;\n"
+                  + "            background-color: #444;\n"
+                  + "            padding: 10px 0;\n"
+                  + "            border-radius: 5px;\n"
+                  + "        }\n"
+                  + "        p {\n"
+                  + "            margin: 5px 0;\n"
+                  + "            font-size: 16px;\n"
+                  + "        }\n"
+                  + "        .ticket-right p:last-child {\n"
+                  + "            text-align: center;\n"
+                  + "        }\n"
+                  + "    </style>\n"
+                  + "</head>\n"
+                  + "<body>\n"
+                  + "    <div class=\"card\">\n"
+                  + "        <div class=\"ticket\">\n"
+                  + "            <div class=\"ticket-left\">\n"
+                  + "                <h2>Đơn đặt phòng</h2>\n"
+                  + "                <h1>Hotel Stars</h1>\n"
+                  + "                <p>Mã đơn: <strong>" + id + "</strong></p>\n"
+                  + "                <p>Tên khách hàng: <strong>"+booking.getAccount().getUsername()+"</strong></p>\n"
+                  + "                <p>Số điện thoại: <strong>"+booking.getAccount().getPhone()+"</strong></p>\n"
+                  + "                <p>Ngày nhận: <strong>"+startDate+"</strong></p>\n"
+                  + "                <p>Ngày trả: <strong>"+endDate+"</strong></p>\n"
+                  + "                <p>Phòng: <strong>"+rooms+"</strong></p>\n"
+                  + "                <p>Tổng tiền: <strong>"+total+"</strong></p>\n"
+                  + "                <p>Trạng thái thanh toán: <strong>"+(booking.getStatusPayment() ? "Đã thanh toán" : "Chưa thanh toán")+"</strong></p>\n"
+                  + "            </div>\n"
+                  + "            <div class=\"ticket-right\">\n"
+                  + "                <div class=\"qr-code\">\n"
+                  + "                </div>\n"
+                  + "            </div>\n"
+                  + "        </div>\n"
+                  + "    </div>\n"
+                  + "</body>\n"
+                  + "</html>";
     }
     public String generatePdf(String htmlContent, String fullName, String id) throws Exception {
         // Định nghĩa đường dẫn thư mục người dùng (Downloads)
@@ -510,13 +473,6 @@ public class paramService {
         File file = new File(filePath);
 
         // Kiểm tra nếu file đã tồn tại, tạo tên mới theo định dạng với số thứ tự
-        int count = 1;
-        while (file.exists()) {
-            fileName = String.format("HotelStart_%s_%s(%d).pdf", fullName.replaceAll("\\s+", "_"), id, count);
-            filePath = downloadDir + fileName;
-            file = new File(filePath);
-            count++;
-        }
 
         // Khởi tạo tài liệu PDF
         Document document = new Document();
@@ -535,11 +491,13 @@ public class paramService {
 
             InputStream htmlStream = new ByteArrayInputStream(htmlContent.getBytes(StandardCharsets.UTF_8));
             worker.parseXHtml(writer, document, htmlStream, null, Charset.forName("UTF-8"), fontProvider);
+            System.out.println(worker);
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Có lỗi xảy ra khi xử lý nội dung HTML.");
         } finally {
             // Đóng tài liệu
+            System.out.println("đóng tài liệu");
             document.close();
         }
 
@@ -580,5 +538,8 @@ public class paramService {
                 + "</div>\n"
                 + "</body>\n"
                 + "</html>";
+    }
+    public String getImage(){
+        return "https://firebasestorage.googleapis.com/v0/b/myprojectimg-164dd.appspot.com/o/files%2F846f674e-5f3d-4164-aa1a-1241189ac18e?alt=media&token=db0c0472-07ec-4436-a3e3-9ba74cd47a8a";
     }
 }

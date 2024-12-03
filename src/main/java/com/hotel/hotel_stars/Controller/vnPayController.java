@@ -57,6 +57,10 @@ public class vnPayController {
 
             List<BookingRoom> bookingRoomList = booking.getBookingRooms();
             double total = bookingRoomList.stream().mapToDouble(BookingRoom::getPrice).sum();
+            if(booking.getDiscountPercent()!=null && booking.getDiscountPercent()!=null){
+                double discountAmount = total * (booking.getDiscountPercent() / 100);
+                total=total-discountAmount;
+            }
             System.out.println();
             String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
             LocalDate startDate=paramServices.convertInstallToLocalDate(booking.getStartAt());
@@ -65,11 +69,11 @@ public class vnPayController {
             String roomsString = bookingRoomList.stream()
                     .map(bookingRoom -> bookingRoom.getRoom().getRoomName())  // Extract roomName from each BookingRoom
                     .collect(Collectors.joining(", "));
-            String idBk = "Bk" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "" + booking.getId();
+            String idBk = "Bk" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + "" + booking.getId();
             booking.setStatusPayment(true);
 
             paramServices.sendEmails(booking.getAccount().getEmail(),"thông tin đơn hàng",
-                    paramServices.confirmBookings(idBk,booking,startDate,endDate ,formattedAmount,roomsString));
+                    paramServices.pdfDownload(idBk,booking,startDate,endDate ,formattedAmount,roomsString, paramServices.getImage()));
 
 
             try {
