@@ -24,5 +24,5 @@ public class DiscountDto implements Serializable {
     Double percent;
     Instant startDate;
     Instant endDate;
-    TypeRoomDto typeRoomDto;
+//    TypeRoomDto typeRoomDto;
 }
