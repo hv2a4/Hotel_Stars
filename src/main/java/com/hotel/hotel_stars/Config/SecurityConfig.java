@@ -75,9 +75,10 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/service-package/delete-service-package/**")
                                                 .permitAll()
                                                 .requestMatchers("/vnpay-payment").permitAll()
+                                                .requestMatchers("/api/booking/downloadPdf").permitAll()
                                                 // All
                                                 // khoi
-                                                .requestMatchers("/api/account/getAll").permitAll()
+                                                .requestMatchers("/api/discount/get-discount-account").permitAll()
                                                 .requestMatchers("/api/account/add-account-staff").permitAll()
                                                 // khoi
                                                 // vu

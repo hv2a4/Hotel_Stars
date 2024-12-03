@@ -35,9 +35,10 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.text.NumberFormat;
 import java.time.*;
-import java.time.temporal.ChronoUnit;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -81,6 +82,8 @@ public class BookingService {
     private paramService paramServices;
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    private DiscountAccountRepository discountAccountRepositorys;
 
     public List<BookingDetailDTO> getBookingDetailsByAccountId(Integer accountId) {
         List<Object[]> results = bookingRepository.findBookingDetailsByAccountId(accountId);
@@ -115,49 +118,45 @@ public class BookingService {
         return paymentInfoDTOs;
     }
 
-    public Double calculateDiscountedPrice(Room room, LocalDateTime creatNow, Discount discount, Booking booking) {
-        Double typeRoomPrice = room.getTypeRoom().getPrice();
+    public Discount getDiscounts(DiscountAccount discountAccounts, LocalDateTime creatNow) {
+          if(discountAccounts == null){
+              return null;
+          }
         Instant current = paramServices.localdatetimeToInsant(creatNow);
-        if (discount == null) {
-            return typeRoomPrice;
-        }
 
-        if (room.getTypeRoom().getId() == discount.getTypeRoom().getId()) {
             LocalDate currentDate = current.atZone(ZoneId.systemDefault()).toLocalDate();
-            LocalDate discountStartDate = discount.getStartDate().atZone(ZoneId.systemDefault()).toLocalDate();
-            LocalDate discountEndDate = discount.getEndDate().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate discountStartDate = discountAccounts.getDiscount().getStartDate().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate discountEndDate = discountAccounts.getDiscount().getEndDate().atZone(ZoneId.systemDefault()).toLocalDate();
             if (!currentDate.isBefore(discountStartDate) && !currentDate.isAfter(discountEndDate)) {
-                double discountRate = discount.getPercent() / 100.0;
-                typeRoomPrice = typeRoomPrice * (1 - discountRate);
-                booking.setDiscountName(discount.getDiscountName());
-                booking.setDiscountPercent(discount.getPercent());
-                try {
-                    bookingRepository.save(booking);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    throw new RuntimeException(e);
+                System.out.println("đã vào tới đây1");
+                System.out.println("trạng thái: "+discountAccounts.getStatusDa());
+                if (!discountAccounts.getStatusDa()){
+                    discountAccounts.setStatusDa(true);
+                    try{
+                        discountAccountRepositorys.save(discountAccounts);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return discountAccounts.getDiscount();
                 }
             }
-        }
-        return typeRoomPrice; // Return the final price, ensuring it's positive
+
+        return null;
     }
 
-    public Boolean checkCreatbkRoom(Integer bookingId, List<Integer> roomId, String discountName) {
+    public Boolean checkCreatbkRoom(Integer bookingId, List<Integer> roomId) {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow();
-        Discount discount = (discountRepository.findByDiscountName(discountName) != null) ? discountRepository.findByDiscountName(discountName) : null;
         Long days = Duration.between(booking.getStartAt(), booking.getEndAt()).toDays();
+
 
         for (int i = 0; i < roomId.size(); i++) {
             Room room = roomRepository.findById(roomId.get(i)).get();
             System.out.println("giá mặc định: " + room.getTypeRoom().getPrice());
             BookingRoom bookingRoom = new BookingRoom();
-            Double priceFind = calculateDiscountedPrice(room, booking.getCreateAt(), discount, booking);
-            System.out.println("tiền: " + priceFind);
+            Double priceRoom = room.getTypeRoom().getPrice();
             bookingRoom.setBooking(booking);
             bookingRoom.setRoom(room);
-            System.out.println("chưa set: " + room.getTypeRoom().getPrice());
-            bookingRoom.setPrice(priceFind * days);
-            System.out.println("set rồi: " + bookingRoom.getPrice());
+            bookingRoom.setPrice(priceRoom * days);
             booking.getBookingRooms().add(bookingRoom);
             try {
                 System.out.println("lỗi 1");
@@ -169,44 +168,31 @@ public class BookingService {
             }
         }
 
-        System.out.println("mảng: " + booking.getBookingRooms());
+        System.out.println("mảng: "+booking.getBookingRooms());
         return true;
     }
 
     public Boolean checkCreatbkOffRoom(Integer bookingId, List<Integer> roomId, String discountName) {
-        Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new RuntimeException("Booking not found"));
+        Booking booking = bookingRepository.findById(bookingId).get();
         Discount discount = discountRepository.findByDiscountName(discountName);
+        Long days = Duration.between(booking.getStartAt(), booking.getEndAt()).toDays();
 
-        // Tính số ngày chính xác
-        LocalDate startDate = booking.getStartAt().atZone(ZoneId.systemDefault()).toLocalDate();
-        LocalDate endDate = booking.getEndAt().atZone(ZoneId.systemDefault()).toLocalDate();
-        Long days = ChronoUnit.DAYS.between(startDate, endDate);
-        if (days == 0) {
-            days = 1L;
-        }
-
-        for (Integer id : roomId) {
-            Room room = roomRepository.findById(id).orElseThrow(() -> new RuntimeException("Room not found"));
+        for (int i = 0; i < roomId.size(); i++) {
+            Room room = roomRepository.findById(roomId.get(i)).get();
             BookingRoom bookingRoom = new BookingRoom();
-
-            // Tính giá đã áp dụng khuyến mãi
-            Double priceFind = calculateDiscountedPrice(room, booking.getCreateAt(), discount, booking);
-
-            // Thiết lập giá tổng (giá mỗi ngày * số ngày)
+            Double priceRoom = room.getTypeRoom().getPrice();
             bookingRoom.setBooking(booking);
             bookingRoom.setRoom(room);
-            bookingRoom.setPrice(priceFind * days);
-
+            bookingRoom.setPrice(priceRoom * days);
             try {
                 bookingRoomRepository.save(bookingRoom);
             } catch (Exception e) {
                 e.printStackTrace();
-                throw new RuntimeException("Error saving BookingRoom", e);
+                throw new RuntimeException(e);
             }
         }
         return true;
     }
-
 
     public Booking sendBookingEmail(bookingModel bookingModels) {
         Booking booking = new Booking();
@@ -216,6 +202,8 @@ public class BookingService {
                 (payment.getId()==1)?statusBookingRepository.findById(1):statusBookingRepository.findById(3);
         Instant starDateIns = paramServices.stringToInstant(bookingModels.getStartDate());
         Instant endDateIns = paramServices.stringToInstant(bookingModels.getEndDate());
+        Discount discount = discountRepository.findByDiscountName(bookingModels.getDiscountName());
+
         booking.setAccount(accounts.get());
         booking.setStartAt(starDateIns);
         booking.setEndAt(endDateIns);
@@ -224,9 +212,14 @@ public class BookingService {
         booking.setMethodPayment(payment);
         System.out.println(LocalDateTime.now());
         booking.setCreateAt(LocalDateTime.now());
+        DiscountAccount discountAccount= (discount!=null)?
+                discountAccountRepositorys.findByDiscountAndAccount(discount,booking.getAccount()):null;
+        Discount discountBooking=(getDiscounts(discountAccount,booking.getCreateAt())!=null)?getDiscounts(discountAccount,booking.getCreateAt()):null;
+        booking.setDiscountName((discountBooking!=null)?discountBooking.getDiscountName():null);
+        booking.setDiscountPercent((discountBooking!=null)?discountBooking.getPercent():null);
         try {
             bookingRepository.save(booking);
-            if (checkCreatbkRoom(booking.getId(), bookingModels.getRoomId(), bookingModels.getDiscountName())) {
+            if (checkCreatbkRoom(booking.getId(), bookingModels.getRoomId())) {
                 System.out.println(jwtService.generateBoking(booking.getId()));
                 List<BookingRoom> bookingRoomList = booking.getBookingRooms();
                 double total = bookingRoomList.stream().mapToDouble(BookingRoom::getPrice).sum();
@@ -256,18 +249,14 @@ public class BookingService {
         Booking booking = new Booking();
         Optional<Account> accounts = accountRepository.findByUsername(bookingModels.getUserName());
         Optional<StatusBooking> statusBooking = statusBookingRepository.findById(4);
-        MethodPayment methodPayment = methodPaymentRepository.findById(1).get();
-        String startDateWithFixedTime = bookingModels.getStartDate().split("T")[0] + "T14:00:00Z";
-        String endDateWithFixedTime = bookingModels.getEndDate().split("T")[0] + "T12:00:00Z";
-        Instant starDateIns = paramServices.stringToInstant(startDateWithFixedTime).minus(7, ChronoUnit.HOURS);
-        Instant endDateIns = paramServices.stringToInstant(endDateWithFixedTime).minus(7, ChronoUnit.HOURS);
-
+        Instant starDateIns = paramServices.stringToInstant(bookingModels.getStartDate());
+        Instant endDateIns = paramServices.stringToInstant(bookingModels.getEndDate());
         booking.setAccount(accounts.get());
         booking.setStartAt(starDateIns);
         booking.setEndAt(endDateIns);
         booking.setStatus(statusBooking.get());
         booking.setStatusPayment(false);
-        booking.setMethodPayment(methodPayment);
+        booking.setMethodPayment(null);
         booking.setCreateAt(LocalDateTime.now());
         try {
             bookingRepository.save(booking);
