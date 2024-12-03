@@ -200,8 +200,8 @@ public class BookingService {
         MethodPayment payment = methodPaymentRepository.findById(bookingModels.getMethodPayment()).get();
         Optional<StatusBooking> statusBooking =
                 (payment.getId()==1)?statusBookingRepository.findById(1):statusBookingRepository.findById(3);
-        Instant starDateIns = paramServices.stringToInstant(bookingModels.getStartDate());
-        Instant endDateIns = paramServices.stringToInstant(bookingModels.getEndDate());
+        Instant starDateIns = paramServices.stringToInstantBK(bookingModels.getStartDate(),14,0);
+        Instant endDateIns = paramServices.stringToInstantBK(bookingModels.getEndDate(),12,0);
         Discount discount = discountRepository.findByDiscountName(bookingModels.getDiscountName());
 
         booking.setAccount(accounts.get());
@@ -210,6 +210,7 @@ public class BookingService {
         booking.setStatus(statusBooking.get());
         booking.setStatusPayment(false);
         booking.setMethodPayment(payment);
+        booking.setDescriptions("Đặt trước");
         System.out.println(LocalDateTime.now());
         booking.setCreateAt(LocalDateTime.now());
         DiscountAccount discountAccount= (discount!=null)?

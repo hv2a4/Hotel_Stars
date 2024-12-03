@@ -153,8 +153,7 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
                 tr.price, 
                 tr.acreage, 
                 tr.guest_limit, 
-                tr.describes, 
-                discount.id
+                tr.describes
             """,
             countQuery = """
                     SELECT COUNT(DISTINCT r.id) 

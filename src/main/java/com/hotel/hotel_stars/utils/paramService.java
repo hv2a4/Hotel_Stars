@@ -31,6 +31,7 @@ import java.nio.file.Files;
 import java.security.GeneralSecurityException;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
@@ -121,6 +122,19 @@ public class paramService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDate localDate = LocalDate.parse(dateString, formatter);
         return localDate.atStartOfDay(ZoneId.of("UTC")).toInstant();
+    }
+    public Instant stringToInstantBK(String dateString, int hour, int minute) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        try {
+            // Parse date string to LocalDate
+            LocalDate localDate = LocalDate.parse(dateString, formatter);
+            // Add default time (hour, minute)
+            LocalDateTime localDateTime = localDate.atTime(hour, minute);
+            // Convert to Instant in UTC
+            return localDateTime.atZone(ZoneId.of("UTC")).toInstant();
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Invalid date format: " + dateString, e);
+        }
     }
     public LocalDate convertStringToLocalDate(String dateStr) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
