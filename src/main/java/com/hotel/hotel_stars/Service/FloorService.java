@@ -45,6 +45,7 @@ public class FloorService {
         FloorDto newFloorDto = new FloorDto();
         newFloorDto.setId(fl.getId());
         newFloorDto.setFloorName(fl.getFloorName());
+        newFloorDto.setRoomDtos(convertRoom(fl));
         return newFloorDto;
     }
 
@@ -57,6 +58,8 @@ public class FloorService {
 
     public RoomDto convertRoomDto(Room room) {
         RoomDto roomDto = new RoomDto();
+        roomDto.setId(room.getId());
+        roomDto.setRoomName(room.getRoomName());
         roomDto.setTypeRoomDto(typeRoomService.convertTypeRoomDto(room.getTypeRoom()));
         roomDto.setStatusRoomDto(statusRoomService.convertToDto(room.getStatusRoom()));
         //roomDto.setFloorDto(convertToDto(room.getFloor()));

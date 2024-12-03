@@ -267,6 +267,57 @@ public class BookingService {
         }
         return false;
     }
+    
+    public boolean cancelBooking(Integer idBooking) {
+        try {
+            // Tìm booking theo id
+            Booking booking = bookingRepository.findById(idBooking)
+                    .orElse(null);
+            if (booking == null) {
+                return false; // Không tìm thấy booking
+            }
+
+            // Cập nhật trạng thái của booking
+            StatusBooking statusBooking = statusBookingRepository.findById(6)
+                    .orElse(null);
+            if (statusBooking == null) {
+                return false; // Không tìm thấy trạng thái booking
+            }
+            booking.setStatus(statusBooking);
+            booking.setEndAt(Instant.now());
+
+            // Lấy danh sách phòng từ booking
+            List<BookingRoom> bookingRooms = booking.getBookingRooms();
+            if (bookingRooms == null || bookingRooms.isEmpty()) {
+                return false; // Không có phòng nào trong booking
+            }
+
+            // Cập nhật trạng thái phòng
+            StatusRoom statusRoom = statusRoomRepository.findById(1)
+                    .orElse(null);
+            if (statusRoom == null) {
+                return false; // Không tìm thấy trạng thái phòng
+            }
+            for (BookingRoom bookingRoom : bookingRooms) {
+                Room room = roomRepository.findById(bookingRoom.getRoom().getId())
+                        .orElse(null);
+                if (room == null) {
+                    return false; // Không tìm thấy phòng
+                }
+                room.setStatusRoom(statusRoom);
+                roomRepository.save(room);
+            }
+
+            // Lưu lại booking
+            bookingRepository.save(booking);
+            return true; // Thành công
+        } catch (Exception e) {
+            e.printStackTrace(); // In lỗi ra console (có thể thay bằng ghi log)
+            return false; // Lỗi phát sinh
+        }
+    }
+
+    
 
     public List<ReservationInfoDTO> getAllReservationInfoDTO() {
         List<Object[]> results = bookingRepository.findAllBookingDetailsUsingSQL();
@@ -506,6 +557,15 @@ public class BookingService {
         List<Booking> bookings = bookingRepository.findByAccount_Id(id);
         return bookings.stream().map(this::convertToDto).collect(Collectors.toList());
     }
+    private void updateRoomStatus(List<BookingRoom> bookingRooms, Integer statusRoomId) {
+        StatusRoom statusRoom = statusRoomRepository.findById(statusRoomId).get();
+        
+        for (BookingRoom bookingRoom : bookingRooms) {
+            Room room = roomRepository.findById(bookingRoom.getRoom().getId()).get();
+            room.setStatusRoom(statusRoom);
+            roomRepository.save(room);
+        }
+    }
 
     public boolean updateStatusBooking(Integer idBooking, Integer idStatus, bookingModelNew bookingModel) {
         Optional<Booking> bookingOptional = bookingRepository.findById(idBooking);
@@ -520,7 +580,9 @@ public class BookingService {
 
         Booking booking = bookingOptional.get();
         StatusBooking statusBooking = statusBookingOptional.get();
-
+        if (idStatus == 4) {
+        	updateRoomStatus(booking.getBookingRooms(), 4);
+		}
         booking.setStatus(statusBooking);
         booking.setStartAt(bookingModel.getStartDate());
         booking.setEndAt(bookingModel.getEndDate());
@@ -591,6 +653,9 @@ public class BookingService {
         return convertToDto(booking);
     }
 
-
+    public List<accountHistoryDto> getBookingByRoom(Integer idRoom) {
+    	List<Booking> bookings = bookingRepository.findBookingsByRoomId(idRoom);
+    	return bookings.stream().map(this::convertToDto).toList();
+    }
 //khôi
 }
