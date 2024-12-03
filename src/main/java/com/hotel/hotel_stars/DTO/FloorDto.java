@@ -19,4 +19,5 @@ import java.util.List;
 public class FloorDto implements Serializable {
     Integer id;
     String floorName;
+    List<RoomDto> roomDtos;
 }

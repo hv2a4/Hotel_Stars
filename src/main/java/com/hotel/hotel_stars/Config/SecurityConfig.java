@@ -234,130 +234,46 @@ public class SecurityConfig {
                                                 .hasAuthority("HotelOwner")
 
                                                 // khoi
-                                                .requestMatchers("/api/service-room/update-service-room/**")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/service-room/add-service-room")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/service-room/delete-service-room/**")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/type-room-service/update/**")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/type-room-service/create")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/type-room-service/delete/**")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/booking-room/account/{id}")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/service-hotel/post-data-service-hotel")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/service-hotel/update-data-service-hotel")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/service-hotel/delete-data-service-hotel/**")
-                                                .hasAnyAuthority("HotelOwner")
-                                                // .requestMatchers("/api/booking-infomation/booking-room").hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/booking-room-service-room/service")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/booking-room/room")
-                                                .hasAnyAuthority("Staff", "HotelOwner")
-                                                .requestMatchers("/api/status-room/get-status-excluding/**").permitAll()
-                                                .requestMatchers("/api/room/update-active")
-                                                .hasAnyAuthority("Staff", "HotelOwner")
-                                                .requestMatchers("/api/room").permitAll()
-                                                .requestMatchers("/api/booking/booking-offline").permitAll()
-                                                .requestMatchers("/api/booking").permitAll()
-                                                .requestMatchers("/api/booking/update-status/**").permitAll()
-                                                .requestMatchers("/api/booking/update-checkIn/**").permitAll()
-                                                .requestMatchers("/api/booking-infomation/booking-room").permitAll()
-                                                .requestMatchers("/api/booking-room/list-booking-room").permitAll()
-                                                .requestMatchers("/api/customer-info/add").permitAll()
-                                                // khoi
-                                                .requestMatchers("/api/service-room/update-service-room/**")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/service-room/add-service-room")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/service-room/delete-service-room/**")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/type-room-service/update/**")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/type-room-service/create")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/type-room-service/delete/**")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/booking-room/account/{id}")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/service-hotel/post-data-service-hotel")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/service-hotel/update-data-service-hotel")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/service-hotel/delete-data-service-hotel/**")
-                                                .hasAnyAuthority("HotelOwner")
-                                                // .requestMatchers("/api/booking-infomation/booking-room").hasAnyAuthority("HotelOwner")
-                                                // .requestMatchers("/api/booking-room-service-room/service").hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/booking-room/room")
-                                                .hasAnyAuthority("Staff", "HotelOwner")
-                                                .requestMatchers("/api/status-room/get-status-excluding/**").permitAll()
-                                                .requestMatchers("/api/room/update-active")
-                                                .hasAnyAuthority("Staff", "HotelOwner")
-                                                .requestMatchers("/api/room").permitAll()
-                                                .requestMatchers("/api/booking/booking-offline").permitAll()
-                                                .requestMatchers("/api/booking").permitAll()
-                                                .requestMatchers("/api/booking/update-status/**").permitAll()
-                                                .requestMatchers("/api/booking/update-checkIn/**").permitAll()
-                                                .requestMatchers("/api/booking-infomation/booking-room").permitAll()
-                                                .requestMatchers("/api/booking-room/list-booking-room").permitAll()
-                                                .requestMatchers("/api/customer-info/add").permitAll()
-                                                .requestMatchers("/api/customer-info/update/**").permitAll()
-                                                .requestMatchers("/api/booking-infomation").permitAll()
-                                                .requestMatchers("/api/booking/getById/**").permitAll()
-                                                .requestMatchers("/api/booking-room/getById/**").permitAll()
-                                                .requestMatchers("/api/booking-room-service-room/booking-room-id")
-                                                .permitAll()
-                                                .requestMatchers("/api/booking-room-service-room/service").permitAll()
-                                                // khoi
-                                                .requestMatchers("/api/service-room/update-service-room/**")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/service-room/add-service-room")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/service-room/delete-service-room/**")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/type-room-service/update/**")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/type-room-service/create")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/type-room-service/delete/**")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/booking-room/account/{id}")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/service-hotel/post-data-service-hotel")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/service-hotel/update-data-service-hotel")
-                                                .hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/service-hotel/delete-data-service-hotel/**")
-                                                .hasAnyAuthority("HotelOwner")
-                                                // .requestMatchers("/api/booking-infomation/booking-room").hasAnyAuthority("HotelOwner")
-                                                // .requestMatchers("/api/booking-room-service-room/service").hasAnyAuthority("HotelOwner")
-                                                .requestMatchers("/api/booking-room/room")
-                                                .hasAnyAuthority("Staff", "HotelOwner")
-                                                .requestMatchers("/api/status-room/get-status-excluding/**").permitAll()
-                                                .requestMatchers("/api/room/update-active")
-                                                .hasAnyAuthority("Staff", "HotelOwner")
-                                                .requestMatchers("/api/room").permitAll()
-                                                .requestMatchers("/api/booking/booking-offline").permitAll()
-                                                .requestMatchers("/api/booking").permitAll()
-                                                .requestMatchers("/api/booking/update-status/**").permitAll()
-                                                .requestMatchers("/api/booking/update-checkIn/**").permitAll()
-                                                .requestMatchers("/api/booking-infomation/booking-room").permitAll()
-                                                .requestMatchers("/api/booking-room/list-booking-room").permitAll()
-                                                .requestMatchers("/api/customer-info/add").permitAll()
-                                                .requestMatchers("/api/customer-info/update/**").permitAll()
-                                                .requestMatchers("/api/booking-infomation").permitAll()
-                                                .requestMatchers("/api/booking/getById/**").permitAll()
-                                                .requestMatchers("/api/booking-room/getById/**").permitAll()
-                                                .requestMatchers("/api/booking-room-service-room/booking-room-id")
-                                                .permitAll()
-                                                .requestMatchers("/api/booking-room-service-room/service").permitAll()
-                                                .requestMatchers("/api/service-room/booking-room").permitAll()
-                                                .requestMatchers("/api/booking-room-service-room/**").permitAll()
+                                                .requestMatchers(
+                                                	    "/api/service-room/update-service-room/**",
+                                                	    "/api/service-room/add-service-room",
+                                                	    "/api/service-room/delete-service-room/**",
+                                                	    "/api/type-room-service/update/**",
+                                                	    "/api/type-room-service/create",
+                                                	    "/api/type-room-service/delete/**",
+                                                	    "/api/booking-room/account/{id}",
+                                                	    "/api/service-hotel/post-data-service-hotel",
+                                                	    "/api/service-hotel/update-data-service-hotel",
+                                                	    "/api/service-hotel/delete-data-service-hotel/**"
+                                                	).hasAnyAuthority("HotelOwner")
+                                                	.requestMatchers(
+                                                	    "/api/booking-room/room",
+                                                	    "/api/room/update-active",
+                                                	    "/api/invoice/add"
+                                                	).hasAnyAuthority("Staff", "HotelOwner")
+                                                	.requestMatchers(
+                                                	    "/api/status-room/get-status-excluding/**",
+                                                	    "/api/room",
+                                                	    "/api/booking/booking-offline",
+                                                	    "/api/booking",
+                                                	    "/api/booking/update-status/**",
+                                                	    "/api/booking/update-checkIn/**",
+                                                	    "/api/booking-infomation/booking-room",
+                                                	    "/api/booking-room/list-booking-room",
+                                                	    "/api/customer-info/add",
+                                                	    "/api/customer-info/update/**",
+                                                	    "/api/booking-infomation",
+                                                	    "/api/booking/getById/**",
+                                                	    "/api/booking-room/getById/**",
+                                                	    "/api/booking-room-service-room/booking-room-id",
+                                                	    "/api/booking-room-service-room/service",
+                                                	    "/api/service-room/booking-room",
+                                                	    "/api/booking-room-service-room/**",
+                                                	    "/api/booking/downloadPdf",
+                                                	    "/api/booking/cancel-booking/**",
+                                                	    "/api/booking/booking-by-room/**"
+                                                	).permitAll()
+
                                 // khoi
                                 // vu
 
