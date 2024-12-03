@@ -29,6 +29,4 @@ public class DiscountModel {
     @NotNull(message = "Ngày kết thúc không được để trống.")
     Instant endDate;
 
-    @NotNull(message = "Loại phòng ID không được để trống.")
-    Integer typeRoomId;
 }
