@@ -294,7 +294,7 @@ public class RoomService {
 
             // Setting the additional fields
             roomAvailabilityInfo.setFinalPrice(finalPrice);
-            roomAvailabilityInfo.setEstCost(estCost);
+            roomAvailabilityInfo.setEstCost(null);
 
 
             return roomAvailabilityInfo;

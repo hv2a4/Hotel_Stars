@@ -113,12 +113,7 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
                     THEN 0 
                     ELSE (tr.price * (1 - IFNULL(discount.percent, 0) / 100)) 
                 END) AS finalPrice, 
-                (TIMESTAMPDIFF(DAY, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 1 DAY)) * 
-                (CASE 
-                    WHEN discount.id IS NULL OR NOT (NOW() BETWEEN discount.start_date AND discount.end_date) 
-                    THEN tr.price 
-                    ELSE (tr.price * (1 - IFNULL(discount.percent, 0) / 100)) 
-                END)) AS estCost, 
+                    (TIMESTAMPDIFF(DAY, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 1 DAY)) * tr.price) AS estCost,
                 discount.percent 
             FROM 
                 type_room tr 
