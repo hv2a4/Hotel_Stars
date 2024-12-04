@@ -81,7 +81,21 @@ public class BookingController {
 		List<accountHistoryDto> bookings = bookingService.getAllBooking(filterType, startDate, endDate);
 		return ResponseEntity.ok(bookings);
 	}
+	@PutMapping("/cancel-booking/{id}")
+	public StatusResponseDto cancelBooking(@PathVariable("id") Integer id) {
+		boolean flag = bookingService.cancelBooking(id);
+		if (flag) {
+			return new StatusResponseDto("200","success","Hủy đặt phòng thành công");
+		} else {
+			return new StatusResponseDto("400","error","Hủy đặt phòng thất bại");
+		}
+	}
 
+	@GetMapping("/booking-by-room/{id}")
+	public ResponseEntity<?> getBookingByRoom(@PathVariable("id") Integer id){
+		return ResponseEntity.ok(bookingService.getBookingByRoom(id));
+	}
+	
 	@PutMapping("/update-checkIn/{id}")
 	public ResponseEntity<?> updateCheckIn(@PathVariable("id") Integer id,
 			@RequestParam("roomId") List<Integer> roomId,
