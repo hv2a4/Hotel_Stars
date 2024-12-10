@@ -1,21 +1,10 @@
 package com.hotel.hotel_stars.Controller;
 
-import com.hotel.hotel_stars.DTO.Select.PaginatedResponse;
-import com.hotel.hotel_stars.DTO.Select.BookingDetailDTO;
-import com.hotel.hotel_stars.DTO.Select.RoomTypeDetail;
-import com.hotel.hotel_stars.DTO.Select.TypeRoomBookingCountDto;
-import com.hotel.hotel_stars.DTO.TypeRoomDto;
-import com.hotel.hotel_stars.DTO.selectDTO.FindTypeRoomDto;
-import com.hotel.hotel_stars.Entity.TypeRoom;
-import com.hotel.hotel_stars.Entity.TypeRoomAmenitiesTypeRoom;
-import com.hotel.hotel_stars.Exception.CustomValidationException;
-import com.hotel.hotel_stars.Models.TypeRoomAmenitiesTypeRoomModel;
-import com.hotel.hotel_stars.Models.typeRoomModel;
-import com.hotel.hotel_stars.Service.AccountService;
-import com.hotel.hotel_stars.Service.BookingService;
-import com.hotel.hotel_stars.Service.TypeRoomService;
-import com.hotel.hotel_stars.Utils.paramService;
-import jakarta.validation.Valid;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -23,14 +12,31 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import com.hotel.hotel_stars.DTO.TypeRoomDto;
+import com.hotel.hotel_stars.DTO.Select.BookingDetailDTO;
+import com.hotel.hotel_stars.DTO.Select.PaginatedResponse;
+import com.hotel.hotel_stars.DTO.Select.RoomTypeDetail;
+import com.hotel.hotel_stars.DTO.selectDTO.FindTypeRoomDto;
+import com.hotel.hotel_stars.Exception.CustomValidationException;
+import com.hotel.hotel_stars.Models.TypeRoomAmenitiesTypeRoomModel;
+import com.hotel.hotel_stars.Models.typeRoomModel;
+import com.hotel.hotel_stars.Service.AccountService;
+import com.hotel.hotel_stars.Service.BookingService;
+import com.hotel.hotel_stars.Service.TypeRoomService;
+import com.hotel.hotel_stars.utils.paramService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @CrossOrigin("*")

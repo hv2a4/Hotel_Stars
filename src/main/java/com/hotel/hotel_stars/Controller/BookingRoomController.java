@@ -47,5 +47,10 @@ public class BookingRoomController {
     public ResponseEntity<?> getById(@PathVariable("id") Integer id) {
         return ResponseEntity.ok(bookingRoomService.getByIdBookingRoom(id));
     }
+    
+    @GetMapping("/getByRoom/{idRoom}")
+    public ResponseEntity<?> getByRoom(@PathVariable("idRoom") Integer idRoom){
+    	return ResponseEntity.ok(bookingRoomService.getBookingRoomByRoom(idRoom));
+    }
     //khoi
 }

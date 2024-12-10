@@ -1,42 +1,72 @@
 package com.hotel.hotel_stars.Service;
 
-import com.hotel.hotel_stars.Config.JwtService;
-import com.hotel.hotel_stars.DTO.AmenitiesTypeRoomDto;
-import com.hotel.hotel_stars.DTO.Select.*;
-import com.hotel.hotel_stars.DTO.StatusResponseDto;
-import com.hotel.hotel_stars.DTO.TypeRoomAmenitiesTypeRoomDto;
-import com.hotel.hotel_stars.DTO.TypeRoomImageDto;
-import com.hotel.hotel_stars.DTO.Select.AccountInfo;
-import com.hotel.hotel_stars.DTO.Select.BookingDetailDTO;
-import com.hotel.hotel_stars.DTO.Select.CustomerReservation;
-import com.hotel.hotel_stars.DTO.Select.PaymentInfoDTO;
-import com.hotel.hotel_stars.DTO.Select.ReservationInfoDTO;
-import com.hotel.hotel_stars.DTO.AccountDto;
-import com.hotel.hotel_stars.DTO.BookingDto;
-import com.hotel.hotel_stars.DTO.MethodPaymentDto;
-import com.hotel.hotel_stars.DTO.RoleDto;
-import com.hotel.hotel_stars.DTO.StatusBookingDto;
-import com.hotel.hotel_stars.DTO.accountHistoryDto;
-import com.hotel.hotel_stars.Entity.*;
-import com.hotel.hotel_stars.Exception.ErrorsService;
-import com.hotel.hotel_stars.Models.bookingModel;
-import com.hotel.hotel_stars.Models.bookingModelNew;
-import com.hotel.hotel_stars.Models.bookingRoomModel;
-import com.hotel.hotel_stars.Repository.*;
-import com.hotel.hotel_stars.Utils.paramService;
+import java.sql.Timestamp;
+import java.text.NumberFormat;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
-import java.text.NumberFormat;
-import java.time.*;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import com.hotel.hotel_stars.Config.JwtService;
+import com.hotel.hotel_stars.DTO.AccountDto;
+import com.hotel.hotel_stars.DTO.AmenitiesTypeRoomDto;
+import com.hotel.hotel_stars.DTO.BookingDto;
+import com.hotel.hotel_stars.DTO.MethodPaymentDto;
+import com.hotel.hotel_stars.DTO.RoleDto;
+import com.hotel.hotel_stars.DTO.StatusBookingDto;
+import com.hotel.hotel_stars.DTO.StatusResponseDto;
+import com.hotel.hotel_stars.DTO.TypeRoomAmenitiesTypeRoomDto;
+import com.hotel.hotel_stars.DTO.TypeRoomImageDto;
+import com.hotel.hotel_stars.DTO.accountHistoryDto;
+import com.hotel.hotel_stars.DTO.Select.AccountInfo;
+import com.hotel.hotel_stars.DTO.Select.AvailableRoomDTO;
+import com.hotel.hotel_stars.DTO.Select.BookingDetailDTO;
+import com.hotel.hotel_stars.DTO.Select.CustomerReservation;
+import com.hotel.hotel_stars.DTO.Select.PaymentInfoDTO;
+import com.hotel.hotel_stars.DTO.Select.ReservationInfoDTO;
+import com.hotel.hotel_stars.Entity.Account;
+import com.hotel.hotel_stars.Entity.AmenitiesTypeRoom;
+import com.hotel.hotel_stars.Entity.Booking;
+import com.hotel.hotel_stars.Entity.BookingRoom;
+import com.hotel.hotel_stars.Entity.Discount;
+import com.hotel.hotel_stars.Entity.DiscountAccount;
+import com.hotel.hotel_stars.Entity.MethodPayment;
+import com.hotel.hotel_stars.Entity.Room;
+import com.hotel.hotel_stars.Entity.StatusBooking;
+import com.hotel.hotel_stars.Entity.StatusRoom;
+import com.hotel.hotel_stars.Entity.TypeRoomAmenitiesTypeRoom;
+import com.hotel.hotel_stars.Entity.TypeRoomImage;
+import com.hotel.hotel_stars.Exception.ErrorsService;
+import com.hotel.hotel_stars.Models.bookingModel;
+import com.hotel.hotel_stars.Models.bookingModelNew;
+import com.hotel.hotel_stars.Models.bookingRoomModel;
+import com.hotel.hotel_stars.Repository.AccountRepository;
+import com.hotel.hotel_stars.Repository.AmenitiesTypeRoomRepository;
+import com.hotel.hotel_stars.Repository.BookingRepository;
+import com.hotel.hotel_stars.Repository.BookingRoomRepository;
+import com.hotel.hotel_stars.Repository.DiscountAccountRepository;
+import com.hotel.hotel_stars.Repository.DiscountRepository;
+import com.hotel.hotel_stars.Repository.MethodPaymentRepository;
+import com.hotel.hotel_stars.Repository.RoomRepository;
+import com.hotel.hotel_stars.Repository.StatusBookingRepository;
+import com.hotel.hotel_stars.Repository.StatusRoomRepository;
+import com.hotel.hotel_stars.Repository.TypeRoomAmenitiesTypeRoomRepository;
+import com.hotel.hotel_stars.Repository.TypeRoomImageRepository;
+import com.hotel.hotel_stars.Repository.TypeRoomRepository;
+import com.hotel.hotel_stars.utils.paramService;
 
 @Service
 public class BookingService {
@@ -143,7 +173,12 @@ public class BookingService {
 
     public Boolean checkCreatbkRoom(Integer bookingId, List<Integer> roomId) {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow();
-        Long days = Duration.between(booking.getStartAt(), booking.getEndAt()).toDays();
+        LocalDate startDate = booking.getStartAt().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate endDate = booking.getEndAt().atZone(ZoneId.systemDefault()).toLocalDate();
+        Long days = ChronoUnit.DAYS.between(startDate, endDate);
+        if (days == 0) {
+            days = 1L;
+        }
 
 
         for (int i = 0; i < roomId.size(); i++) {
@@ -168,24 +203,62 @@ public class BookingService {
         System.out.println("mảng: "+booking.getBookingRooms());
         return true;
     }
+    public Double calculateDiscountedPrice(Room room, LocalDateTime creatNow, Discount discount, Booking booking) {
+        Double typeRoomPrice = room.getTypeRoom().getPrice();
+        Instant current = paramServices.localdatetimeToInsant(creatNow);
+        if (discount == null) {
+            return typeRoomPrice;
+        }
+
+        if (room.getTypeRoom().getId() == discount.getTypeRoom().getId()) {
+            LocalDate currentDate = current.atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate discountStartDate = discount.getStartDate().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate discountEndDate = discount.getEndDate().atZone(ZoneId.systemDefault()).toLocalDate();
+            if (!currentDate.isBefore(discountStartDate) && !currentDate.isAfter(discountEndDate)) {
+                double discountRate = discount.getPercent() / 100.0;
+                typeRoomPrice = typeRoomPrice * (1 - discountRate);
+                booking.setDiscountName(discount.getDiscountName());
+                booking.setDiscountPercent(discount.getPercent());
+                try {
+                    bookingRepository.save(booking);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        return typeRoomPrice; // Return the final price, ensuring it's positive
+    }
 
     public Boolean checkCreatbkOffRoom(Integer bookingId, List<Integer> roomId, String discountName) {
-        Booking booking = bookingRepository.findById(bookingId).get();
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new RuntimeException("Booking not found"));
         Discount discount = discountRepository.findByDiscountName(discountName);
-        Long days = Duration.between(booking.getStartAt(), booking.getEndAt()).toDays();
 
-        for (int i = 0; i < roomId.size(); i++) {
-            Room room = roomRepository.findById(roomId.get(i)).get();
+        // Tính số ngày chính xác
+        LocalDate startDate = booking.getStartAt().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate endDate = booking.getEndAt().atZone(ZoneId.systemDefault()).toLocalDate();
+        Long days = ChronoUnit.DAYS.between(startDate, endDate);
+        if (days == 0) {
+            days = 1L;
+        }
+
+        for (Integer id : roomId) {
+            Room room = roomRepository.findById(id).orElseThrow(() -> new RuntimeException("Room not found"));
             BookingRoom bookingRoom = new BookingRoom();
-            Double priceRoom = room.getTypeRoom().getPrice();
+
+            // Tính giá đã áp dụng khuyến mãi
+            Double priceFind = calculateDiscountedPrice(room, booking.getCreateAt(), discount, booking);
+
+            // Thiết lập giá tổng (giá mỗi ngày * số ngày)
             bookingRoom.setBooking(booking);
             bookingRoom.setRoom(room);
-            bookingRoom.setPrice(priceRoom * days);
+            bookingRoom.setPrice(priceFind * days);
+
             try {
                 bookingRoomRepository.save(bookingRoom);
             } catch (Exception e) {
                 e.printStackTrace();
-                throw new RuntimeException(e);
+                throw new RuntimeException("Error saving BookingRoom", e);
             }
         }
         return true;
@@ -207,7 +280,7 @@ public class BookingService {
         booking.setStatus(statusBooking.get());
         booking.setStatusPayment(false);
         booking.setMethodPayment(payment);
-        booking.setDescriptions("Đặt trước");
+        booking.setDescriptions("Đặt trực tuyến");
         System.out.println(LocalDateTime.now());
         booking.setCreateAt(LocalDateTime.now());
         DiscountAccount discountAccount= (discount!=null)?
@@ -247,14 +320,19 @@ public class BookingService {
         Booking booking = new Booking();
         Optional<Account> accounts = accountRepository.findByUsername(bookingModels.getUserName());
         Optional<StatusBooking> statusBooking = statusBookingRepository.findById(4);
-        Instant starDateIns = paramServices.stringToInstant(bookingModels.getStartDate());
-        Instant endDateIns = paramServices.stringToInstant(bookingModels.getEndDate());
+        MethodPayment methodPayment = methodPaymentRepository.findById(1).get();
+        String startDateWithFixedTime = bookingModels.getStartDate().split("T")[0] + "T14:00:00Z";
+        String endDateWithFixedTime = bookingModels.getEndDate().split("T")[0] + "T12:00:00Z";
+        Instant starDateIns = paramServices.stringToInstant(startDateWithFixedTime).minus(7, ChronoUnit.HOURS);
+        Instant endDateIns = paramServices.stringToInstant(endDateWithFixedTime).minus(7, ChronoUnit.HOURS);
+
         booking.setAccount(accounts.get());
         booking.setStartAt(starDateIns);
         booking.setEndAt(endDateIns);
         booking.setStatus(statusBooking.get());
         booking.setStatusPayment(false);
-        booking.setMethodPayment(null);
+        booking.setDescriptions("Đặt trực tiếp");        
+        booking.setMethodPayment(methodPayment);
         booking.setCreateAt(LocalDateTime.now());
         try {
             bookingRepository.save(booking);
@@ -268,7 +346,7 @@ public class BookingService {
         return false;
     }
     
-    public boolean cancelBooking(Integer idBooking) {
+    public boolean cancelBooking(Integer idBooking, String why) {
         try {
             // Tìm booking theo id
             Booking booking = bookingRepository.findById(idBooking)
@@ -284,6 +362,7 @@ public class BookingService {
                 return false; // Không tìm thấy trạng thái booking
             }
             booking.setStatus(statusBooking);
+            booking.setDescriptions("Đã hủy vì: " + why);           
             booking.setEndAt(Instant.now());
 
             // Lấy danh sách phòng từ booking
@@ -469,7 +548,7 @@ public class BookingService {
         // Chuyển đổi danh sách Booking sang BookingDto
         List<BookingDto> bookingDtoList = account.getBookingList().stream()
                 .map(booking -> new BookingDto(booking.getId(), booking.getCreateAt(), booking.getStartAt(),
-                        booking.getEndAt(), booking.getStatusPayment(), new AccountDto(),
+                        booking.getEndAt(), booking.getStatusPayment(),booking.getDescriptions(),new StatusBookingDto(booking.getStatus().getId(), booking.getStatus().getStatusBookingName()), new AccountDto(),
                         new MethodPaymentDto(booking.getMethodPayment().getId(),
                                 booking.getMethodPayment().getMethodPaymentName()))) // Cần xử lý accountDto trong
                 // BookingDto
@@ -512,6 +591,7 @@ public class BookingService {
         dto.setEndAt(booking.getEndAt());
         dto.setId(booking.getId());
         dto.setStartAt(booking.getStartAt());
+        dto.setDescriptions(booking.getDescriptions());
         dto.setStatusBookingDto(new StatusBookingDto(booking.getStatus().getId(), booking.getStatus().getStatusBookingName()));
         dto.setStatusPayment(booking.getStatusPayment());
         dto.setBookingRooms(bookingRoomService.convertListDto(booking.getBookingRooms()));

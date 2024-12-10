@@ -1,5 +1,25 @@
 package com.hotel.hotel_stars.Controller;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.hotel.hotel_stars.Config.JwtService;
 import com.hotel.hotel_stars.Config.UserInfoService;
 import com.hotel.hotel_stars.DTO.AccountDto;
@@ -9,17 +29,9 @@ import com.hotel.hotel_stars.Models.changePasswordModel;
 import com.hotel.hotel_stars.Repository.AccountRepository;
 import com.hotel.hotel_stars.Service.AccountService;
 import com.hotel.hotel_stars.Service.TypeRoomService;
-import com.hotel.hotel_stars.Utils.paramService;
+import com.hotel.hotel_stars.utils.paramService;
+
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
 
 @RestController
 @CrossOrigin("*")

@@ -1,5 +1,33 @@
 package com.hotel.hotel_stars.Controller;
 
+import java.io.File;
+import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.hotel.hotel_stars.Config.JwtService;
 import com.hotel.hotel_stars.Config.VNPayService;
 import com.hotel.hotel_stars.DTO.StatusResponseDto;
@@ -9,7 +37,6 @@ import com.hotel.hotel_stars.DTO.Select.PaymentInfoDTO;
 import com.hotel.hotel_stars.Entity.Booking;
 import com.hotel.hotel_stars.Entity.BookingRoom;
 import com.hotel.hotel_stars.Entity.StatusBooking;
-import com.hotel.hotel_stars.Exception.CustomValidationException;
 import com.hotel.hotel_stars.Exception.ErrorsService;
 import com.hotel.hotel_stars.Models.bookingModel;
 import com.hotel.hotel_stars.Models.bookingModelNew;
@@ -18,35 +45,12 @@ import com.hotel.hotel_stars.Repository.BookingRepository;
 import com.hotel.hotel_stars.Repository.BookingRoomRepository;
 import com.hotel.hotel_stars.Repository.StatusBookingRepository;
 import com.hotel.hotel_stars.Service.BookingService;
-import com.hotel.hotel_stars.Utils.SessionService;
-import com.hotel.hotel_stars.Utils.paramService;
+import com.hotel.hotel_stars.utils.SessionService;
+import com.hotel.hotel_stars.utils.paramService;
+
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URLEncoder;
-
-import org.springframework.context.annotation.Lazy;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.text.NumberFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin("*")
@@ -81,7 +85,20 @@ public class BookingController {
 		List<accountHistoryDto> bookings = bookingService.getAllBooking(filterType, startDate, endDate);
 		return ResponseEntity.ok(bookings);
 	}
-
+	@PutMapping("/cancel-booking/{id}")
+	public StatusResponseDto cancelBooking(@PathVariable("id") Integer id, @RequestParam("descriptions") String descriptions) {
+		boolean flag = bookingService.cancelBooking(id,descriptions);
+		if (flag) {
+			return new StatusResponseDto("200","success","Hủy đặt phòng thành công");
+		} else {
+			return new StatusResponseDto("400","error","Hủy đặt phòng thất bại");
+		}
+	}
+	
+	@GetMapping("/booking-by-room/{id}")
+	public ResponseEntity<?> getBookingByRoom(@PathVariable("id") Integer id){
+		return ResponseEntity.ok(bookingService.getBookingByRoom(id));
+	}
 	@PutMapping("/update-checkIn/{id}")
 	public ResponseEntity<?> updateCheckIn(@PathVariable("id") Integer id,
 			@RequestParam("roomId") List<Integer> roomId,

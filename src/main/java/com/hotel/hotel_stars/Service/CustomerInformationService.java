@@ -56,8 +56,8 @@ public class CustomerInformationService {
             customerInformation.setPhone(customerInformationModel.getPhone());
             customerInformation.setGender(customerInformationModel.getGender());
             customerInformation.setBirthday(customerInformationModel.getBirthday());
-            customerInformation.setImgFirstCard(customerInformationModel.getImgFirstCard());
-            customerInformation.setImgLastCard(customerInformationModel.getImgLastCard());
+            customerInformation.setImgFirstCard(null);
+            customerInformation.setImgLastCard(null);
 
             // Lưu vào cơ sở dữ liệu
             CustomerInformation savedCustomerInformation = customerInformationRepository.save(customerInformation);
@@ -102,8 +102,8 @@ public class CustomerInformationService {
             existingCustomer.setCccd(customerInformationModel.getCccd());
             existingCustomer.setGender(customerInformationModel.getGender());
             existingCustomer.setBirthday(customerInformationModel.getBirthday());
-            existingCustomer.setImgFirstCard(customerInformationModel.getImgFirstCard());
-            existingCustomer.setImgLastCard(customerInformationModel.getImgLastCard());
+            existingCustomer.setImgFirstCard(null);
+            existingCustomer.setImgLastCard(null);
 
             // Lưu thay đổi vào cơ sở dữ liệu
             CustomerInformation updatedCustomer = customerInformationRepository.save(existingCustomer);

@@ -1,8 +1,25 @@
 package com.hotel.hotel_stars.Controller;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.hotel.hotel_stars.DTO.HotelImageDto;
 import com.hotel.hotel_stars.DTO.StatusResponseDto;
-import com.hotel.hotel_stars.DTO.TypeRoomImageDto;
 import com.hotel.hotel_stars.Entity.TypeRoom;
 import com.hotel.hotel_stars.Entity.TypeRoomImage;
 import com.hotel.hotel_stars.Models.ImgageModel;
@@ -10,17 +27,7 @@ import com.hotel.hotel_stars.Repository.TypeRoomImageRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomRepository;
 import com.hotel.hotel_stars.Service.ImageService;
 import com.hotel.hotel_stars.Service.TypeRoomImageModel;
-import com.hotel.hotel_stars.Utils.paramService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import com.hotel.hotel_stars.utils.paramService;
 
 @RestController
 @CrossOrigin("*")

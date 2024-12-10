@@ -41,6 +41,10 @@ public class BookingRoomServiceRoomController {
 	public ResponseEntity<?> add(@RequestBody List<BookingRoomServiceRoomModel> model){
 		return ResponseEntity.ok(bookingRoomServiceRoomService.add(model));
 	}
+	@PostMapping("/post-service")
+	public ResponseEntity<?> addNew(@RequestBody List<BookingRoomServiceRoomModel> model, @RequestParam("bookingRoomId") List<Integer> bookingRoomId){
+		return ResponseEntity.ok(bookingRoomServiceRoomService.addNew(model, bookingRoomId));
+	}
 	@PutMapping("/{id}")
 	public ResponseEntity<?> updateQuantity(@PathVariable("id") Integer id,@RequestBody BookingRoomServiceRoomModel model){
 		return ResponseEntity.ok(bookingRoomServiceRoomService.updateQuantity(id, model));
