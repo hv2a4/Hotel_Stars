@@ -108,14 +108,6 @@ public class BookingController {
             @RequestBody List<bookingRoomModel> model) {
         Map<String, String> response = new HashMap<String, String>();
         boolean update = bookingService.updateStatusCheckInBooking(id, roomId, model);
-    }
-
-    @PutMapping("/update-checkIn/{id}")
-    public ResponseEntity<?> updateCheckIn(@PathVariable("id") Integer id,
-            @RequestParam("roomId") List<Integer> roomId,
-            @RequestBody List<bookingRoomModel> model) {
-        Map<String, String> response = new HashMap<String, String>();
-        boolean update = bookingService.updateStatusCheckInBooking(id, roomId, model);
 
         if (update == true) {
             response = paramServices.messageSuccessApi(201, "success",
