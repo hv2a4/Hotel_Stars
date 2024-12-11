@@ -8,6 +8,7 @@ import com.hotel.hotel_stars.DTO.RoleDto;
 import com.hotel.hotel_stars.DTO.Select.AccountBookingDTO;
 import com.hotel.hotel_stars.Config.JwtService;
 import com.hotel.hotel_stars.DTO.Select.AccountInfo;
+import com.hotel.hotel_stars.DTO.Select.AccountRoleDTO;
 import com.hotel.hotel_stars.Entity.Account;
 import com.hotel.hotel_stars.Entity.Booking;
 import com.hotel.hotel_stars.Entity.Role;
@@ -73,20 +74,20 @@ public class AccountService {
 
         // Chuyển đổi danh sách Booking sang BookingDto
         List<BookingDto> bookingDtoList = account.getBookingList() != null
-        	    ? account.getBookingList().stream()
-        	        .map(booking -> new BookingDto(
-        	            booking.getId(),
-        	            booking.getCreateAt(),
-        	            booking.getStartAt(),
-        	            booking.getEndAt(),
-        	            booking.getStatusPayment(),
-        	            new AccountDto(), // Chỗ này có thể cần xử lý chính xác hơn
-        	            booking.getMethodPayment() != null 
-        	                ? new MethodPaymentDto(booking.getMethodPayment().getId(), booking.getMethodPayment().getMethodPaymentName())
-        	                : null
-        	        ))
-        	        .collect(Collectors.toList())
-        	    : Collections.emptyList();
+                ? account.getBookingList().stream()
+                .map(booking -> new BookingDto(
+                        booking.getId(),
+                        booking.getCreateAt(),
+                        booking.getStartAt(),
+                        booking.getEndAt(),
+                        booking.getStatusPayment(),
+                        new AccountDto(), // Chỗ này có thể cần xử lý chính xác hơn
+                        booking.getMethodPayment() != null
+                                ? new MethodPaymentDto(booking.getMethodPayment().getId(), booking.getMethodPayment().getMethodPaymentName())
+                                : null
+                ))
+                .collect(Collectors.toList())
+                : Collections.emptyList();
 
         // Trả về AccountDto
         return new AccountDto(
@@ -401,7 +402,7 @@ public class AccountService {
         if (accountsObject.isEmpty()) {
             return false;
         }
-        paramServices.sendEmails(accountsObject.get().getEmail(), "Đổi mật khẩu ",paramServices.contentEmail(jwtService.generateSimpleToken(email)));
+        paramServices.sendEmails(accountsObject.get().getEmail(), "Đổi mật khẩu ", paramServices.contentEmail(jwtService.generateSimpleToken(email)));
         return true;
     }
 
@@ -432,9 +433,10 @@ public class AccountService {
                 .map(this::convertDT)
                 .orElse(null);
     }
+
     public AccountDto getAccountId(Integer id) {
-    	Account ac = accountRepository.findById(id).get();
-    	return convertToDto(ac);
+        Account ac = accountRepository.findById(id).get();
+        return convertToDto(ac);
     }
 
     public AccountInfo convertDT(Account account) {
@@ -484,6 +486,10 @@ public class AccountService {
             System.out.println("Error: " + e.getMessage());
             return null;
         }
+    }
+
+    public List<AccountRoleDTO> getAccountRoles() {
+        return accountRepository.findAccountsWithRoleStaff();
     }
 }
 

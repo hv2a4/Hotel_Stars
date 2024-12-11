@@ -152,7 +152,10 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/room/getCountRoom").permitAll()
                                                 .requestMatchers("/api/booking/confirmBooking").permitAll()
                                                 .requestMatchers("/api/type-room/find-type-room",
-                                                                "/api/amenitiesHotel/getAll")
+                                                                "/api/amenitiesHotel/getAll",
+                                                                "/api/list-controller/get-staff",
+                                                                "/api/feedback/get-all-use"
+                                                                )
                                                 .permitAll()
                                                 // nghia
 

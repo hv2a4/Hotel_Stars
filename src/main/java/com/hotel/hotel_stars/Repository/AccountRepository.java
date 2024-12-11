@@ -1,5 +1,6 @@
 package com.hotel.hotel_stars.Repository;
 
+import com.hotel.hotel_stars.DTO.Select.AccountRoleDTO;
 import com.hotel.hotel_stars.Entity.Account;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -44,4 +45,9 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
     Optional<Account> findByEmail(String email);
     @EntityGraph(attributePaths = {"bookingList"})
     List<Account> findAll();
+
+    @Query("SELECT new com.hotel.hotel_stars.DTO.Select.AccountRoleDTO(a.id, a.fullname, a.avatar, r.roleName) " +
+            "FROM Account a JOIN a.role r " +
+            "WHERE r.roleName = 'Staff'")
+    List<AccountRoleDTO> findAccountsWithRoleStaff();
 }

@@ -33,6 +33,7 @@ import java.sql.Timestamp;
 import java.text.NumberFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.List;
 import java.util.Optional;
@@ -116,41 +117,47 @@ public class BookingService {
     }
 
     public Discount getDiscounts(DiscountAccount discountAccounts, LocalDateTime creatNow) {
-          if(discountAccounts == null){
-              return null;
-          }
+        if (discountAccounts == null) {
+            return null;
+        }
         Instant current = paramServices.localdatetimeToInsant(creatNow);
 
-            LocalDate currentDate = current.atZone(ZoneId.systemDefault()).toLocalDate();
-            LocalDate discountStartDate = discountAccounts.getDiscount().getStartDate().atZone(ZoneId.systemDefault()).toLocalDate();
-            LocalDate discountEndDate = discountAccounts.getDiscount().getEndDate().atZone(ZoneId.systemDefault()).toLocalDate();
-            if (!currentDate.isBefore(discountStartDate) && !currentDate.isAfter(discountEndDate)) {
-                System.out.println("đã vào tới đây1");
-                System.out.println("trạng thái: "+discountAccounts.getStatusDa());
-                if (!discountAccounts.getStatusDa()){
-                    discountAccounts.setStatusDa(true);
-                    try{
-                        discountAccountRepositorys.save(discountAccounts);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    return discountAccounts.getDiscount();
-                }
-            }
+        LocalDate currentDate = current.atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate discountStartDate = discountAccounts.getDiscount().getStartDate().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate discountEndDate = discountAccounts.getDiscount().getEndDate().atZone(ZoneId.systemDefault()).toLocalDate();
 
+        System.out.println("mã của người này: " + discountAccounts.getId());
+        System.out.println("mã của người này: " + discountAccounts.getStatusDa());
+        if (!currentDate.isBefore(discountStartDate) && !currentDate.isAfter(discountEndDate)) {
+            System.out.println(discountAccounts.getStatusDa());
+            if (!discountAccounts.getStatusDa()) {
+                System.out.println("Trạng thái ban đầu: " + discountAccounts.getStatusDa());
+                discountAccounts.setStatusDa(true);
+                discountAccountRepositorys.save(discountAccounts);
+                System.out.println("Trạng thái sau khi lưu: " + discountAccounts.getStatusDa());
+                return discountAccounts.getDiscount();
+            }
+        } else {
+            System.out.println("ko có giảm giá");
+        }
+        System.out.println("null rồi nè!");
         return null;
     }
 
     public Boolean checkCreatbkRoom(Integer bookingId, List<Integer> roomId) {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow();
-        Long days = Duration.between(booking.getStartAt(), booking.getEndAt()).toDays();
-
-
+        LocalDate startDate = booking.getStartAt().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate endDate = booking.getEndAt().atZone(ZoneId.systemDefault()).toLocalDate();
+        Long days = ChronoUnit.DAYS.between(startDate, endDate);
+        if (days == 0) {
+            days = 1L;
+        }
         for (int i = 0; i < roomId.size(); i++) {
             Room room = roomRepository.findById(roomId.get(i)).get();
             System.out.println("giá mặc định: " + room.getTypeRoom().getPrice());
             BookingRoom bookingRoom = new BookingRoom();
             Double priceRoom = room.getTypeRoom().getPrice();
+            System.out.println();
             bookingRoom.setBooking(booking);
             bookingRoom.setRoom(room);
             bookingRoom.setPrice(priceRoom * days);
@@ -159,13 +166,13 @@ public class BookingService {
                 System.out.println("lỗi 1");
                 bookingRoomRepository.save(bookingRoom);
                 bookingRepository.save(booking);
+                System.out.println("tiền: " + bookingRoom.getPrice());
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
             }
         }
 
-        System.out.println("mảng: "+booking.getBookingRooms());
         return true;
     }
 
@@ -196,11 +203,11 @@ public class BookingService {
         Optional<Account> accounts = accountRepository.findByUsername(bookingModels.getUserName());
         MethodPayment payment = methodPaymentRepository.findById(bookingModels.getMethodPayment()).get();
         Optional<StatusBooking> statusBooking =
-                (payment.getId()==1)?statusBookingRepository.findById(1):statusBookingRepository.findById(3);
-        Instant starDateIns = paramServices.stringToInstantBK(bookingModels.getStartDate(),14,0);
-        Instant endDateIns = paramServices.stringToInstantBK(bookingModels.getEndDate(),12,0);
+                (payment.getId() == 1) ? statusBookingRepository.findById(1) : statusBookingRepository.findById(3);
+        Instant starDateIns = paramServices.stringToInstantBK(bookingModels.getStartDate(), 14, 0);
+        Instant endDateIns = paramServices.stringToInstantBK(bookingModels.getEndDate(), 12, 0);
         Discount discount = discountRepository.findByDiscountName(bookingModels.getDiscountName());
-
+        System.out.println("mã tìm: " + discount.getDiscountName());
         booking.setAccount(accounts.get());
         booking.setStartAt(starDateIns);
         booking.setEndAt(endDateIns);
@@ -210,30 +217,26 @@ public class BookingService {
         booking.setDescriptions("Đặt trước");
         System.out.println(LocalDateTime.now());
         booking.setCreateAt(LocalDateTime.now());
-        DiscountAccount discountAccount= (discount!=null)?
-                discountAccountRepositorys.findByDiscountAndAccount(discount,booking.getAccount()):null;
-        Discount discountBooking=(getDiscounts(discountAccount,booking.getCreateAt())!=null)?getDiscounts(discountAccount,booking.getCreateAt()):null;
-        booking.setDiscountName((discountBooking!=null)?discountBooking.getDiscountName():null);
-        booking.setDiscountPercent((discountBooking!=null)?discountBooking.getPercent():null);
+        DiscountAccount discountAccount = discountAccountRepositorys.findByDiscountAndAccount(discount.getId(), booking.getAccount().getId());
+        Discount discountBooking = getDiscounts(discountAccount, booking.getCreateAt());
+        booking.setDiscountName((discountBooking != null) ? discountBooking.getDiscountName() : null);
+        booking.setDiscountPercent((discountBooking != null) ? discountBooking.getPercent() : null);
         try {
             bookingRepository.save(booking);
             if (checkCreatbkRoom(booking.getId(), bookingModels.getRoomId())) {
                 System.out.println(jwtService.generateBoking(booking.getId()));
                 List<BookingRoom> bookingRoomList = booking.getBookingRooms();
                 double total = bookingRoomList.stream().mapToDouble(BookingRoom::getPrice).sum();
-                System.out.println();
                 String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
-                LocalDate startDate=paramServices.convertInstallToLocalDate(booking.getStartAt());
-                LocalDate endDate=paramServices.convertInstallToLocalDate(booking.getEndAt());
+                LocalDate startDate = paramServices.convertInstallToLocalDate(booking.getStartAt());
+                LocalDate endDate = paramServices.convertInstallToLocalDate(booking.getEndAt());
                 String roomsString = bookingRoomList.stream()
                         .map(bookingRoom -> bookingRoom.getRoom().getRoomName())  // Extract roomName from each BookingRoom
                         .collect(Collectors.joining(", "));
 
                 String idBk = "Bk" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "" + booking.getId();
-                Boolean flag = (payment.getId()==1)? paramServices.sendEmails(booking.getAccount().getEmail(), "Xác nhận đặt phòng",
-                        paramServices.generateBookingEmail(idBk, booking.getAccount().getFullname(), jwtService.generateBoking(booking.getId())
-                                ,startDate,endDate , formattedAmount,roomsString  )):false;
-
+                Boolean flag = (payment.getId() == 1) ? paramServices.sendEmails(booking.getAccount().getEmail(), "Xác nhận đặt phòng", paramServices.generateBookingEmail(idBk, booking.getAccount().getFullname(), jwtService.generateBoking(booking.getId())
+                        , startDate, endDate, formattedAmount, roomsString)) : false;
                 return booking;
             }
         } catch (Exception e) {
@@ -267,7 +270,7 @@ public class BookingService {
         }
         return false;
     }
-    
+
     public boolean cancelBooking(Integer idBooking) {
         try {
             // Tìm booking theo id
@@ -317,7 +320,6 @@ public class BookingService {
         }
     }
 
-    
 
     public List<ReservationInfoDTO> getAllReservationInfoDTO() {
         List<Object[]> results = bookingRepository.findAllBookingDetailsUsingSQL();
@@ -557,9 +559,10 @@ public class BookingService {
         List<Booking> bookings = bookingRepository.findByAccount_Id(id);
         return bookings.stream().map(this::convertToDto).collect(Collectors.toList());
     }
+
     private void updateRoomStatus(List<BookingRoom> bookingRooms, Integer statusRoomId) {
         StatusRoom statusRoom = statusRoomRepository.findById(statusRoomId).get();
-        
+
         for (BookingRoom bookingRoom : bookingRooms) {
             Room room = roomRepository.findById(bookingRoom.getRoom().getId()).get();
             room.setStatusRoom(statusRoom);
@@ -581,8 +584,8 @@ public class BookingService {
         Booking booking = bookingOptional.get();
         StatusBooking statusBooking = statusBookingOptional.get();
         if (idStatus == 4) {
-        	updateRoomStatus(booking.getBookingRooms(), 4);
-		}
+            updateRoomStatus(booking.getBookingRooms(), 4);
+        }
         booking.setStatus(statusBooking);
         booking.setStartAt(bookingModel.getStartDate());
         booking.setEndAt(bookingModel.getEndDate());
@@ -654,8 +657,8 @@ public class BookingService {
     }
 
     public List<accountHistoryDto> getBookingByRoom(Integer idRoom) {
-    	List<Booking> bookings = bookingRepository.findBookingsByRoomId(idRoom);
-    	return bookings.stream().map(this::convertToDto).toList();
+        List<Booking> bookings = bookingRepository.findBookingsByRoomId(idRoom);
+        return bookings.stream().map(this::convertToDto).toList();
     }
 //khôi
 }

@@ -52,239 +52,238 @@ import java.util.stream.Collectors;
 @CrossOrigin("*")
 @RequestMapping("/api/booking")
 public class BookingController {
-	@Autowired
-	private BookingService bookingService;
-	@Lazy
-	@Autowired
-	private ErrorsService errorsServices;
-	@Autowired
-	private BookingRoomRepository bookingRoomRepository;
-	@Autowired
-	private StatusBookingRepository statusBookingRepository;
-	@Autowired
-	private paramService paramServices;
-	@Autowired
-	private JwtService jwtService;
-	@Autowired
-	private BookingRepository bookingRepository;
-	@Autowired
-	VNPayService vnPayService;
-	@Autowired
-	SessionService sessionService;
+    @Autowired
+    private BookingService bookingService;
+    @Lazy
+    @Autowired
+    private ErrorsService errorsServices;
+    @Autowired
+    private BookingRoomRepository bookingRoomRepository;
+    @Autowired
+    private StatusBookingRepository statusBookingRepository;
+    @Autowired
+    private paramService paramServices;
+    @Autowired
+    private JwtService jwtService;
+    @Autowired
+    private BookingRepository bookingRepository;
+    @Autowired
+    VNPayService vnPayService;
+    @Autowired
+    SessionService sessionService;
 
-	// khoi
-	@GetMapping("")
-	public ResponseEntity<List<accountHistoryDto>> getBookings(
-			@RequestParam(required = false) String filterType,
-			@RequestParam(required = false) LocalDate startDate,
-			@RequestParam(required = false) LocalDate endDate) {
-		List<accountHistoryDto> bookings = bookingService.getAllBooking(filterType, startDate, endDate);
-		return ResponseEntity.ok(bookings);
-	}
-	@PutMapping("/cancel-booking/{id}")
-	public StatusResponseDto cancelBooking(@PathVariable("id") Integer id) {
-		boolean flag = bookingService.cancelBooking(id);
-		if (flag) {
-			return new StatusResponseDto("200","success","Hủy đặt phòng thành công");
-		} else {
-			return new StatusResponseDto("400","error","Hủy đặt phòng thất bại");
-		}
-	}
+    // khoi
+    @GetMapping("")
+    public ResponseEntity<List<accountHistoryDto>> getBookings(
+            @RequestParam(required = false) String filterType,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate) {
+        List<accountHistoryDto> bookings = bookingService.getAllBooking(filterType, startDate, endDate);
+        return ResponseEntity.ok(bookings);
+    }
 
-	@GetMapping("/booking-by-room/{id}")
-	public ResponseEntity<?> getBookingByRoom(@PathVariable("id") Integer id){
-		return ResponseEntity.ok(bookingService.getBookingByRoom(id));
-	}
-	
-	@PutMapping("/update-checkIn/{id}")
-	public ResponseEntity<?> updateCheckIn(@PathVariable("id") Integer id,
-			@RequestParam("roomId") List<Integer> roomId,
-			@RequestBody List<bookingRoomModel> model) {
-		Map<String, String> response = new HashMap<String, String>();
-		boolean update = bookingService.updateStatusCheckInBooking(id, roomId, model);
+    @PutMapping("/cancel-booking/{id}")
+    public StatusResponseDto cancelBooking(@PathVariable("id") Integer id) {
+        boolean flag = bookingService.cancelBooking(id);
+        if (flag) {
+            return new StatusResponseDto("200", "success", "Hủy đặt phòng thành công");
+        } else {
+            return new StatusResponseDto("400", "error", "Hủy đặt phòng thất bại");
+        }
+    }
 
-		if (update == true) {
-			response = paramServices.messageSuccessApi(201, "success",
-					"Cập nhật trạng thái thành công");
-			return ResponseEntity.status(HttpStatus.CREATED).body(response);
-		} else {
-			response = paramServices.messageSuccessApi(400, "error", "Cập nhật trạng thái thất bại");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
-	}
+    @GetMapping("/booking-by-room/{id}")
+    public ResponseEntity<?> getBookingByRoom(@PathVariable("id") Integer id) {
+        return ResponseEntity.ok(bookingService.getBookingByRoom(id));
+    }
 
-	@GetMapping("/getById/{id}")
-	public ResponseEntity<?> getById(@PathVariable("id") Integer id) {
-		return ResponseEntity.ok(bookingService.getByIdBooking(id));
-	}
+    @PutMapping("/update-checkIn/{id}")
+    public ResponseEntity<?> updateCheckIn(@PathVariable("id") Integer id,
+                                           @RequestParam("roomId") List<Integer> roomId,
+                                           @RequestBody List<bookingRoomModel> model) {
+        Map<String, String> response = new HashMap<String, String>();
+        boolean update = bookingService.updateStatusCheckInBooking(id, roomId, model);
 
-	@GetMapping("/account/payment-info/{id}")
-	public ResponseEntity<List<PaymentInfoDTO>> getBookingPaymentInfo(@PathVariable Integer id) {
-		return ResponseEntity.ok(bookingService.getPaymentInfoByAccountId(id));
-	}
+        if (update == true) {
+            response = paramServices.messageSuccessApi(201, "success",
+                    "Cập nhật trạng thái thành công");
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } else {
+            response = paramServices.messageSuccessApi(400, "error", "Cập nhật trạng thái thất bại");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
 
-	@PostMapping("/booking-offline")
-	public ResponseEntity<?> postBookingOffline(@Valid @RequestBody bookingModel bookingModels) {
-		Map<String, String> response = new HashMap<String, String>();
-		errorsServices.errorBooking(bookingModels);
-		Boolean flag = bookingService.addBookingOffline(bookingModels);
-		if (flag == true) {
-			response = paramServices.messageSuccessApi(201, "success", "Đặt phòng thành công");
-			return ResponseEntity.status(HttpStatus.CREATED).body(response);
-		} else {
-			response = paramServices.messageSuccessApi(400, "error", "Đặt phòng thất bại");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
-	}
+    @GetMapping("/getById/{id}")
+    public ResponseEntity<?> getById(@PathVariable("id") Integer id) {
+        return ResponseEntity.ok(bookingService.getByIdBooking(id));
+    }
 
-	@GetMapping("/confirmBooking")
-	public ResponseEntity<?> updateBooking(@RequestParam("token") String token) {
+    @GetMapping("/account/payment-info/{id}")
+    public ResponseEntity<List<PaymentInfoDTO>> getBookingPaymentInfo(@PathVariable Integer id) {
+        return ResponseEntity.ok(bookingService.getPaymentInfoByAccountId(id));
+    }
 
-		try {
-			Integer id = jwtService.extractBookingId(token);
-			Optional<StatusBooking> statusBooking = statusBookingRepository.findById(2);
-			Booking booking = bookingRepository.findById(id).get();
-			List<BookingRoom> bookingRoomList = booking.getBookingRooms();
-			double total = bookingRoomList.stream().mapToDouble(BookingRoom::getPrice).sum();
-			if (booking.getDiscountPercent() != null && booking.getDiscountPercent() != null) {
-				double discountAmount = total * (booking.getDiscountPercent() / 100);
-				total = total - discountAmount;
-			}
-			String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
-			LocalDate startDate = paramServices.convertInstallToLocalDate(booking.getStartAt());
-			LocalDate endDate = paramServices.convertInstallToLocalDate(booking.getEndAt());
-			booking.setStatus(statusBooking.get());
-			String roomsString = bookingRoomList.stream()
-					.map(bookingRoom -> bookingRoom.getRoom().getRoomName()) // Extract roomName from each BookingRoom
-					.collect(Collectors.joining(", "));
-			String idBk = "Bk" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "" + booking.getId();
-			System.out.println("chuỗi: " + roomsString);
-			try {
-				bookingRepository.save(booking);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			paramServices.sendEmails(booking.getAccount().getEmail(), "thông tin đơn hàng",
-					paramServices.pdfDownload(idBk, booking, startDate, endDate, formattedAmount, roomsString,
-							paramServices.getImage()));
-			return ResponseEntity
-					.ok(paramServices.confirmBookings(idBk, booking, startDate, endDate, formattedAmount, roomsString,
-							paramServices.getImage()));
-		} catch (ExpiredJwtException e) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-					.body("Token đã hết hạn. Vui lòng liên lạc qua số điện thoại 1900 6522");
-		} catch (Exception e) {
-			// Xử lý các ngoại lệ khác nếu cần
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Đã có lỗi xảy ra.");
-		}
-	}
+    @PostMapping("/booking-offline")
+    public ResponseEntity<?> postBookingOffline(@Valid @RequestBody bookingModel bookingModels) {
+        Map<String, String> response = new HashMap<String, String>();
+        errorsServices.errorBooking(bookingModels);
+        Boolean flag = bookingService.addBookingOffline(bookingModels);
+        if (flag == true) {
+            response = paramServices.messageSuccessApi(201, "success", "Đặt phòng thành công");
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } else {
+            response = paramServices.messageSuccessApi(400, "error", "Đặt phòng thất bại");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
 
-	@GetMapping("/account/{accountId}")
-	public ResponseEntity<List<BookingDetailDTO>> getBookingDetails(@PathVariable Integer accountId) {
-		return ResponseEntity.ok(bookingService.getBookingDetailsByAccountId(accountId));
-	}
+    @GetMapping("/confirmBooking")
+    public ResponseEntity<?> updateBooking(@RequestParam("token") String token) {
 
-	@GetMapping("/accountId/{id}")
-	public ResponseEntity<?> getBookingByAccount(@PathVariable("id") Integer id) {
-		return ResponseEntity.ok(bookingService.getListByAccountId(id));
-	}
+        try {
+            Integer id = jwtService.extractBookingId(token);
+            Optional<StatusBooking> statusBooking = statusBookingRepository.findById(2);
+            Booking booking = bookingRepository.findById(id).get();
+            List<BookingRoom> bookingRoomList = booking.getBookingRooms();
+            double total = bookingRoomList.stream().mapToDouble(BookingRoom::getPrice).sum();
+            if (booking.getDiscountPercent() != null && booking.getDiscountPercent() != null) {
+                double discountAmount = total * (booking.getDiscountPercent() / 100);
+                total = total - discountAmount;
+            }
+            String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
+            LocalDate startDate = paramServices.convertInstallToLocalDate(booking.getStartAt());
+            LocalDate endDate = paramServices.convertInstallToLocalDate(booking.getEndAt());
+            booking.setStatus(statusBooking.get());
+            String roomsString = bookingRoomList.stream()
+                    .map(bookingRoom -> bookingRoom.getRoom().getRoomName()) // Extract roomName from each BookingRoom
+                    .collect(Collectors.joining(", "));
+            String idBk = "Bk" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "" + booking.getId();
+            System.out.println("chuỗi: " + roomsString);
+            try {
+                bookingRepository.save(booking);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            paramServices.sendEmails(booking.getAccount().getEmail(), "thông tin đơn hàng",
+                    paramServices.pdfDownload(idBk, booking, startDate, endDate, formattedAmount, roomsString, paramServices.getImage()));
+            return ResponseEntity
+                    .ok(paramServices.confirmBookings(idBk, booking, startDate, endDate, formattedAmount, roomsString, paramServices.getImage()));
+        } catch (ExpiredJwtException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Token đã hết hạn. Vui lòng liên lạc qua số điện thoại 1900 6522");
+        } catch (Exception e) {
+            // Xử lý các ngoại lệ khác nếu cần
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Đã có lỗi xảy ra.");
+        }
+    }
 
-	@GetMapping("/downloadPdf")
-	public ResponseEntity<?> downloadPdf(@RequestParam String id) {
+    @GetMapping("/account/{accountId}")
+    public ResponseEntity<List<BookingDetailDTO>> getBookingDetails(@PathVariable Integer accountId) {
+        return ResponseEntity.ok(bookingService.getBookingDetailsByAccountId(accountId));
+    }
 
-		try {
-			Booking booking = bookingRepository.findById(Integer.parseInt(id)).get();
-			List<BookingRoom> bookingRoomList = booking.getBookingRooms();
-			double total = bookingRoomList.stream().mapToDouble(BookingRoom::getPrice).sum();
-			String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
-			LocalDate startDate = paramServices.convertInstallToLocalDate(booking.getStartAt());
-			LocalDate endDate = paramServices.convertInstallToLocalDate(booking.getEndAt());
-			String roomsString = bookingRoomList.stream()
-					.map(bookingRoom -> bookingRoom.getRoom().getRoomName()) // Extract roomName from each BookingRoom
-					.collect(Collectors.joining(", "));
-			String idBk = "Bk" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + "" + booking.getId();
+    @GetMapping("/accountId/{id}")
+    public ResponseEntity<?> getBookingByAccount(@PathVariable("id") Integer id) {
+        return ResponseEntity.ok(bookingService.getListByAccountId(id));
+    }
 
-			paramServices.sendEmails(booking.getAccount().getEmail(), "thông tin đơn hàng",
-					paramServices.confirmBookings(idBk, booking, startDate, endDate, formattedAmount, roomsString,
-							paramServices.getImage()));
+    @GetMapping("/downloadPdf")
+    public ResponseEntity<?> downloadPdf(@RequestParam String id) {
 
-			String filePath = paramServices.generatePdf(
-					paramServices.pdfDownload(idBk, booking, startDate, endDate, formattedAmount, roomsString,
-							paramServices.getImage()),
-					booking.getAccount().getFullname(), idBk);
+        try {
+            Booking booking = bookingRepository.findById(Integer.parseInt(id)).get();
+            List<BookingRoom> bookingRoomList = booking.getBookingRooms();
+            double total = bookingRoomList.stream().mapToDouble(BookingRoom::getPrice).sum();
+            if (booking.getDiscountPercent() != null && booking.getDiscountPercent() != null) {
+                double discountAmount = total * (booking.getDiscountPercent() / 100);
+                total = total - discountAmount;
+            }
+            String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
+            LocalDate startDate = paramServices.convertInstallToLocalDate(booking.getStartAt());
+            LocalDate endDate = paramServices.convertInstallToLocalDate(booking.getEndAt());
+            String roomsString = bookingRoomList.stream()
+                    .map(bookingRoom -> bookingRoom.getRoom().getRoomName()) // Extract roomName from each BookingRoom
+                    .collect(Collectors.joining(", "));
+            String idBk = "Bk" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + "" + booking.getId();
 
-			File file = new File(filePath);
-			System.out.println(file);
-			HttpHeaders headers = new HttpHeaders();
-			headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + file.getName());
+            paramServices.sendEmails(booking.getAccount().getEmail(), "thông tin đơn hàng",
+                    paramServices.confirmBookings(idBk, booking, startDate, endDate, formattedAmount, roomsString, paramServices.getImage()));
 
-			return ResponseEntity.ok()
-					.headers(headers)
-					.contentType(MediaType.APPLICATION_PDF)
-					.body(new FileSystemResource(file));
-		} catch (Exception e) {
-			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Có lỗi xảy ra khi tạo PDF.");
-		}
-	}
+            String filePath = paramServices.generatePdf(
+                    paramServices.pdfDownload(idBk, booking, startDate, endDate, formattedAmount, roomsString, paramServices.getImage()),
+                    booking.getAccount().getFullname(), idBk);
 
-	@PostMapping("/sendBooking")
-	public ResponseEntity<?> postBooking(@Valid @RequestBody bookingModel bookingModels, HttpServletRequest request) {
-		Map<String, String> response = new HashMap<String, String>();
+            File file = new File(filePath);
+            System.out.println(file);
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + file.getName());
 
-		StatusResponseDto statusResponseDto = errorsServices.errorBooking(bookingModels);
-		if (statusResponseDto != null) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(statusResponseDto);
-		}
-		try {
-			Booking bookings = bookingService.sendBookingEmail(bookingModels);
-			if (bookings != null) {
-				response = paramServices.messageSuccessApi(201, "success",
-						"Đặt phòng thành công, vui lòng vào email để xác nhận");
-				if (bookings.getMethodPayment().getId() == 1) {
-					response.put("vnPayURL", null);
-				} else {
-					List<BookingRoom> bookingRoomList = bookings.getBookingRooms();
-					double total = bookingRoomList.stream().mapToDouble(BookingRoom::getPrice).sum();
-					if (bookings.getDiscountPercent() != null && bookings.getDiscountPercent() != null) {
-						double discountAmount = total * (bookings.getDiscountPercent() / 100);
-						total = total - discountAmount;
-					}
-					int totalAsInt = (int) total;
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(new FileSystemResource(file));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Có lỗi xảy ra khi tạo PDF.");
+        }
+    }
 
-					String baseUrl = request.getScheme() + "://" + request.getServerName() + ":"
-							+ request.getServerPort();
-					response = paramServices.messageSuccessApi(201, "success",
-							"Đặt phòng thành công");
-					response.put("vnPayURL",
-							vnPayService.createOrder(totalAsInt, String.valueOf(bookings.getId()), baseUrl));
+    @PostMapping("/sendBooking")
+    public ResponseEntity<?> postBooking(@Valid @RequestBody bookingModel bookingModels, HttpServletRequest request) {
+        Map<String, String> response = new HashMap<String, String>();
 
-				}
-				return ResponseEntity.status(HttpStatus.CREATED).body(response);
-			} else {
-				response = paramServices.messageSuccessApi(400, "error", "Đặt phòng thất bại");
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-			}
-		} catch (Exception e) {
-			response.put("error", e.getMessage()); // Thêm thông tin lỗi ở đây
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-		}
-	}
+        StatusResponseDto statusResponseDto = errorsServices.errorBooking(bookingModels);
+        if(statusResponseDto!=null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(statusResponseDto);
+        }
+        try {
+            Booking bookings = bookingService.sendBookingEmail(bookingModels);
+            if (bookings!=null) {
+                response = paramServices.messageSuccessApi(201, "success",
+                        "Đặt phòng thành công, vui lòng vào email để xác nhận");
+                if(bookings.getMethodPayment().getId()==1){
+                    response.put("vnPayURL", null);
+                }else {
+                    List<BookingRoom> bookingRoomList = bookings.getBookingRooms();
+                    double total = bookingRoomList.stream().mapToDouble(BookingRoom::getPrice).sum();
+                    if(bookings.getDiscountPercent()!=null && bookings.getDiscountPercent()!=null){
+                        double discountAmount = total * (bookings.getDiscountPercent() / 100);
+                        total=total-discountAmount;
+                    }
+                    int totalAsInt = (int) total;
+                    System.out.println("totals: "+totalAsInt);
+                    String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+                    response = paramServices.messageSuccessApi(201, "success",
+                            "Đặt phòng thành công");
+                    response.put("vnPayURL", vnPayService.createOrder(totalAsInt,String.valueOf(bookings.getId()), baseUrl));
 
-	@PutMapping("/update-status/{id}/{idStatus}")
-	public ResponseEntity<?> updateStatus(@PathVariable("id") Integer idBooking,
-			@PathVariable("idStatus") Integer idStatus, @RequestBody bookingModelNew bookingModel) {
-		// Gọi phương thức updateStatusBooking từ service
-		Map<String, String> response = new HashMap<String, String>();
-		boolean update = bookingService.updateStatusBooking(idBooking, idStatus, bookingModel);
+                }
+                return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            } else {
+                response = paramServices.messageSuccessApi(400, "error", "Đặt phòng thất bại");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+        } catch (Exception e) {
+            response.put("error", e.getMessage()); // Thêm thông tin lỗi ở đây
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
 
-		if (update == true) {
-			response = paramServices.messageSuccessApi(201, "success",
-					"Cập nhật trạng thái thành công");
-			return ResponseEntity.status(HttpStatus.CREATED).body(response);
-		} else {
-			response = paramServices.messageSuccessApi(400, "error", "Cập nhật trạng thái thất bại");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
-	}
+    @PutMapping("/update-status/{id}/{idStatus}")
+    public ResponseEntity<?> updateStatus(@PathVariable("id") Integer idBooking,
+                                          @PathVariable("idStatus") Integer idStatus, @RequestBody bookingModelNew bookingModel) {
+        // Gọi phương thức updateStatusBooking từ service
+        Map<String, String> response = new HashMap<String, String>();
+        boolean update = bookingService.updateStatusBooking(idBooking, idStatus, bookingModel);
+
+        if (update == true) {
+            response = paramServices.messageSuccessApi(201, "success",
+                    "Cập nhật trạng thái thành công");
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } else {
+            response = paramServices.messageSuccessApi(400, "error", "Cập nhật trạng thái thất bại");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
 }
