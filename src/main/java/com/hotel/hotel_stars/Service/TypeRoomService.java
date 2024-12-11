@@ -38,7 +38,7 @@ import com.hotel.hotel_stars.Repository.TypeBedRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomAmenitiesTypeRoomRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomImageRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomRepository;
-import com.hotel.hotel_stars.utils.paramService;
+import com.hotel.hotel_stars.Utils.paramService;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;

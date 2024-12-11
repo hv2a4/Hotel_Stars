@@ -2,7 +2,6 @@ package com.hotel.hotel_stars.Service;
 
 import java.sql.Timestamp;
 import java.text.NumberFormat;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,15 +20,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
-import java.text.NumberFormat;
-import java.time.*;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import com.hotel.hotel_stars.Config.JwtService;
 import com.hotel.hotel_stars.DTO.*;
 import com.hotel.hotel_stars.Entity.*;
@@ -38,7 +28,7 @@ import com.hotel.hotel_stars.Models.bookingModel;
 import com.hotel.hotel_stars.Models.bookingModelNew;
 import com.hotel.hotel_stars.Models.bookingRoomModel;
 import com.hotel.hotel_stars.Repository.*;
-import com.hotel.hotel_stars.utils.paramService;
+import com.hotel.hotel_stars.Utils.paramService;
 
 @Service
 public class BookingService {
@@ -178,6 +168,7 @@ public class BookingService {
 
         return true;
     }
+
     public Double calculateDiscountedPrice(Room room, LocalDateTime creatNow, Discount discount, Booking booking) {
         Double typeRoomPrice = room.getTypeRoom().getPrice();
         Instant current = paramServices.localdatetimeToInsant(creatNow);
@@ -247,18 +238,18 @@ public class BookingService {
                 (payment.getId() == 1) ? statusBookingRepository.findById(1) : statusBookingRepository.findById(3);
         Instant starDateIns = paramServices.stringToInstantBK(bookingModels.getStartDate(), 14, 0);
         Instant endDateIns = paramServices.stringToInstantBK(bookingModels.getEndDate(), 12, 0);
-        Discount discount = discountRepository.findByDiscountName(bookingModels.getDiscountName());
-        System.out.println("mã tìm: " + discount.getDiscountName());
+        Discount discount = (discountRepository.findByDiscountName(bookingModels.getDiscountName()) != null) ? discountRepository.findByDiscountName(bookingModels.getDiscountName()) : null;
         booking.setAccount(accounts.get());
         booking.setStartAt(starDateIns);
         booking.setEndAt(endDateIns);
         booking.setStatus(statusBooking.get());
         booking.setStatusPayment(false);
         booking.setMethodPayment(payment);
-        booking.setDescriptions("Đặt trực tuyến");
+        booking.setDescriptions("Đặt trước");
         System.out.println(LocalDateTime.now());
         booking.setCreateAt(LocalDateTime.now());
-        DiscountAccount discountAccount = discountAccountRepositorys.findByDiscountAndAccount(discount.getId(), booking.getAccount().getId());
+        Integer id = (discount != null) ? discount.getId() : null;
+        DiscountAccount discountAccount = discountAccountRepositorys.findByDiscountAndAccount(id, booking.getAccount().getId());
         Discount discountBooking = getDiscounts(discountAccount, booking.getCreateAt());
         booking.setDiscountName((discountBooking != null) ? discountBooking.getDiscountName() : null);
         booking.setDiscountPercent((discountBooking != null) ? discountBooking.getPercent() : null);
@@ -278,6 +269,7 @@ public class BookingService {
                 String idBk = "Bk" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "" + booking.getId();
                 Boolean flag = (payment.getId() == 1) ? paramServices.sendEmails(booking.getAccount().getEmail(), "Xác nhận đặt phòng", paramServices.generateBookingEmail(idBk, booking.getAccount().getFullname(), jwtService.generateBoking(booking.getId())
                         , startDate, endDate, formattedAmount, roomsString)) : false;
+
                 return booking;
             }
         } catch (Exception e) {
@@ -302,7 +294,7 @@ public class BookingService {
         booking.setEndAt(endDateIns);
         booking.setStatus(statusBooking.get());
         booking.setStatusPayment(false);
-        booking.setDescriptions("Đặt trực tiếp");        
+        booking.setDescriptions("Đặt trực tiếp");
         booking.setMethodPayment(methodPayment);
         booking.setCreateAt(LocalDateTime.now());
         try {
@@ -316,7 +308,7 @@ public class BookingService {
         }
         return false;
     }
-    
+
     public boolean cancelBooking(Integer idBooking, String why) {
         try {
             // Tìm booking theo id
@@ -333,7 +325,7 @@ public class BookingService {
                 return false; // Không tìm thấy trạng thái booking
             }
             booking.setStatus(statusBooking);
-            booking.setDescriptions("Đã hủy vì: " + why);           
+            booking.setDescriptions("Đã hủy vì: " + why);
             booking.setEndAt(Instant.now());
 
             // Lấy danh sách phòng từ booking
@@ -518,7 +510,7 @@ public class BookingService {
         // Chuyển đổi danh sách Booking sang BookingDto
         List<BookingDto> bookingDtoList = account.getBookingList().stream()
                 .map(booking -> new BookingDto(booking.getId(), booking.getCreateAt(), booking.getStartAt(),
-                        booking.getEndAt(), booking.getStatusPayment(),booking.getDescriptions(),new StatusBookingDto(booking.getStatus().getId(), booking.getStatus().getStatusBookingName()), new AccountDto(),
+                        booking.getEndAt(), booking.getStatusPayment(), booking.getDescriptions(), new StatusBookingDto(booking.getStatus().getId(), booking.getStatus().getStatusBookingName()), new AccountDto(),
                         new MethodPaymentDto(booking.getMethodPayment().getId(),
                                 booking.getMethodPayment().getMethodPaymentName()))) // Cần xử lý accountDto trong
                 // BookingDto

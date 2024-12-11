@@ -27,7 +27,7 @@ import com.hotel.hotel_stars.DTO.Select.PaginatedResponseDto;
 import com.hotel.hotel_stars.DTO.Select.RoomAvailabilityInfo;
 import com.hotel.hotel_stars.Models.RoomModel;
 import com.hotel.hotel_stars.Service.RoomService;
-import com.hotel.hotel_stars.utils.paramService;
+import com.hotel.hotel_stars.Utils.paramService;
 
 @RestController
 @RequestMapping("api/room")

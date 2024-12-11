@@ -10,7 +10,6 @@ import com.hotel.hotel_stars.Config.JwtService;
 import com.hotel.hotel_stars.DTO.Select.AccountInfo;
 import com.hotel.hotel_stars.DTO.Select.AccountRoleDTO;
 import com.hotel.hotel_stars.Entity.Account;
-import com.hotel.hotel_stars.Entity.Booking;
 import com.hotel.hotel_stars.Entity.Role;
 import com.hotel.hotel_stars.Exception.CustomValidationException;
 import com.hotel.hotel_stars.Exception.ValidationError;
@@ -19,7 +18,7 @@ import com.hotel.hotel_stars.Models.changePasswordModel;
 import com.hotel.hotel_stars.Repository.AccountRepository;
 import com.hotel.hotel_stars.Repository.RoleRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomRepository;
-import com.hotel.hotel_stars.utils.paramService;
+import com.hotel.hotel_stars.Utils.paramService;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -43,25 +42,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.hotel.hotel_stars.Config.JwtService;
-import com.hotel.hotel_stars.Config.UserInfoService;
-import com.hotel.hotel_stars.DTO.AccountDto;
-import com.hotel.hotel_stars.DTO.BookingDto;
-import com.hotel.hotel_stars.DTO.MethodPaymentDto;
-import com.hotel.hotel_stars.DTO.RoleDto;
 import com.hotel.hotel_stars.DTO.StatusBookingDto;
-import com.hotel.hotel_stars.DTO.Select.AccountBookingDTO;
-import com.hotel.hotel_stars.DTO.Select.AccountInfo;
-import com.hotel.hotel_stars.Entity.Account;
-import com.hotel.hotel_stars.Entity.Role;
-import com.hotel.hotel_stars.Exception.CustomValidationException;
-import com.hotel.hotel_stars.Exception.ValidationError;
-import com.hotel.hotel_stars.Models.accountModel;
-import com.hotel.hotel_stars.Models.changePasswordModel;
-import com.hotel.hotel_stars.Repository.AccountRepository;
-import com.hotel.hotel_stars.Repository.RoleRepository;
-import com.hotel.hotel_stars.Repository.TypeRoomRepository;
-import com.hotel.hotel_stars.utils.paramService;
 
 @Service
 public class AccountService {

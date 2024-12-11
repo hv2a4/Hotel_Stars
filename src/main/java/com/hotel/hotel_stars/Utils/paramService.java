@@ -1,4 +1,4 @@
-package com.hotel.hotel_stars.utils;
+package com.hotel.hotel_stars.Utils;
 
 
 import java.awt.image.BufferedImage;

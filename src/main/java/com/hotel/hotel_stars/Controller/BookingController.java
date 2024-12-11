@@ -45,8 +45,8 @@ import com.hotel.hotel_stars.Repository.BookingRepository;
 import com.hotel.hotel_stars.Repository.BookingRoomRepository;
 import com.hotel.hotel_stars.Repository.StatusBookingRepository;
 import com.hotel.hotel_stars.Service.BookingService;
-import com.hotel.hotel_stars.utils.SessionService;
-import com.hotel.hotel_stars.utils.paramService;
+import com.hotel.hotel_stars.Utils.SessionService;
+import com.hotel.hotel_stars.Utils.paramService;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;

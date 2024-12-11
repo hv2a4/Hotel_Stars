@@ -34,7 +34,7 @@ import com.hotel.hotel_stars.Models.typeRoomModel;
 import com.hotel.hotel_stars.Service.AccountService;
 import com.hotel.hotel_stars.Service.BookingService;
 import com.hotel.hotel_stars.Service.TypeRoomService;
-import com.hotel.hotel_stars.utils.paramService;
+import com.hotel.hotel_stars.Utils.paramService;
 
 import jakarta.validation.Valid;
 

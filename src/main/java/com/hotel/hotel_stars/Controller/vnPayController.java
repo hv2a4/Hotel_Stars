@@ -22,7 +22,7 @@ import com.hotel.hotel_stars.Entity.BookingRoom;
 import com.hotel.hotel_stars.Entity.StatusBooking;
 import com.hotel.hotel_stars.Repository.BookingRepository;
 import com.hotel.hotel_stars.Repository.StatusBookingRepository;
-import com.hotel.hotel_stars.utils.SessionService;
+import com.hotel.hotel_stars.Utils.SessionService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -33,7 +33,7 @@ public class vnPayController {
     @Autowired
     VNPayService vnPayService;
     @Autowired
-    private com.hotel.hotel_stars.utils.paramService paramServices;
+    private com.hotel.hotel_stars.Utils.paramService paramServices;
     @Autowired
     private StatusBookingRepository statusBookingRepository;
     @Autowired
