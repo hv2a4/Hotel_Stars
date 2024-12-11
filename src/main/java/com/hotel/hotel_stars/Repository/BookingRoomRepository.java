@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface BookingRoomRepository extends JpaRepository<BookingRoom, Integer> {
 //	Optional<BookingRoom> findMostRecentBookingRoomByRoomIdAndStatusRoomId(Integer roomId, String statusRoomId);
@@ -14,4 +15,16 @@ public interface BookingRoomRepository extends JpaRepository<BookingRoom, Intege
 	List<BookingRoom> findBookingRoomByAccountId(Integer id);
 	List<BookingRoom> findByRoom_IdAndRoom_StatusRoom_Id(Integer roomId, Integer statusRoomId);
 	List<BookingRoom> findByIdIn(List<Integer> ids);
+	
+	//khoi
+	@Query(value = "SELECT br.* " +
+            "FROM booking_room br " +
+            "JOIN booking b ON br.booking_id = b.id " +
+            "WHERE br.room_id = :roomId " +
+            "AND b.status_id NOT IN (8, 6, 1, 3,5,9) " +
+            "ORDER BY b.create_at ASC " +
+            "LIMIT 1", 
+    nativeQuery = true)
+	BookingRoom findFirstBookingRoomByRoomIdAndStatusNotIn(@Param("roomId") Integer roomId);
+	//khoi
 }

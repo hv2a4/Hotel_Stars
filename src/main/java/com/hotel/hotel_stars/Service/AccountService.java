@@ -20,6 +20,19 @@ import com.hotel.hotel_stars.Repository.AccountRepository;
 import com.hotel.hotel_stars.Repository.RoleRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomRepository;
 import com.hotel.hotel_stars.Utils.paramService;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -30,18 +43,25 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-
-import java.util.Optional;
-import java.util.regex.Pattern;
-
-import java.util.*;
-import java.util.stream.Collectors;
+import com.hotel.hotel_stars.Config.JwtService;
+import com.hotel.hotel_stars.Config.UserInfoService;
+import com.hotel.hotel_stars.DTO.AccountDto;
+import com.hotel.hotel_stars.DTO.BookingDto;
+import com.hotel.hotel_stars.DTO.MethodPaymentDto;
+import com.hotel.hotel_stars.DTO.RoleDto;
+import com.hotel.hotel_stars.DTO.StatusBookingDto;
+import com.hotel.hotel_stars.DTO.Select.AccountBookingDTO;
+import com.hotel.hotel_stars.DTO.Select.AccountInfo;
+import com.hotel.hotel_stars.Entity.Account;
+import com.hotel.hotel_stars.Entity.Role;
+import com.hotel.hotel_stars.Exception.CustomValidationException;
+import com.hotel.hotel_stars.Exception.ValidationError;
+import com.hotel.hotel_stars.Models.accountModel;
+import com.hotel.hotel_stars.Models.changePasswordModel;
+import com.hotel.hotel_stars.Repository.AccountRepository;
+import com.hotel.hotel_stars.Repository.RoleRepository;
+import com.hotel.hotel_stars.Repository.TypeRoomRepository;
+import com.hotel.hotel_stars.utils.paramService;
 
 @Service
 public class AccountService {
@@ -75,18 +95,21 @@ public class AccountService {
         // Chuyển đổi danh sách Booking sang BookingDto
         List<BookingDto> bookingDtoList = account.getBookingList() != null
                 ? account.getBookingList().stream()
-                .map(booking -> new BookingDto(
-                        booking.getId(),
-                        booking.getCreateAt(),
-                        booking.getStartAt(),
-                        booking.getEndAt(),
-                        booking.getStatusPayment(),
-                        new AccountDto(), // Chỗ này có thể cần xử lý chính xác hơn
-                        booking.getMethodPayment() != null
-                                ? new MethodPaymentDto(booking.getMethodPayment().getId(), booking.getMethodPayment().getMethodPaymentName())
-                                : null
-                ))
-                .collect(Collectors.toList())
+                        .map(booking -> new BookingDto(
+                                booking.getId(),
+                                booking.getCreateAt(),
+                                booking.getStartAt(),
+                                booking.getEndAt(),
+                                booking.getStatusPayment(),
+                                booking.getDescriptions(),
+                                new StatusBookingDto(booking.getStatus().getId(),
+                                        booking.getStatus().getStatusBookingName()),
+                                new AccountDto(), // Chỗ này có thể cần xử lý chính xác hơn
+                                booking.getMethodPayment() != null
+                                        ? new MethodPaymentDto(booking.getMethodPayment().getId(),
+                                                booking.getMethodPayment().getMethodPaymentName())
+                                        : null))
+                        .collect(Collectors.toList())
                 : Collections.emptyList();
 
         // Trả về AccountDto
@@ -100,8 +123,7 @@ public class AccountService {
                 account.getGender(),
                 account.getIsDelete(),
                 roleDto,
-                bookingDtoList
-        );
+                bookingDtoList);
     }
 
     public Account convertToEntity(AccountDto accountDto) {
@@ -121,12 +143,10 @@ public class AccountService {
 
     public List<AccountDto> getAllAccounts() {
         List<Account> accounts = accountRepository.findAll();
-        return accounts.
-                stream()
+        return accounts.stream()
                 .map(this::convertToDto)
                 .toList();
     }
-
 
     public boolean addUser(accountModel accountModels) {
         Account accounts = new Account();
@@ -141,7 +161,8 @@ public class AccountService {
             accounts.setFullname(accountModels.getFullname());
             accounts.setEmail(accountModels.getEmail());
             accounts.setPhone(accountModels.getPhone());
-            accounts.setAvatar("https://firebasestorage.googleapis.com/v0/b/myprojectimg-164dd.appspot.com/o/files%2F140aa596-c596-49d4-b679-f2df70845b8d?alt=media&token=54bedd2b-f56f-4b23-8820-cb7e04d43c92");
+            accounts.setAvatar(
+                    "https://firebasestorage.googleapis.com/v0/b/myprojectimg-164dd.appspot.com/o/files%2F140aa596-c596-49d4-b679-f2df70845b8d?alt=media&token=54bedd2b-f56f-4b23-8820-cb7e04d43c92");
             accounts.setRole(roles.get());
             accounts.setIsDelete(true);
             accounts.setGender(true);
@@ -174,7 +195,8 @@ public class AccountService {
             String serviceName = (String) row[5];
             LocalDateTime bookingCreationDate = null;
             if (row[6] instanceof Timestamp) {
-                bookingCreationDate = ((Timestamp) row[6]).toLocalDateTime(); // Chuyển đổi từ Timestamp sang LocalDateTime
+                bookingCreationDate = ((Timestamp) row[6]).toLocalDateTime(); // Chuyển đổi từ Timestamp sang
+                                                                              // LocalDateTime
             } else if (row[6] instanceof java.util.Date) {
                 bookingCreationDate = ((java.util.Date) row[6]).toInstant()
                         .atZone(ZoneId.systemDefault()).toLocalDateTime();
@@ -182,7 +204,8 @@ public class AccountService {
             String avt = String.valueOf(row[7]);
             Boolean gender = (Boolean) row[8];
             Integer id = (Integer) row[9];
-            AccountBookingDTO accountBookingDTO = new AccountBookingDTO(username, fullname, phoneNumber, email, role, serviceName, bookingCreationDate, avt, gender, id);
+            AccountBookingDTO accountBookingDTO = new AccountBookingDTO(username, fullname, phoneNumber, email, role,
+                    serviceName, bookingCreationDate, avt, gender, id);
             accountBookings.add(accountBookingDTO);
         }
         return accountBookings;
@@ -237,7 +260,8 @@ public class AccountService {
     }
 
     private boolean isValidUsername(String username) {
-        // Quy tắc: ít nhất 6 ký tự, chỉ chứa chữ cái, số, dấu gạch dưới và dấu chấm, không bắt đầu bằng số
+        // Quy tắc: ít nhất 6 ký tự, chỉ chứa chữ cái, số, dấu gạch dưới và dấu chấm,
+        // không bắt đầu bằng số
         String regex = "^(?!\\d)([a-zA-Z0-9_.]{6,})$"; // Biểu thức chính quy
         return Pattern.matches(regex, username);
     }
@@ -251,7 +275,8 @@ public class AccountService {
         List<ValidationError> validationErrors = new ArrayList<>(); // Danh sách lưu trữ các thông báo lỗi
         System.out.println(accountModel.getAvatar());
         if (!isValidUsername(accountModel.getUsername())) {
-            validationErrors.add(new ValidationError("username", "Tên người dùng không hợp lệ. Tên người dùng phải có ít nhất 6 ký tự và chỉ chứa chữ cái, số, dấu gạch dưới và dấu chấm, không được bắt đầu bằng số."));
+            validationErrors.add(new ValidationError("username",
+                    "Tên người dùng không hợp lệ. Tên người dùng phải có ít nhất 6 ký tự và chỉ chứa chữ cái, số, dấu gạch dưới và dấu chấm, không được bắt đầu bằng số."));
         }
         // Kiểm tra xem các trường có giá trị hợp lệ hay không
         if (accountModel.getUsername() == null || accountModel.getUsername().isEmpty()) {
@@ -332,14 +357,17 @@ public class AccountService {
         if (accountModel.getUsername() == null || accountModel.getUsername().isEmpty()) {
             validationErrors.add(new ValidationError("username", "Tên người dùng không được để trống"));
         } else if (!isValidUsername(accountModel.getUsername())) {
-            validationErrors.add(new ValidationError("username", "Tên người dùng không hợp lệ. Tên người dùng phải có ít nhất 6 ký tự và chỉ chứa chữ cái, số, dấu gạch dưới và dấu chấm, không được bắt đầu bằng số."));
-        } else if (!existingAccount.getUsername().equals(accountModel.getUsername()) && accountRepository.existsByUsername(accountModel.getUsername())) {
+            validationErrors.add(new ValidationError("username",
+                    "Tên người dùng không hợp lệ. Tên người dùng phải có ít nhất 6 ký tự và chỉ chứa chữ cái, số, dấu gạch dưới và dấu chấm, không được bắt đầu bằng số."));
+        } else if (!existingAccount.getUsername().equals(accountModel.getUsername())
+                && accountRepository.existsByUsername(accountModel.getUsername())) {
             validationErrors.add(new ValidationError("username", "Tên người dùng đã tồn tại"));
         }
 
         if (accountModel.getEmail() == null || accountModel.getEmail().isEmpty()) {
             validationErrors.add(new ValidationError("email", "Email không được để trống"));
-        } else if (!existingAccount.getEmail().equals(accountModel.getEmail()) && accountRepository.existsByEmail(accountModel.getEmail())) {
+        } else if (!existingAccount.getEmail().equals(accountModel.getEmail())
+                && accountRepository.existsByEmail(accountModel.getEmail())) {
             validationErrors.add(new ValidationError("email", "Email đã tồn tại"));
         }
 
@@ -347,7 +375,8 @@ public class AccountService {
             validationErrors.add(new ValidationError("phone", "Số điện thoại không được để trống"));
         } else if (!isValidPhoneNumber(accountModel.getPhone())) {
             validationErrors.add(new ValidationError("phone", "Số điện thoại không hợp lệ"));
-        } else if (!existingAccount.getPhone().equals(accountModel.getPhone()) && accountRepository.existsByPhone(accountModel.getPhone())) {
+        } else if (!existingAccount.getPhone().equals(accountModel.getPhone())
+                && accountRepository.existsByPhone(accountModel.getPhone())) {
             validationErrors.add(new ValidationError("phone", "Số điện thoại đã tồn tại"));
         }
 
@@ -402,7 +431,8 @@ public class AccountService {
         if (accountsObject.isEmpty()) {
             return false;
         }
-        paramServices.sendEmails(accountsObject.get().getEmail(), "Đổi mật khẩu ", paramServices.contentEmail(jwtService.generateSimpleToken(email)));
+        paramServices.sendEmails(accountsObject.get().getEmail(), "Đổi mật khẩu ",
+                paramServices.contentEmail(jwtService.generateSimpleToken(email)));
         return true;
     }
 
@@ -492,4 +522,3 @@ public class AccountService {
         return accountRepository.findAccountsWithRoleStaff();
     }
 }
-

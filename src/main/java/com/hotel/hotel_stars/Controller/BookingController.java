@@ -1,5 +1,33 @@
 package com.hotel.hotel_stars.Controller;
 
+import java.io.File;
+import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.hotel.hotel_stars.Config.JwtService;
 import com.hotel.hotel_stars.Config.VNPayService;
 import com.hotel.hotel_stars.DTO.StatusResponseDto;
@@ -9,7 +37,6 @@ import com.hotel.hotel_stars.DTO.Select.PaymentInfoDTO;
 import com.hotel.hotel_stars.Entity.Booking;
 import com.hotel.hotel_stars.Entity.BookingRoom;
 import com.hotel.hotel_stars.Entity.StatusBooking;
-import com.hotel.hotel_stars.Exception.CustomValidationException;
 import com.hotel.hotel_stars.Exception.ErrorsService;
 import com.hotel.hotel_stars.Models.bookingModel;
 import com.hotel.hotel_stars.Models.bookingModelNew;
@@ -18,35 +45,12 @@ import com.hotel.hotel_stars.Repository.BookingRepository;
 import com.hotel.hotel_stars.Repository.BookingRoomRepository;
 import com.hotel.hotel_stars.Repository.StatusBookingRepository;
 import com.hotel.hotel_stars.Service.BookingService;
-import com.hotel.hotel_stars.Utils.SessionService;
-import com.hotel.hotel_stars.Utils.paramService;
+import com.hotel.hotel_stars.utils.SessionService;
+import com.hotel.hotel_stars.utils.paramService;
+
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URLEncoder;
-
-import org.springframework.context.annotation.Lazy;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.text.NumberFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin("*")
@@ -83,8 +87,9 @@ public class BookingController {
     }
 
     @PutMapping("/cancel-booking/{id}")
-    public StatusResponseDto cancelBooking(@PathVariable("id") Integer id) {
-        boolean flag = bookingService.cancelBooking(id);
+    public StatusResponseDto cancelBooking(@PathVariable("id") Integer id,
+            @RequestParam("descriptions") String descriptions) {
+        boolean flag = bookingService.cancelBooking(id, descriptions);
         if (flag) {
             return new StatusResponseDto("200", "success", "Hủy đặt phòng thành công");
         } else {
@@ -99,8 +104,16 @@ public class BookingController {
 
     @PutMapping("/update-checkIn/{id}")
     public ResponseEntity<?> updateCheckIn(@PathVariable("id") Integer id,
-                                           @RequestParam("roomId") List<Integer> roomId,
-                                           @RequestBody List<bookingRoomModel> model) {
+            @RequestParam("roomId") List<Integer> roomId,
+            @RequestBody List<bookingRoomModel> model) {
+        Map<String, String> response = new HashMap<String, String>();
+        boolean update = bookingService.updateStatusCheckInBooking(id, roomId, model);
+    }
+
+    @PutMapping("/update-checkIn/{id}")
+    public ResponseEntity<?> updateCheckIn(@PathVariable("id") Integer id,
+            @RequestParam("roomId") List<Integer> roomId,
+            @RequestBody List<bookingRoomModel> model) {
         Map<String, String> response = new HashMap<String, String>();
         boolean update = bookingService.updateStatusCheckInBooking(id, roomId, model);
 
@@ -166,9 +179,11 @@ public class BookingController {
                 e.printStackTrace();
             }
             paramServices.sendEmails(booking.getAccount().getEmail(), "thông tin đơn hàng",
-                    paramServices.pdfDownload(idBk, booking, startDate, endDate, formattedAmount, roomsString, paramServices.getImage()));
+                    paramServices.pdfDownload(idBk, booking, startDate, endDate, formattedAmount, roomsString,
+                            paramServices.getImage()));
             return ResponseEntity
-                    .ok(paramServices.confirmBookings(idBk, booking, startDate, endDate, formattedAmount, roomsString, paramServices.getImage()));
+                    .ok(paramServices.confirmBookings(idBk, booking, startDate, endDate, formattedAmount, roomsString,
+                            paramServices.getImage()));
         } catch (ExpiredJwtException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Token đã hết hạn. Vui lòng liên lạc qua số điện thoại 1900 6522");
@@ -208,10 +223,12 @@ public class BookingController {
             String idBk = "Bk" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + "" + booking.getId();
 
             paramServices.sendEmails(booking.getAccount().getEmail(), "thông tin đơn hàng",
-                    paramServices.confirmBookings(idBk, booking, startDate, endDate, formattedAmount, roomsString, paramServices.getImage()));
+                    paramServices.confirmBookings(idBk, booking, startDate, endDate, formattedAmount, roomsString,
+                            paramServices.getImage()));
 
             String filePath = paramServices.generatePdf(
-                    paramServices.pdfDownload(idBk, booking, startDate, endDate, formattedAmount, roomsString, paramServices.getImage()),
+                    paramServices.pdfDownload(idBk, booking, startDate, endDate, formattedAmount, roomsString,
+                            paramServices.getImage()),
                     booking.getAccount().getFullname(), idBk);
 
             File file = new File(filePath);
@@ -234,29 +251,31 @@ public class BookingController {
         Map<String, String> response = new HashMap<String, String>();
 
         StatusResponseDto statusResponseDto = errorsServices.errorBooking(bookingModels);
-        if(statusResponseDto!=null) {
+        if (statusResponseDto != null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(statusResponseDto);
         }
         try {
             Booking bookings = bookingService.sendBookingEmail(bookingModels);
-            if (bookings!=null) {
+            if (bookings != null) {
                 response = paramServices.messageSuccessApi(201, "success",
                         "Đặt phòng thành công, vui lòng vào email để xác nhận");
-                if(bookings.getMethodPayment().getId()==1){
+                if (bookings.getMethodPayment().getId() == 1) {
                     response.put("vnPayURL", null);
-                }else {
+                } else {
                     List<BookingRoom> bookingRoomList = bookings.getBookingRooms();
                     double total = bookingRoomList.stream().mapToDouble(BookingRoom::getPrice).sum();
-                    if(bookings.getDiscountPercent()!=null && bookings.getDiscountPercent()!=null){
+                    if (bookings.getDiscountPercent() != null && bookings.getDiscountPercent() != null) {
                         double discountAmount = total * (bookings.getDiscountPercent() / 100);
-                        total=total-discountAmount;
+                        total = total - discountAmount;
                     }
                     int totalAsInt = (int) total;
-                    System.out.println("totals: "+totalAsInt);
-                    String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+                    System.out.println("totals: " + totalAsInt);
+                    String baseUrl = request.getScheme() + "://" + request.getServerName() + ":"
+                            + request.getServerPort();
                     response = paramServices.messageSuccessApi(201, "success",
                             "Đặt phòng thành công");
-                    response.put("vnPayURL", vnPayService.createOrder(totalAsInt,String.valueOf(bookings.getId()), baseUrl));
+                    response.put("vnPayURL",
+                            vnPayService.createOrder(totalAsInt, String.valueOf(bookings.getId()), baseUrl));
 
                 }
                 return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -272,7 +291,7 @@ public class BookingController {
 
     @PutMapping("/update-status/{id}/{idStatus}")
     public ResponseEntity<?> updateStatus(@PathVariable("id") Integer idBooking,
-                                          @PathVariable("idStatus") Integer idStatus, @RequestBody bookingModelNew bookingModel) {
+            @PathVariable("idStatus") Integer idStatus, @RequestBody bookingModelNew bookingModel) {
         // Gọi phương thức updateStatusBooking từ service
         Map<String, String> response = new HashMap<String, String>();
         boolean update = bookingService.updateStatusBooking(idBooking, idStatus, bookingModel);

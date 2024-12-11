@@ -1,29 +1,47 @@
 package com.hotel.hotel_stars.Service;
 
-import com.hotel.hotel_stars.DTO.*;
-import com.hotel.hotel_stars.DTO.Select.RoomTypeDetail;
-import com.hotel.hotel_stars.DTO.selectDTO.FindTypeRoomDto;
-import com.hotel.hotel_stars.Entity.*;
-import com.hotel.hotel_stars.Models.typeRoomModel;
-import com.hotel.hotel_stars.Repository.*;
-import com.hotel.hotel_stars.Repository.TypeBedRepository;
-import com.hotel.hotel_stars.Repository.TypeRoomImageRepository;
-import com.hotel.hotel_stars.Utils.paramService;
-import com.hotel.hotel_stars.Models.TypeRoomAmenitiesTypeRoomModel;
-import com.hotel.hotel_stars.Models.amenitiesTypeRoomModel;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.hotel.hotel_stars.DTO.AmenitiesTypeRoomDto;
+import com.hotel.hotel_stars.DTO.FeedbackDto;
+import com.hotel.hotel_stars.DTO.TypeBedDto;
+import com.hotel.hotel_stars.DTO.TypeRoomAmenitiesTypeRoomDto;
+import com.hotel.hotel_stars.DTO.TypeRoomDto;
+import com.hotel.hotel_stars.DTO.TypeRoomImageDto;
+import com.hotel.hotel_stars.DTO.TypeRoomWithReviewsDTO;
+import com.hotel.hotel_stars.DTO.Select.RoomTypeDetail;
+import com.hotel.hotel_stars.DTO.selectDTO.FindTypeRoomDto;
+import com.hotel.hotel_stars.Entity.AmenitiesTypeRoom;
+import com.hotel.hotel_stars.Entity.Feedback;
+import com.hotel.hotel_stars.Entity.TypeBed;
+import com.hotel.hotel_stars.Entity.TypeRoom;
+import com.hotel.hotel_stars.Entity.TypeRoomAmenitiesTypeRoom;
+import com.hotel.hotel_stars.Entity.TypeRoomImage;
+import com.hotel.hotel_stars.Models.TypeRoomAmenitiesTypeRoomModel;
+import com.hotel.hotel_stars.Models.amenitiesTypeRoomModel;
+import com.hotel.hotel_stars.Models.typeRoomModel;
+import com.hotel.hotel_stars.Repository.AmenitiesTypeRoomRepository;
+import com.hotel.hotel_stars.Repository.FeedBackRepository;
+import com.hotel.hotel_stars.Repository.TypeBedRepository;
+import com.hotel.hotel_stars.Repository.TypeRoomAmenitiesTypeRoomRepository;
+import com.hotel.hotel_stars.Repository.TypeRoomImageRepository;
+import com.hotel.hotel_stars.Repository.TypeRoomRepository;
+import com.hotel.hotel_stars.utils.paramService;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 
 @Service
 public class TypeRoomService {

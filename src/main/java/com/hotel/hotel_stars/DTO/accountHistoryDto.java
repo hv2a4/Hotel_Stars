@@ -16,6 +16,7 @@ public class accountHistoryDto {
     Instant endAt;
     Boolean statusPayment;
     AccountInfo accountDto;
+    String descriptions;
     StatusBookingDto statusBookingDto;
     MethodPaymentDto methodPaymentDto;
     List<BookingRoomDto> bookingRooms;

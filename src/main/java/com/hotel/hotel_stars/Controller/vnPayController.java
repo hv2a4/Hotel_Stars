@@ -1,20 +1,5 @@
 package com.hotel.hotel_stars.Controller;
 
-import com.hotel.hotel_stars.Config.VNPayService;
-import com.hotel.hotel_stars.Entity.Booking;
-import com.hotel.hotel_stars.Entity.BookingRoom;
-import com.hotel.hotel_stars.Entity.StatusBooking;
-import com.hotel.hotel_stars.Repository.BookingRepository;
-import com.hotel.hotel_stars.Repository.StatusBookingRepository;
-import com.hotel.hotel_stars.Utils.SessionService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -24,8 +9,23 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.hotel.hotel_stars.Config.VNPayService;
+import com.hotel.hotel_stars.Entity.Booking;
+import com.hotel.hotel_stars.Entity.BookingRoom;
+import com.hotel.hotel_stars.Entity.StatusBooking;
+import com.hotel.hotel_stars.Repository.BookingRepository;
+import com.hotel.hotel_stars.Repository.StatusBookingRepository;
+import com.hotel.hotel_stars.utils.SessionService;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @CrossOrigin("*")
@@ -33,7 +33,7 @@ public class vnPayController {
     @Autowired
     VNPayService vnPayService;
     @Autowired
-    private com.hotel.hotel_stars.Utils.paramService paramServices;
+    private com.hotel.hotel_stars.utils.paramService paramServices;
     @Autowired
     private StatusBookingRepository statusBookingRepository;
     @Autowired

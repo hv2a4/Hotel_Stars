@@ -556,6 +556,8 @@ public class SecurityConfig {
                                 .requestMatchers("/api/booking-room-service-room/service").permitAll()
                                 .requestMatchers("/api/service-room/booking-room").permitAll()
                                 .requestMatchers("/api/booking-room-service-room/**").permitAll()
+                                .requestMatchers("/api/booking-room-service-room/post-service").permitAll()
+                                .requestMatchers("/api/booking-room/getByRoom/**").permitAll()
                         // khoi
                         // vu
 
