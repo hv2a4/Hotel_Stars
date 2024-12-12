@@ -24,6 +24,7 @@ import com.hotel.hotel_stars.Config.JwtService;
 import com.hotel.hotel_stars.DTO.AccountDto;
 import com.hotel.hotel_stars.DTO.AmenitiesTypeRoomDto;
 import com.hotel.hotel_stars.DTO.BookingDto;
+import com.hotel.hotel_stars.DTO.BookingStatisticsDTO;
 import com.hotel.hotel_stars.DTO.MethodPaymentDto;
 import com.hotel.hotel_stars.DTO.RoleDto;
 import com.hotel.hotel_stars.DTO.StatusBookingDto;
@@ -737,5 +738,30 @@ public class BookingService {
     	List<Booking> bookings = bookingRepository.findBookingsByRoomId(idRoom);
     	return bookings.stream().map(this::convertToDto).toList();
     }
+    public List<accountHistoryDto> getBookingsByStartAtWithInvoice(LocalDate date) {
+    	 List<Booking> bookings = bookingRepository.findBookingsByStartAtWithInvoice(date);
+        return bookings.stream().map(this::convertToDto).toList();
+    }
+    
+    public List<BookingStatisticsDTO> getStatistics(LocalDate startDate, LocalDate endDate) {
+        List<Object[]> objects = bookingRepository.getBookingStatisticsByDateRange(startDate, endDate);
+        List<BookingStatisticsDTO> result = new ArrayList<>();
+        for (Object[] object : objects) {
+            java.sql.Date sqlDate = (java.sql.Date) object[0];
+            LocalDate bookingDate = sqlDate.toLocalDate();
+            Long totalBookings = (Long) object[1];
+            Long totalRoomsBooked = (Long) object[2];
+            Double totalBookingValue = (Double) object[3];
+            Double totalPaid = (Double) object[4];
+            BookingStatisticsDTO bookingStatisticsDTO = new BookingStatisticsDTO(
+                bookingDate, totalBookings, totalRoomsBooked, totalBookingValue, totalPaid
+            );
+            result.add(bookingStatisticsDTO);
+        }
+
+        return result;
+    }
+
+
 //khôi
 }
