@@ -18,6 +18,7 @@ import com.hotel.hotel_stars.DTO.RoleDto;
 import com.hotel.hotel_stars.DTO.StatusBookingDto;
 import com.hotel.hotel_stars.DTO.StatusResponseDto;
 import com.hotel.hotel_stars.DTO.accountHistoryDto;
+import com.hotel.hotel_stars.DTO.selectDTO.bookingHistoryDTO;
 import com.hotel.hotel_stars.Entity.*;
 import com.hotel.hotel_stars.Exception.CustomValidationException;
 import com.hotel.hotel_stars.Exception.ErrorsService;
@@ -36,6 +37,7 @@ import java.sql.Timestamp;
 import java.text.NumberFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.List;
 import java.util.Optional;
@@ -127,33 +129,39 @@ public class BookingService {
             LocalDate currentDate = current.atZone(ZoneId.systemDefault()).toLocalDate();
             LocalDate discountStartDate = discountAccounts.getDiscount().getStartDate().atZone(ZoneId.systemDefault()).toLocalDate();
             LocalDate discountEndDate = discountAccounts.getDiscount().getEndDate().atZone(ZoneId.systemDefault()).toLocalDate();
-            if (!currentDate.isBefore(discountStartDate) && !currentDate.isAfter(discountEndDate)) {
-                System.out.println("đã vào tới đây1");
-                System.out.println("trạng thái: "+discountAccounts.getStatusDa());
+
+        System.out.println("mã của người này: "+discountAccounts.getId());
+        System.out.println("mã của người này: "+discountAccounts.getStatusDa());
+        if (!currentDate.isBefore(discountStartDate) && !currentDate.isAfter(discountEndDate)) {
+            System.out.println(discountAccounts.getStatusDa());
                 if (!discountAccounts.getStatusDa()){
+                    System.out.println("Trạng thái ban đầu: " + discountAccounts.getStatusDa());
                     discountAccounts.setStatusDa(true);
-                    try{
-                        discountAccountRepositorys.save(discountAccounts);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    discountAccountRepositorys.save(discountAccounts);
+                    System.out.println("Trạng thái sau khi lưu: " + discountAccounts.getStatusDa());
                     return discountAccounts.getDiscount();
                 }
+            }else {
+                System.out.println("ko có giảm giá");
             }
-
+        System.out.println("null rồi nè!");
         return null;
     }
 
     public Boolean checkCreatbkRoom(Integer bookingId, List<Integer> roomId) {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow();
-        Long days = Duration.between(booking.getStartAt(), booking.getEndAt()).toDays();
-
-
+        LocalDate startDate = booking.getStartAt().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate endDate = booking.getEndAt().atZone(ZoneId.systemDefault()).toLocalDate();
+        Long days = ChronoUnit.DAYS.between(startDate, endDate);
+        if (days == 0) {
+            days = 1L;
+        }
         for (int i = 0; i < roomId.size(); i++) {
             Room room = roomRepository.findById(roomId.get(i)).get();
             System.out.println("giá mặc định: " + room.getTypeRoom().getPrice());
             BookingRoom bookingRoom = new BookingRoom();
             Double priceRoom = room.getTypeRoom().getPrice();
+            System.out.println();
             bookingRoom.setBooking(booking);
             bookingRoom.setRoom(room);
             bookingRoom.setPrice(priceRoom * days);
@@ -162,13 +170,13 @@ public class BookingService {
                 System.out.println("lỗi 1");
                 bookingRoomRepository.save(bookingRoom);
                 bookingRepository.save(booking);
+                System.out.println("tiền: "+bookingRoom.getPrice());
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
             }
         }
 
-        System.out.println("mảng: "+booking.getBookingRooms());
         return true;
     }
 
@@ -202,8 +210,7 @@ public class BookingService {
                 (payment.getId()==1)?statusBookingRepository.findById(1):statusBookingRepository.findById(3);
         Instant starDateIns = paramServices.stringToInstantBK(bookingModels.getStartDate(),14,0);
         Instant endDateIns = paramServices.stringToInstantBK(bookingModels.getEndDate(),12,0);
-        Discount discount = discountRepository.findByDiscountName(bookingModels.getDiscountName());
-
+        Discount discount = (discountRepository.findByDiscountName(bookingModels.getDiscountName())!=null)?discountRepository.findByDiscountName(bookingModels.getDiscountName()):null;
         booking.setAccount(accounts.get());
         booking.setStartAt(starDateIns);
         booking.setEndAt(endDateIns);
@@ -213,9 +220,9 @@ public class BookingService {
         booking.setDescriptions("Đặt trước");
         System.out.println(LocalDateTime.now());
         booking.setCreateAt(LocalDateTime.now());
-        DiscountAccount discountAccount= (discount!=null)?
-                discountAccountRepositorys.findByDiscountAndAccount(discount,booking.getAccount()):null;
-        Discount discountBooking=(getDiscounts(discountAccount,booking.getCreateAt())!=null)?getDiscounts(discountAccount,booking.getCreateAt()):null;
+        Integer id= (discount!=null)?discount.getId():null;
+        DiscountAccount discountAccount= discountAccountRepositorys.findByDiscountAndAccount(id,booking.getAccount().getId());
+        Discount discountBooking=getDiscounts(discountAccount,booking.getCreateAt());
         booking.setDiscountName((discountBooking!=null)?discountBooking.getDiscountName():null);
         booking.setDiscountPercent((discountBooking!=null)?discountBooking.getPercent():null);
         try {
@@ -224,7 +231,6 @@ public class BookingService {
                 System.out.println(jwtService.generateBoking(booking.getId()));
                 List<BookingRoom> bookingRoomList = booking.getBookingRooms();
                 double total = bookingRoomList.stream().mapToDouble(BookingRoom::getPrice).sum();
-                System.out.println();
                 String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
                 LocalDate startDate=paramServices.convertInstallToLocalDate(booking.getStartAt());
                 LocalDate endDate=paramServices.convertInstallToLocalDate(booking.getEndAt());
@@ -585,7 +591,28 @@ public class BookingService {
 
         return true;
     }
+    public List<bookingHistoryDTO> getBookingDetailsByAccountId(Long accountId, int page, int pageSize) {
+        int offset = (page - 1) * pageSize;
+        List<Object[]> results = bookingRepository.findBookingDetailsByAccountIdWithPagination(accountId, pageSize, offset);
+        return results.stream().map(result -> {
 
+            return new bookingHistoryDTO(
+                    (Integer) result[0],                     // bkId
+                    (String) result[1],                   // bkFormat
+                    (String) result[2],                   // createAt
+                    (String) result[3],                   // startAt
+                    (String) result[4],                   // endAt
+                    (Integer) result[5],                     // ivId
+                    (Double) result[6],                   // total
+                    (Integer) result[7],                     // fbId
+                    (String) result[8],                   // content
+                    (Integer) result[9],                  // stars
+                    (String) result[10],                  // roomName
+                    (String) result[11],                  // trName
+                    (String) result[12]                   // image
+            );
+        }).toList();
+    }
 
 // khoi
 

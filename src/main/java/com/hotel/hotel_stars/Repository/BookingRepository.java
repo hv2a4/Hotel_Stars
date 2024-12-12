@@ -2,6 +2,7 @@ package com.hotel.hotel_stars.Repository;
 
 import com.hotel.hotel_stars.DTO.Select.CustomerReservation;
 import com.hotel.hotel_stars.DTO.Select.ReservationInfoDTO;
+import com.hotel.hotel_stars.DTO.selectDTO.bookingHistoryDTO;
 import com.hotel.hotel_stars.Entity.Booking;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -128,5 +129,37 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
     	        @Param("startDate") LocalDate startDate,
     	        @Param("endDate") LocalDate endDate
     	);
+
+	@Query(value = """
+    SELECT 
+        bk.id as bkId,
+        CONCAT('bk', DATE_FORMAT(bk.create_at, '%d%m%Y'), bk.id) AS bkFormat,
+        DATE_FORMAT(bk.create_at, '%d-%m-%Y') AS createAt,
+        DATE_FORMAT(bk.start_at, '%d-%m-%Y') AS startAt,
+        DATE_FORMAT(bk.end_at, '%d-%m-%Y') AS endAt,
+        iv.id as ivId,
+        iv.total_amount as total,
+        fb.id as fbId,
+        fb.content as content,
+        fb.stars as stars,
+        rm.room_name as roomName,
+        tr.type_room_name as trName,
+        MIN(tyi.image_name) AS image
+    FROM booking bk
+    JOIN booking_room br ON bk.id = br.booking_id
+    JOIN room rm ON br.room_id = rm.id
+    JOIN type_room tr ON rm.type_room_id = tr.id
+    JOIN type_room_image tyi ON tr.id = tyi.type_room_id
+    JOIN invoice iv ON bk.id = iv.booking_id
+    LEFT JOIN feedback fb ON iv.id = fb.invoice_id
+    WHERE account_id = :accountId
+    GROUP BY bk.id, iv.id, fb.id
+    LIMIT :pageSize OFFSET :offset
+    """, nativeQuery = true)
+	List<Object[]> findBookingDetailsByAccountIdWithPagination(
+			@Param("accountId") Long accountId,
+			@Param("pageSize") int pageSize,
+			@Param("offset") int offset
+	);
 
 }

@@ -76,6 +76,7 @@ public class SecurityConfig {
                                                 .permitAll()
                                                 .requestMatchers("/vnpay-payment").permitAll()
                                                 .requestMatchers("/api/booking/downloadPdf").permitAll()
+                                                .requestMatchers("/api/booking/history-by-customer").permitAll()
                                                 // All
                                                 // khoi
                                                 .requestMatchers("/api/discount/get-discount-account").permitAll()

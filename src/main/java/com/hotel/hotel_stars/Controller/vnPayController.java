@@ -1,10 +1,10 @@
 package com.hotel.hotel_stars.Controller;
 
 import com.hotel.hotel_stars.Config.VNPayService;
-import com.hotel.hotel_stars.Entity.Booking;
-import com.hotel.hotel_stars.Entity.BookingRoom;
-import com.hotel.hotel_stars.Entity.StatusBooking;
+import com.hotel.hotel_stars.Entity.*;
 import com.hotel.hotel_stars.Repository.BookingRepository;
+import com.hotel.hotel_stars.Repository.DiscountAccountRepository;
+import com.hotel.hotel_stars.Repository.DiscountRepository;
 import com.hotel.hotel_stars.Repository.StatusBookingRepository;
 import com.hotel.hotel_stars.utils.SessionService;
 import com.hotel.hotel_stars.utils.paramService;
@@ -40,12 +40,17 @@ public class vnPayController {
     @Autowired
     private BookingRepository bookingRepository;
     @Autowired
+    private DiscountRepository discountRepository;
+    @Autowired
+    private DiscountAccountRepository discountAccountRepositorys;
+    @Autowired
     SessionService sessionService;
     @GetMapping("/vnpay-payment")
     public void handleVNPayPayment(HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException {
         String orderInfo = request.getParameter("vnp_OrderInfo");
         StatusBooking statusBooking= statusBookingRepository.findById(2).get();
         int paymentStatus = vnPayService.orderReturn(request);
+        System.out.println("code này vnpay");
         Booking booking = bookingRepository.findById(Integer.valueOf(orderInfo)).get();
         if( paymentStatus == 1){
             try {
@@ -76,7 +81,6 @@ public class vnPayController {
             paramServices.sendEmails(booking.getAccount().getEmail(),"thông tin đơn hàng",
                     paramServices.pdfDownload(idBk,booking,startDate,endDate ,formattedAmount,roomsString, paramServices.getImage()));
 
-
             try {
                 bookingRepository.save(booking);
             } catch (Exception e) {
@@ -104,6 +108,13 @@ public class vnPayController {
                 throw new RuntimeException(e);
             }
         }else{
+            if(booking.getDiscountName()!=null && booking.getDiscountPercent()!=null){
+                System.out.println("mã này đã hồi phục");
+                Discount discount = (discountRepository.findByDiscountName(booking.getDiscountName())!=null)?discountRepository.findByDiscountName(booking.getDiscountName()):null;
+                DiscountAccount discountAccount= discountAccountRepositorys.findByDiscountAndAccount(discount.getId(),booking.getAccount().getId());
+                discountAccount.setStatusDa(false);
+                discountAccountRepositorys.save(discountAccount);
+            }
             StatusBooking statusBooking1 = statusBookingRepository.findById(6).get();
             booking.setStatus(statusBooking1);
             booking.setStatusPayment(false);
@@ -123,6 +134,5 @@ public class vnPayController {
                 throw new RuntimeException(e);
             }
         }
-
     }
 }

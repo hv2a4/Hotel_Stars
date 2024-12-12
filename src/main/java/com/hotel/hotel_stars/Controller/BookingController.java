@@ -197,6 +197,10 @@ public class BookingController {
             Booking booking = bookingRepository.findById(Integer.parseInt(id)).get();
             List<BookingRoom> bookingRoomList = booking.getBookingRooms();
             double total = bookingRoomList.stream().mapToDouble(BookingRoom::getPrice).sum();
+            if(booking.getDiscountPercent()!=null && booking.getDiscountPercent()!=null){
+                double discountAmount = total * (booking.getDiscountPercent() / 100);
+                total=total-discountAmount;
+            }
             String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
             LocalDate startDate = paramServices.convertInstallToLocalDate(booking.getStartAt());
             LocalDate endDate = paramServices.convertInstallToLocalDate(booking.getEndAt());
@@ -250,7 +254,7 @@ public class BookingController {
                         total=total-discountAmount;
                     }
                     int totalAsInt = (int) total;
-
+                    System.out.println("totals: "+totalAsInt);
                     String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
                     response = paramServices.messageSuccessApi(201, "success",
                             "Đặt phòng thành công");
@@ -267,5 +271,10 @@ public class BookingController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
-
+    @GetMapping("/history-by-customer")
+    public ResponseEntity<?> getHistoryByCustomer(
+            @RequestParam(required = false) Long accountId, @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int pageSize) {
+        return ResponseEntity.ok(bookingService.getBookingDetailsByAccountId(accountId, page, pageSize));
+    }
 }
