@@ -217,25 +217,61 @@ public class BookingService {
         System.out.println("mảng: "+booking.getBookingRooms());
         return true;
     }
+    public Double calculateDiscountedPrice(Room room, LocalDateTime creatNow, Discount discount, Booking booking) {
+        Double typeRoomPrice = room.getTypeRoom().getPrice();
+        Instant current = paramServices.localdatetimeToInsant(creatNow);
+        if (discount == null) {
+            return typeRoomPrice;
+        }
 
+        if (room.getTypeRoom().getId() == discount.getTypeRoom().getId()) {
+            LocalDate currentDate = current.atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate discountStartDate = discount.getStartDate().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate discountEndDate = discount.getEndDate().atZone(ZoneId.systemDefault()).toLocalDate();
+            if (!currentDate.isBefore(discountStartDate) && !currentDate.isAfter(discountEndDate)) {
+                double discountRate = discount.getPercent() / 100.0;
+                typeRoomPrice = typeRoomPrice * (1 - discountRate);
+                booking.setDiscountName(discount.getDiscountName());
+                booking.setDiscountPercent(discount.getPercent());
+                try {
+                    bookingRepository.save(booking);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        return typeRoomPrice; // Return the final price, ensuring it's positive
+    }
     public Boolean checkCreatbkOffRoom(Integer bookingId, List<Integer> roomId, String discountName) {
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Booking not found"));
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new RuntimeException("Booking not found"));
         Discount discount = discountRepository.findByDiscountName(discountName);
-        Long days = Duration.between(booking.getStartAt(), booking.getEndAt()).toDays();
 
-        for (int i = 0; i < roomId.size(); i++) {
-            Room room = roomRepository.findById(roomId.get(i)).get();
+        // Tính số ngày chính xác
+        LocalDate startDate = booking.getStartAt().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate endDate = booking.getEndAt().atZone(ZoneId.systemDefault()).toLocalDate();
+        Long days = ChronoUnit.DAYS.between(startDate, endDate);
+        if (days == 0) {
+            days = 1L;
+        }
+
+        for (Integer id : roomId) {
+            Room room = roomRepository.findById(id).orElseThrow(() -> new RuntimeException("Room not found"));
             BookingRoom bookingRoom = new BookingRoom();
-            Double priceRoom = room.getTypeRoom().getPrice();
+
+            // Tính giá đã áp dụng khuyến mãi
+            Double priceFind = calculateDiscountedPrice(room, booking.getCreateAt(), discount, booking);
+
+            // Thiết lập giá tổng (giá mỗi ngày * số ngày)
             bookingRoom.setBooking(booking);
             bookingRoom.setRoom(room);
-            bookingRoom.setPrice(priceRoom * days);
+            bookingRoom.setPrice(priceFind * days);
+
             try {
                 bookingRoomRepository.save(bookingRoom);
             } catch (Exception e) {
                 e.printStackTrace();
-                throw new RuntimeException(e);
+                throw new RuntimeException("Error saving BookingRoom", e);
             }
         }
         return true;
@@ -247,8 +283,10 @@ public class BookingService {
         MethodPayment payment = methodPaymentRepository.findById(bookingModels.getMethodPayment()).get();
         Optional<StatusBooking> statusBooking =
                 (payment.getId() == 1) ? statusBookingRepository.findById(1) : statusBookingRepository.findById(3);
-        Instant starDateIns = paramServices.stringToInstantBK(bookingModels.getStartDate(), 14, 0);
-        Instant endDateIns = paramServices.stringToInstantBK(bookingModels.getEndDate(), 12, 0);
+        String startDateWithFixedTime = bookingModels.getStartDate().split("T")[0] + "T14:00:00Z";
+        String endDateWithFixedTime = bookingModels.getEndDate().split("T")[0] + "T12:00:00Z";
+        Instant starDateIns = paramServices.stringToInstant(startDateWithFixedTime).minus(7, ChronoUnit.HOURS);
+        Instant endDateIns = paramServices.stringToInstant(endDateWithFixedTime).minus(7, ChronoUnit.HOURS);
         Discount discount = (discountRepository.findByDiscountName(bookingModels.getDiscountName()) != null) ? discountRepository.findByDiscountName(bookingModels.getDiscountName()) : null;
         booking.setAccount(accounts.get());
         booking.setStartAt(starDateIns);
@@ -294,14 +332,19 @@ public class BookingService {
         Booking booking = new Booking();
         Optional<Account> accounts = accountRepository.findByUsername(bookingModels.getUserName());
         Optional<StatusBooking> statusBooking = statusBookingRepository.findById(4);
-        Instant starDateIns = paramServices.stringToInstant(bookingModels.getStartDate());
-        Instant endDateIns = paramServices.stringToInstant(bookingModels.getEndDate());
+        MethodPayment methodPayment = methodPaymentRepository.findById(1).get();
+        String startDateWithFixedTime = bookingModels.getStartDate().split("T")[0] + "T14:00:00Z";
+        String endDateWithFixedTime = bookingModels.getEndDate().split("T")[0] + "T12:00:00Z";
+        Instant starDateIns = paramServices.stringToInstant(startDateWithFixedTime).minus(7, ChronoUnit.HOURS);
+        Instant endDateIns = paramServices.stringToInstant(endDateWithFixedTime).minus(7, ChronoUnit.HOURS);
+
         booking.setAccount(accounts.get());
         booking.setStartAt(starDateIns);
         booking.setEndAt(endDateIns);
         booking.setStatus(statusBooking.get());
         booking.setStatusPayment(false);
-        booking.setMethodPayment(null);
+        booking.setDescriptions("Đặt trực tiếp");
+        booking.setMethodPayment(methodPayment);
         booking.setCreateAt(LocalDateTime.now());
         try {
             bookingRepository.save(booking);
