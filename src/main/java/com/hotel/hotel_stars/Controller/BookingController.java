@@ -297,4 +297,16 @@ public class BookingController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
+
+    @GetMapping("/reservation")
+	public ResponseEntity<List<BookingStatisticsDTO>> getBookingStatistics(
+			@RequestParam("startDate") LocalDate startDate, @RequestParam("endDate") LocalDate endDate) {
+		List<BookingStatisticsDTO> statistics = bookingService.getStatistics(startDate, endDate);
+		return ResponseEntity.ok(statistics);
+	}
+
+	@GetMapping("/by-start-date-with-invoice")
+	public ResponseEntity<?> getBookingsByStartAtWithInvoice(@RequestParam("date") LocalDate date) {
+		return ResponseEntity.ok(bookingService.getBookingsByStartAtWithInvoice(date));
+	}
 }
