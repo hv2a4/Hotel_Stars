@@ -120,7 +120,7 @@ public class vnPayController {
             booking.setStatusPayment(false);
             bookingRepository.save(booking);
             String paymentStatuss = "error";
-            String messages = "Thanh toán thất bại, đơn đặt phòng của bạn đã bị hủy";
+            String messages = "Thanh toán thất bại";
             String redirectUrl = null;
             redirectUrl = String.format(
                     "http://localhost:3000/client/booking-room?status=%s&message=%s",
