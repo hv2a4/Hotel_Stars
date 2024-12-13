@@ -162,7 +162,7 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
                GROUP BY
                    tr.id, tr.type_room_name, tr.price, tr.bed_count, tr.acreage, tr.guest_limit, tr.describes
                HAVING
-                   COUNT(f.id) >= 3 -- Chỉ lấy loại phòng có ít nhất 3 đánh giá
+                   COUNT(f.id) >= 4 -- Chỉ lấy loại phòng có ít nhất 3 đánh giá
                ORDER BY
                    totalReviews DESC, averageStars DESC
                LIMIT 3;
