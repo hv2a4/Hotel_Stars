@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import com.hotel.hotel_stars.Config.JwtService;
@@ -165,10 +166,11 @@ public class BookingService {
         Instant current = paramServices.localdatetimeToInsant(creatNow);
 
         LocalDate currentDate = current.atZone(ZoneId.systemDefault()).toLocalDate();
-        LocalDate discountStartDate = discountAccounts.getDiscount().getStartDate().atZone(ZoneId.systemDefault())
-                .toLocalDate();
-        LocalDate discountEndDate = discountAccounts.getDiscount().getEndDate().atZone(ZoneId.systemDefault())
-                .toLocalDate();
+        LocalDate discountStartDate = discountAccounts.getDiscount().getStartDate().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate discountEndDate = discountAccounts.getDiscount().getEndDate().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        System.out.println("mã của người này: " + discountAccounts.getId());
+        System.out.println("mã của người này: " + discountAccounts.getStatusDa());
         if (!currentDate.isBefore(discountStartDate) && !currentDate.isAfter(discountEndDate)) {
             System.out.println(discountAccounts.getStatusDa());
             if (!discountAccounts.getStatusDa()) {
@@ -243,23 +245,22 @@ public class BookingService {
         Booking booking = new Booking();
         Optional<Account> accounts = accountRepository.findByUsername(bookingModels.getUserName());
         MethodPayment payment = methodPaymentRepository.findById(bookingModels.getMethodPayment()).get();
-        Optional<StatusBooking> statusBooking = (payment.getId() == 1) ? statusBookingRepository.findById(1)
-                : statusBookingRepository.findById(3);
+        Optional<StatusBooking> statusBooking =
+                (payment.getId() == 1) ? statusBookingRepository.findById(1) : statusBookingRepository.findById(3);
         Instant starDateIns = paramServices.stringToInstantBK(bookingModels.getStartDate(), 14, 0);
         Instant endDateIns = paramServices.stringToInstantBK(bookingModels.getEndDate(), 12, 0);
-        Discount discount = discountRepository.findByDiscountName(bookingModels.getDiscountName());
-        System.out.println("mã tìm: " + discount.getDiscountName());
+        Discount discount = (discountRepository.findByDiscountName(bookingModels.getDiscountName()) != null) ? discountRepository.findByDiscountName(bookingModels.getDiscountName()) : null;
         booking.setAccount(accounts.get());
         booking.setStartAt(starDateIns);
         booking.setEndAt(endDateIns);
         booking.setStatus(statusBooking.get());
         booking.setStatusPayment(false);
         booking.setMethodPayment(payment);
-        booking.setDescriptions("Đặt trước");
+        booking.setDescriptions("Đặt trực tuyến");
         System.out.println(LocalDateTime.now());
         booking.setCreateAt(LocalDateTime.now());
-        DiscountAccount discountAccount = discountAccountRepositorys.findByDiscountAndAccount(discount.getId(),
-                booking.getAccount().getId());
+        Integer id = (discount != null) ? discount.getId() : null;
+        DiscountAccount discountAccount = discountAccountRepositorys.findByDiscountAndAccount(id, booking.getAccount().getId());
         Discount discountBooking = getDiscounts(discountAccount, booking.getCreateAt());
         booking.setDiscountName((discountBooking != null) ? discountBooking.getDiscountName() : null);
         booking.setDiscountPercent((discountBooking != null) ? discountBooking.getPercent() : null);
@@ -273,18 +274,12 @@ public class BookingService {
                 LocalDate startDate = paramServices.convertInstallToLocalDate(booking.getStartAt());
                 LocalDate endDate = paramServices.convertInstallToLocalDate(booking.getEndAt());
                 String roomsString = bookingRoomList.stream()
-                        .map(bookingRoom -> bookingRoom.getRoom().getRoomName()) // Extract roomName from each
-                        // BookingRoom
+                        .map(bookingRoom -> bookingRoom.getRoom().getRoomName())  // Extract roomName from each BookingRoom
                         .collect(Collectors.joining(", "));
 
-                String idBk = "Bk" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ""
-                        + booking.getId();
-                Boolean flag = (payment.getId() == 1)
-                        ? paramServices.sendEmails(booking.getAccount().getEmail(), "Xác nhận đặt    phòng",
-                        paramServices.generateBookingEmail(idBk, booking.getAccount().getFullname(),
-                                jwtService.generateBoking(booking.getId()), startDate, endDate, formattedAmount,
-                                roomsString))
-                        : false;
+                String idBk = "Bk" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "" + booking.getId();
+                Boolean flag = (payment.getId() == 1) ? paramServices.sendEmails(booking.getAccount().getEmail(), "Xác nhận đặt phòng", paramServices.generateBookingEmail(idBk, booking.getAccount().getFullname(), jwtService.generateBoking(booking.getId())
+                        , startDate, endDate, formattedAmount, roomsString)) : false;
 
                 return booking;
             }
@@ -724,28 +719,58 @@ public class BookingService {
     // khôi
 
     public List<BookingHistoryDTO> getBookingsByAccountId(Integer accountId) {
+
         List<Object[]> results = bookingRepository.findBookingsByAccountId(accountId);
+
         return results.stream().map(objects -> new BookingHistoryDTO(
-                (Integer) objects[0], // bk_id
-                (String) objects[1], // bkformat
-                (String) objects[2], // create_at
-                (String) objects[3], // start_at
-                (String) objects[4], // end_at
-                (String) objects[5], // fullname
-                (String) objects[6], // avatar
-                (Integer) objects[7], // statusBkID
-                (String) objects[8], // statusBkName
-                (Integer) objects[9], // iv_id
-                (Double) objects[10], // totalRoom
+                (Integer) objects[0],  // bk_id
+                (String) objects[1],   // bkformat
+                (String) objects[2],   // create_at
+                (String) objects[3],   // start_at
+                (String) objects[4],   // end_at
+                (String) objects[5],   // fullname
+                (String) objects[6],   // avatar
+                (Integer) objects[7],  // statusBkID
+                (String) objects[8],   // statusBkName
+                (Integer) objects[9],  // iv_id
+                (Double) objects[10],  // totalRoom
                 (Integer) objects[11], // fb_id
-                (String) objects[12], // content
+                (String) objects[12],  // content
                 (Integer) objects[13], // stars
-                (String) objects[14], // roomInfo
-                (String) objects[15], // image
-                (String) objects[16], // combinedServiceNames
-                (Double) objects[17], // combinedTotalServices
-                (Double) objects[18], // totalBooking
-                (Float) objects[19],
-                (String) objects[20])).collect(Collectors.toList());
+                (String) objects[14],  // roomInfo
+                (String) objects[15],  // image
+                (String) objects[16],  // combinedServiceNames
+                (Double) objects[17],  // combinedTotalServices
+                (Double) objects[18]
+        )).collect(Collectors.toList());
     }
+//    public List<BookingHistoryDTO> getBookingsByAccountId2(Integer accountId) {
+//        List<Booking> booking = bookingRepository.findByAccount_Id(accountId);
+//
+//    }
+       // List<Object[]> results = bookingRepository.findBookingsByAccountId(accountId);
+//
+//        return results.stream().map(objects -> new BookingHistoryDTO(
+//                (Integer) objects[0],  // bk_id
+//                (String) objects[1],   // bkformat
+//                (String) objects[2],   // create_at
+//                (String) objects[3],   // start_at
+//                (String) objects[4],   // end_at
+//                (String) objects[5],   // fullname
+//                (String) objects[6],   // avatar
+//                (Integer) objects[7],  // statusBkID
+//                (String) objects[8],   // statusBkName
+//                (Integer) objects[9],  // iv_id
+//                (Double) objects[10],  // totalRoom
+//                (Integer) objects[11], // fb_id
+//                (String) objects[12],  // content
+//                (Integer) objects[13], // stars
+//                (String) objects[14],  // roomInfo
+//                (String) objects[15],  // image
+//                (String) objects[16],  // combinedServiceNames
+//                (Double) objects[17],  // combinedTotalServices
+//                (Double) objects[18]
+//        )).collect(Collectors.toList());
+//    }
+//
 }

@@ -308,4 +308,9 @@ public class BookingController {
         List<BookingHistoryDTO> bookings = bookingService.getBookingsByAccountId(accountId);
         return ResponseEntity.ok(bookings);
     }
+
+    @GetMapping("/booking-by-room/{id}")
+    public ResponseEntity<?> getBookingByRoom(@PathVariable("id") Integer id) {
+        return ResponseEntity.ok(bookingService.getBookingByRoom(id));
+    }
 }

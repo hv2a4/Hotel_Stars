@@ -138,118 +138,136 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 	// khoi
 
 
-
-
 	@Query(value = """
-        WITH AggregatedService AS (
-            SELECT 
-                br.booking_id,
-                GROUP_CONCAT(DISTINCT svr.service_room_name SEPARATOR ', ') AS serviceRoomName,
-                SUM(IFNULL(brsr.quantity * brsr.price, 0)) AS totalsService
-            FROM booking_room_service_room brsr
-            LEFT JOIN service_room svr ON brsr.service_room_id = svr.id
-            JOIN booking_room br ON brsr.booking_room_id = br.id
-            GROUP BY br.booking_id
-        ),
-        AggregatedRoomDetails AS (
-            SELECT 
-                br.booking_id,
-                tr.type_room_name,
-                GROUP_CONCAT(DISTINCT rm.room_name SEPARATOR ', ') AS roomNames,
-                SUM(br.price) AS totalRoom
-            FROM booking_room br
-            JOIN room rm ON br.room_id = rm.id
-            JOIN type_room tr ON rm.type_room_id = tr.id
-            GROUP BY br.booking_id, tr.type_room_name
-        ),
-        AggregatedImages AS (
-            SELECT 
-                br.booking_id,
-                MIN(tyi.image_name) AS image
-            FROM booking_room br
-            JOIN room rm ON br.room_id = rm.id
-            JOIN type_room tr ON rm.type_room_id = tr.id
-            LEFT JOIN type_room_image tyi ON tr.id = tyi.type_room_id
-            GROUP BY br.booking_id
-        ),
-        FinalAggregatedRooms AS (
-            SELECT 
-                booking_id,
-                GROUP_CONCAT(
-                    CONCAT(type_room_name, ' (', roomNames, ')') 
-                    SEPARATOR ', '
-                ) AS roomInfo,
-                SUM(totalRoom) AS totalRoom
-            FROM AggregatedRoomDetails
-            GROUP BY booking_id
-        ),
-        AggregatedServiceHotel AS (
-            SELECT 
-                br.booking_id,
-                GROUP_CONCAT(DISTINCT svr.service_hotel_name SEPARATOR ', ') AS serviceHotelName,
-                SUM(IFNULL(brsh.quantity * brsh.price, 0)) AS totalsServiceHotel
-            FROM booking_room_service_hotel brsh
-            LEFT JOIN service_hotel svr ON brsh.service_hotel_id = svr.id
-            JOIN booking_room br ON brsh.booking_room_id = br.id
-            GROUP BY br.booking_id
-        )
-        SELECT  
-            bk.id AS bk_id,
-            CONCAT('BK', DATE_FORMAT(bk.create_at, '%d%m%Y'), bk.id) AS bkformat,
-            DATE_FORMAT(bk.create_at, '%d/%m/%Y') AS create_at,
-            DATE_FORMAT(bk.start_at, '%d/%m/%Y') AS start_at,
-            DATE_FORMAT(bk.end_at, '%d/%m/%Y') AS end_at,
-            ac.fullname AS fullname,
-            ac.avatar AS avatar,
-            sbk.id AS statusBkID,
-            sbk.status_booking_name AS statusBkName,
-            iv.id AS iv_id,
-            CASE 
-                WHEN bk.discount_percent IS NOT NULL AND bk.discount_name IS NOT NULL THEN 
-                    fr.totalRoom * (1 - bk.discount_percent / 100)
-                ELSE 
-                    fr.totalRoom
-            END AS totalRoom,
-            fb.id AS fb_id, 
-            fb.content AS content,
-            fb.stars AS stars,
-            fr.roomInfo AS roomInfo,
-            ai.image AS image, 
-            CASE 
-                WHEN ags.serviceRoomName IS NULL AND arsh.serviceHotelName IS NULL THEN NULL
-                ELSE CONCAT(
-                    IFNULL(ags.serviceRoomName, ''), 
-                    IF(ags.serviceRoomName IS NOT NULL AND arsh.serviceHotelName IS NOT NULL, ', ', ''), 
-                    IFNULL(arsh.serviceHotelName, '')
-                )
-            END AS combinedServiceNames,
-            CASE 
-                WHEN ags.totalsService IS NULL AND arsh.totalsServiceHotel IS NULL THEN NULL
-                ELSE IFNULL(ags.totalsService, 0) + IFNULL(arsh.totalsServiceHotel, 0)
-            END AS combinedTotalServices,
-            CASE
-                WHEN bk.discount_percent IS NOT NULL AND bk.discount_name IS NOT NULL THEN
-                    fr.totalRoom * (1 - bk.discount_percent / 100)
-                    + IFNULL(ags.totalsService, 0)
-                    + IFNULL(arsh.totalsServiceHotel, 0)
-                ELSE
-                    fr.totalRoom
-                    + IFNULL(ags.totalsService, 0)
-                    + IFNULL(arsh.totalsServiceHotel, 0)
-            END AS totalBooking, bk.discount_percent AS discountPercent, bk.discount_name AS discountName
-        FROM booking bk
-        JOIN status_booking sbk ON sbk.id = bk.status_id
-        JOIN accounts ac ON ac.id = bk.account_id
-        LEFT JOIN invoice iv ON bk.id = iv.booking_id
-        LEFT JOIN feedback fb ON iv.id = fb.invoice_id  
-        LEFT JOIN AggregatedService ags ON bk.id = ags.booking_id
-        LEFT JOIN FinalAggregatedRooms fr ON bk.id = fr.booking_id
-        LEFT JOIN AggregatedImages ai ON bk.id = ai.booking_id
-        LEFT JOIN AggregatedServiceHotel arsh ON bk.id = arsh.booking_id
-        WHERE bk.account_id = :accountId AND bk.status_id != 1
-        GROUP BY bk.id, iv.id, fb.id
-        ORDER BY bk.id DESC
-    """,
-			nativeQuery = true)
+    WITH AggregatedService AS (
+        SELECT 
+            br.booking_id,
+            GROUP_CONCAT(DISTINCT svr.service_room_name SEPARATOR ', ') AS serviceRoomName,
+            SUM(IFNULL(brsr.quantity * brsr.price, 0)) AS totalsService
+        FROM booking_room_service_room brsr
+        LEFT JOIN service_room svr ON brsr.service_room_id = svr.id
+        JOIN booking_room br ON brsr.booking_room_id = br.id
+        GROUP BY br.booking_id
+    ),
+    AggregatedRoomDetails AS (
+        SELECT
+            br.booking_id,
+            tr.type_room_name,
+            GROUP_CONCAT(DISTINCT rm.room_name SEPARATOR ', ') AS roomNames,
+            SUM(br.price) AS totalRoom
+        FROM booking_room br
+        JOIN room rm ON br.room_id = rm.id
+        JOIN type_room tr ON rm.type_room_id = tr.id
+        GROUP BY br.booking_id, tr.type_room_name
+    ),
+    AggregatedImages AS (
+        SELECT 
+            br.booking_id,
+            MIN(tyi.image_name) AS image
+        FROM booking_room br
+        JOIN room rm ON br.room_id = rm.id
+        JOIN type_room tr ON rm.type_room_id = tr.id
+        LEFT JOIN type_room_image tyi ON tr.id = tyi.type_room_id
+        GROUP BY br.booking_id
+    ),
+    FinalAggregatedRooms AS (
+        SELECT 
+            booking_id,
+            GROUP_CONCAT(
+                CONCAT(type_room_name, ' (', roomNames, ')') 
+                SEPARATOR ', '
+            ) AS roomInfo,
+            SUM(totalRoom) AS totalRoom
+        FROM AggregatedRoomDetails
+        GROUP BY booking_id
+    ),
+    AggregatedServiceHotel AS (
+        SELECT 
+            br.booking_id,
+            GROUP_CONCAT(DISTINCT svr.service_hotel_name SEPARATOR ', ') AS serviceHotelName,
+            SUM(IFNULL(brsh.quantity * brsh.price, 0)) AS totalsServiceHotel
+        FROM booking_room_service_hotel brsh
+        LEFT JOIN service_hotel svr ON brsh.service_hotel_id = svr.id
+        JOIN booking_room br ON brsh.booking_room_id = br.id
+        GROUP BY br.booking_id
+    )
+    SELECT  
+        bk.id AS bk_id,
+        CONCAT('BK', DATE_FORMAT(bk.create_at, '%d%m%Y'), bk.id) AS bkformat,
+        DATE_FORMAT(bk.create_at, '%d/%m/%Y') AS create_at,
+        DATE_FORMAT(bk.start_at, '%d/%m/%Y') AS start_at,
+        DATE_FORMAT(bk.end_at, '%d/%m/%Y') AS end_at,
+        ac.fullname AS fullname,
+        ac.avatar AS avatar,
+        sbk.id AS statusBkID,
+        sbk.status_booking_name AS statusBkName,
+        iv.id AS iv_id,
+        CASE 
+            WHEN bk.discount_percent IS NOT NULL AND bk.discount_name IS NOT NULL THEN 
+                fr.totalRoom * (1 - bk.discount_percent / 100)
+            ELSE 
+                fr.totalRoom
+        END AS totalRoom,
+        fb.id AS fb_id,
+        fb.content AS content,
+        fb.stars AS stars,
+        fr.roomInfo AS roomInfo,
+        ai.image AS image, 
+        CASE 
+            WHEN ags.serviceRoomName IS NULL AND arsh.serviceHotelName IS NULL THEN NULL
+            ELSE CONCAT(
+                IFNULL(ags.serviceRoomName, ''), 
+                IF(ags.serviceRoomName IS NOT NULL AND arsh.serviceHotelName IS NOT NULL, ', ', ''), 
+                IFNULL(arsh.serviceHotelName, '')
+            )
+        END AS combinedServiceNames,
+        CASE 
+            WHEN ags.totalsService IS NULL AND arsh.totalsServiceHotel IS NULL THEN NULL
+            ELSE IFNULL(ags.totalsService, 0) + IFNULL(arsh.totalsServiceHotel, 0)
+        END AS combinedTotalServices,
+        CASE
+            WHEN bk.discount_percent IS NOT NULL AND bk.discount_name IS NOT NULL THEN
+                fr.totalRoom * (1 - bk.discount_percent / 100)
+                + IFNULL(ags.totalsService, 0)
+                + IFNULL(arsh.totalsServiceHotel, 0)
+            ELSE
+                fr.totalRoom
+                + IFNULL(ags.totalsService, 0)
+                + IFNULL(arsh.totalsServiceHotel, 0)
+        END AS totalBooking, 
+        bk.discount_percent AS discountPercent, 
+        bk.discount_name AS discountName
+    FROM booking bk
+    JOIN status_booking sbk ON sbk.id = bk.status_id
+    JOIN accounts ac ON ac.id = bk.account_id
+    LEFT JOIN invoice iv ON bk.id = iv.booking_id
+    LEFT JOIN feedback fb ON iv.id = fb.invoice_id  
+    LEFT JOIN AggregatedService ags ON bk.id = ags.booking_id
+    LEFT JOIN FinalAggregatedRooms fr ON bk.id = fr.booking_id
+    LEFT JOIN AggregatedImages ai ON bk.id = ai.booking_id
+    LEFT JOIN AggregatedServiceHotel arsh ON bk.id = arsh.booking_id
+    WHERE bk.account_id = :accountId AND bk.status_id != 1
+    GROUP BY 
+        bk.id,
+        ac.fullname,
+        ac.avatar,
+        sbk.id,
+        sbk.status_booking_name,
+        iv.id,
+        fb.id,
+        fb.content,
+        fb.stars,
+        fr.roomInfo,
+        ai.image,
+        fr.totalRoom,
+        ags.serviceRoomName,
+        arsh.serviceHotelName,
+        ags.totalsService,
+        bk.discount_percent,
+        bk.discount_name,
+        arsh.totalsServiceHotel
+    ORDER BY bk.id DESC
+""", nativeQuery = true)
 	List<Object[]> findBookingsByAccountId(@Param("accountId") Integer accountId);
+
 }
