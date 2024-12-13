@@ -82,6 +82,10 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/account/add-account-staff").permitAll()
                                                 // khoi
                                                 // vu
+                                                //tuong
+                                                .requestMatchers("/api/discount/get-discount-by-date").permitAll()
+                                                .requestMatchers("/api/discount-accounts/add").hasAnyAuthority("Customer", "HotelOwner")
+                                                //tuong
                                                 .requestMatchers(
                                                                 "/api/account/account-by-id/{username}",
                                                                 "/api/account/toggleDelete/{id}",
