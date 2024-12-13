@@ -1,19 +1,16 @@
 package com.hotel.hotel_stars.Service;
 
-import com.hotel.hotel_stars.DTO.AccountDto;
-import com.hotel.hotel_stars.DTO.DiscountAccountDto;
-import com.hotel.hotel_stars.DTO.DiscountDto;
-import com.hotel.hotel_stars.DTO.RoleDto;
+import com.hotel.hotel_stars.DTO.*;
 import com.hotel.hotel_stars.Entity.Account;
 import com.hotel.hotel_stars.Entity.Discount;
 import com.hotel.hotel_stars.Entity.DiscountAccount;
+import com.hotel.hotel_stars.Models.DiscountAccountModel;
 import com.hotel.hotel_stars.Repository.AccountRepository;
 import com.hotel.hotel_stars.Repository.DiscountAccountRepository;
 import com.hotel.hotel_stars.Repository.DiscountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -86,5 +83,28 @@ public class DiscountAccountService {
     public List<DiscountAccountDto> getDiscountAccountDtoList() {
         List<DiscountAccount> discountAccountList = discountAccountRepository.findAll();
         return discountAccountList.stream().map(this::convertToDto).toList();
+    }
+
+    public StatusResponseDto add(DiscountAccountModel discountAccountModel) {
+        // Kiểm tra xem discountAccountModel có null không
+        if (discountAccountModel == null) {
+            return new StatusResponseDto("400", "FAILURE", "Dữ liệu không được để trống.");
+        }
+        try {
+            // Tạo đối tượng DiscountAccount từ DiscountAccountModel
+            DiscountAccount discountAccount = new DiscountAccount();
+            Optional<Discount> optionalDiscount = discountRepository.findById(discountAccountModel.getDiscount_id());
+            Discount discount = optionalDiscount.get();
+            discountAccount.setDiscount(discount);
+            Optional<Account> optionalAccount = accountRepository.findById(discountAccountModel.getAccount_id());
+            Account account = optionalAccount.get();
+            discountAccount.setAccount(account);
+            discountAccount.setStatusDa(false);
+            // Lưu vào cơ sở dữ liệu
+            discountAccountRepository.save(discountAccount);
+            return new StatusResponseDto("200", "SUCCESS", "Thêm thành công.");
+        } catch (Exception e) {
+            return new StatusResponseDto("500", "FAILURE", "Lỗi trong quá trình thêm: " + e.getMessage());
+        }
     }
 }
