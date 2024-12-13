@@ -1,5 +1,22 @@
 package com.hotel.hotel_stars.Controller;
 
+import com.hotel.hotel_stars.Config.VNPayService;
+import com.hotel.hotel_stars.Entity.*;
+import com.hotel.hotel_stars.Repository.BookingRepository;
+import com.hotel.hotel_stars.Repository.DiscountAccountRepository;
+import com.hotel.hotel_stars.Repository.DiscountRepository;
+import com.hotel.hotel_stars.Repository.StatusBookingRepository;
+
+import com.hotel.hotel_stars.Utils.SessionService;
+import com.hotel.hotel_stars.Utils.paramService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -9,23 +26,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.stream.Collectors;
-
-import com.hotel.hotel_stars.Entity.*;
-import com.hotel.hotel_stars.Repository.DiscountAccountRepository;
-import com.hotel.hotel_stars.Repository.DiscountRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.hotel.hotel_stars.Config.VNPayService;
-import com.hotel.hotel_stars.Repository.BookingRepository;
-import com.hotel.hotel_stars.Repository.StatusBookingRepository;
-import com.hotel.hotel_stars.Utils.SessionService;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @CrossOrigin("*")
@@ -33,26 +35,24 @@ public class vnPayController {
     @Autowired
     VNPayService vnPayService;
     @Autowired
-    private com.hotel.hotel_stars.Utils.paramService paramServices;
+    private paramService paramServices;
     @Autowired
     private StatusBookingRepository statusBookingRepository;
     @Autowired
     private BookingRepository bookingRepository;
     @Autowired
-    SessionService sessionService;
-
-    @Autowired
     private DiscountRepository discountRepository;
     @Autowired
     private DiscountAccountRepository discountAccountRepositorys;
-
+    @Autowired
+    SessionService sessionService;
     @GetMapping("/vnpay-payment")
     public void handleVNPayPayment(HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException {
         String orderInfo = request.getParameter("vnp_OrderInfo");
-        StatusBooking statusBooking = statusBookingRepository.findById(2).get();
+        StatusBooking statusBooking= statusBookingRepository.findById(2).get();
         int paymentStatus = vnPayService.orderReturn(request);
         Booking booking = bookingRepository.findById(Integer.valueOf(orderInfo)).get();
-        if (paymentStatus == 1) {
+        if( paymentStatus == 1){
             try {
                 if (orderInfo != null) {
                     orderInfo = URLDecoder.decode(orderInfo, "UTF-8");
@@ -63,14 +63,14 @@ public class vnPayController {
 
             List<BookingRoom> bookingRoomList = booking.getBookingRooms();
             double total = bookingRoomList.stream().mapToDouble(BookingRoom::getPrice).sum();
-            if (booking.getDiscountPercent() != null && booking.getDiscountPercent() != null) {
+            if(booking.getDiscountPercent()!=null && booking.getDiscountPercent()!=null){
                 double discountAmount = total * (booking.getDiscountPercent() / 100);
-                total = total - discountAmount;
+                total=total-discountAmount;
             }
             System.out.println();
-            String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
-            LocalDate startDate = paramServices.convertInstallToLocalDate(booking.getStartAt());
-            LocalDate endDate = paramServices.convertInstallToLocalDate(booking.getEndAt());
+String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
+            LocalDate startDate=paramServices.convertInstallToLocalDate(booking.getStartAt());
+            LocalDate endDate=paramServices.convertInstallToLocalDate(booking.getEndAt());
             booking.setStatus(statusBooking);
             String roomsString = bookingRoomList.stream()
                     .map(bookingRoom -> bookingRoom.getRoom().getRoomName())  // Extract roomName from each BookingRoom
@@ -78,8 +78,9 @@ public class vnPayController {
             String idBk = "Bk" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + "" + booking.getId();
             booking.setStatusPayment(true);
 
-            paramServices.sendEmails(booking.getAccount().getEmail(), "thông tin đơn hàng",
-                    paramServices.pdfDownload(idBk, booking, startDate, endDate, formattedAmount, roomsString, paramServices.getImage()));
+            paramServices.sendEmails(booking.getAccount().getEmail(),"thông tin đơn hàng",
+                    paramServices.pdfDownload(idBk,booking,startDate,endDate ,formattedAmount,roomsString, paramServices.getImage()));
+
 
             try {
                 bookingRepository.save(booking);
@@ -107,11 +108,11 @@ public class vnPayController {
 
                 throw new RuntimeException(e);
             }
-        } else {
-            if (booking.getDiscountName() != null && booking.getDiscountPercent() != null) {
+        }else{
+            if(booking.getDiscountName()!=null && booking.getDiscountPercent()!=null){
                 System.out.println("mã này đã hồi phục");
-                Discount discount = (discountRepository.findByDiscountName(booking.getDiscountName()) != null) ? discountRepository.findByDiscountName(booking.getDiscountName()) : null;
-                DiscountAccount discountAccount = discountAccountRepositorys.findByDiscountAndAccount(discount.getId(), booking.getAccount().getId());
+                Discount discount = (discountRepository.findByDiscountName(booking.getDiscountName())!=null)?discountRepository.findByDiscountName(booking.getDiscountName()):null;
+                DiscountAccount discountAccount= discountAccountRepositorys.findByDiscountAndAccount(discount.getId(),booking.getAccount().getId());
                 discountAccount.setStatusDa(false);
                 discountAccountRepositorys.save(discountAccount);
             }
@@ -119,7 +120,7 @@ public class vnPayController {
             booking.setStatus(statusBooking1);
             booking.setStatusPayment(false);
             bookingRepository.save(booking);
-            String paymentStatuss = "error";
+String paymentStatuss = "error";
             String messages = "Thanh toán thất bại";
             String redirectUrl = null;
             redirectUrl = String.format(

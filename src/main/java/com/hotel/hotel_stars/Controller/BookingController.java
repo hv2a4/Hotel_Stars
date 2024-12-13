@@ -12,6 +12,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.hotel.hotel_stars.DTO.BookingStatisticsDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import com.hotel.hotel_stars.DTO.selectDTO.BookingHistoryDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.FileSystemResource;
@@ -87,21 +91,7 @@ public class BookingController {
         return ResponseEntity.ok(bookings);
     }
 
-    @PutMapping("/cancel-booking/{id}")
-    public StatusResponseDto cancelBooking(@PathVariable("id") Integer id,
-            @RequestParam("descriptions") String descriptions) {
-        boolean flag = bookingService.cancelBooking(id, descriptions);
-        if (flag) {
-            return new StatusResponseDto("200", "success", "Hủy đặt phòng thành công");
-        } else {
-            return new StatusResponseDto("400", "error", "Hủy đặt phòng thất bại");
-        }
-    }
 
-    @GetMapping("/booking-by-room/{id}")
-    public ResponseEntity<?> getBookingByRoom(@PathVariable("id") Integer id) {
-        return ResponseEntity.ok(bookingService.getBookingByRoom(id));
-    }
 
     @PutMapping("/update-checkIn/{id}")
     public ResponseEntity<?> updateCheckIn(@PathVariable("id") Integer id,
@@ -207,6 +197,10 @@ public class BookingController {
                 double discountAmount = total * (booking.getDiscountPercent() / 100);
                 total = total - discountAmount;
             }
+            if(booking.getDiscountPercent()!=null && booking.getDiscountPercent()!=null){
+                double discountAmount = total * (booking.getDiscountPercent() / 100);
+                total=total-discountAmount;
+            }
             String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
             LocalDate startDate = paramServices.convertInstallToLocalDate(booking.getStartAt());
             LocalDate endDate = paramServices.convertInstallToLocalDate(booking.getEndAt());
@@ -263,8 +257,7 @@ public class BookingController {
                     }
                     int totalAsInt = (int) total;
                     System.out.println("totals: " + totalAsInt);
-                    String baseUrl = request.getScheme() + "://" + request.getServerName() + ":"
-                            + request.getServerPort();
+                    String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
                     response = paramServices.messageSuccessApi(201, "success",
                             "Đặt phòng thành công");
                     response.put("vnPayURL",
@@ -310,4 +303,9 @@ public class BookingController {
 	public ResponseEntity<?> getBookingsByStartAtWithInvoice(@RequestParam("date") LocalDate date) {
 		return ResponseEntity.ok(bookingService.getBookingsByStartAtWithInvoice(date));
 	}
+    @GetMapping("/booking-history-account")
+    public ResponseEntity<?> getBookings(@RequestParam Integer accountId) {
+        List<BookingHistoryDTO> bookings = bookingService.getBookingsByAccountId(accountId);
+        return ResponseEntity.ok(bookings);
+    }
 }
