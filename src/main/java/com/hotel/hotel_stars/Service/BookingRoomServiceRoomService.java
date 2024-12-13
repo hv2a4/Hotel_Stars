@@ -66,6 +66,51 @@ public class BookingRoomServiceRoomService {
 		}
 
 	}
+	
+	public StatusResponseDto addNew(List<BookingRoomServiceRoomModel> models, List<Integer> idBookingRoom) {
+	    try {
+	        for (BookingRoomServiceRoomModel model : models) {
+	            // Tìm các bản ghi đã tồn tại
+	            List<BookingRoomServiceRoom> existingRecords = bookingRoomServiceRoomRepository
+	                    .findByBookingRoomIdInAndServiceRoomId(
+	                            idBookingRoom, // Danh sách ID BookingRoom
+	                            model.getServiceRoomId() // ID ServiceRoom
+	                    );
+
+	            if (existingRecords != null && !existingRecords.isEmpty()) {
+	                // Cập nhật các bản ghi tồn tại
+	                for (BookingRoomServiceRoom record : existingRecords) {
+	                    record.setQuantity(record.getQuantity() + model.getQuantity());
+	                    bookingRoomServiceRoomRepository.save(record);
+	                }
+	            } else {
+	                // Thêm bản ghi mới nếu không tồn tại
+	                for (Integer bookingRoomId : idBookingRoom) {
+	                    BookingRoom bookingRoom = bookingRoomRepository.findById(bookingRoomId)
+	                            .orElseThrow(() -> new RuntimeException("Booking Room không tồn tại: " + bookingRoomId));
+	                    ServiceRoom serviceRoom = serviceRoomRepository.findById(model.getServiceRoomId())
+	                            .orElseThrow(() -> new RuntimeException("Service Room không tồn tại: " + model.getServiceRoomId()));
+
+	                    BookingRoomServiceRoom newRecord = new BookingRoomServiceRoom();
+	                    newRecord.setBookingRoom(bookingRoom);
+	                    newRecord.setCreateAt(model.getCreateAt());
+	                    newRecord.setPrice(model.getPrice());
+	                    newRecord.setQuantity(model.getQuantity());
+	                    newRecord.setServiceRoom(serviceRoom);
+
+	                    bookingRoomServiceRoomRepository.save(newRecord);
+	                }
+	            }
+	        }
+
+	        return new StatusResponseDto("200", "success", "Dịch vụ đã được thêm thành công");
+	    } catch (RuntimeException e) {
+	        return new StatusResponseDto("400", "error", "Lỗi không thể truyền dữ liệu: " + e.getMessage());
+	    } catch (Exception e) {
+	        return new StatusResponseDto("500", "error", "Có lỗi xảy ra khi thêm/cập nhật dịch vụ: " + e.getMessage());
+	    }
+	}
+
 	public BookingRoomServiceRoomDto updateQuantity(Integer id, BookingRoomServiceRoomModel model) {
 	    BookingRoomServiceRoom service = bookingRoomServiceRoomRepository.findById(id).orElseThrow(() -> new RuntimeException("Service not found"));
 	    Integer quantity = model.getQuantity();

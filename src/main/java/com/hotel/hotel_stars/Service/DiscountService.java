@@ -78,13 +78,9 @@ public class DiscountService {
             return new StatusResponseDto("400", "FAILURE", "Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu.");
         }
 
-        // Kiểm tra loại phòng
-        TypeRoom typeRoom = typeRoomRepository.findById(discountModel.getTypeRoomId()).orElse(null);
-        if (typeRoom == null) {
-            return new StatusResponseDto("404", "FAILURE", "Loại phòng không tồn tại.");
-        } else {
+
             // Kiểm tra thời gian trùng lặp với giảm giá khác
-            List<Discount> existingDiscounts = discountRepository.findByRoomTypeId(typeRoom);
+            List<Discount> existingDiscounts = discountRepository.findAll();
             for (Discount existingDiscount : existingDiscounts) {
                 LocalDate existingStartDate = existingDiscount.getStartDate().atZone(ZoneId.systemDefault()).toLocalDate();
                 LocalDate existingEndDate = existingDiscount.getEndDate().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -93,7 +89,6 @@ public class DiscountService {
                     return new StatusResponseDto("400", "FAILURE", "Khoảng thời gian giảm giá bị trùng lặp với một giảm giá khác.");
                 }
             }
-        }
 
         // Nếu tất cả điều kiện hợp lệ, tiếp tục lưu dữ liệu
         try {
@@ -102,8 +97,6 @@ public class DiscountService {
             discount.setPercent(discountModel.getPercent());
             discount.setStartDate(discountModel.getStartDate());
             discount.setEndDate(discountModel.getEndDate());
-            discount.setTypeRoom(typeRoom);
-
             discountRepository.save(discount);
             return new StatusResponseDto("200", "SUCCESS", "Thêm giảm giá thành công.");
         } catch (Exception e) {
@@ -129,32 +122,35 @@ public class DiscountService {
         LocalDate startDate = discountModel.getStartDate().atZone(ZoneId.systemDefault()).toLocalDate();
         LocalDate endDate = discountModel.getEndDate().atZone(ZoneId.systemDefault()).toLocalDate();
 
-        // Kiểm tra điều kiện ngày và phần trăm giảm giá
-        if (startDate.isBefore(today)) {
-            throw new IllegalArgumentException("Ngày bắt đầu không được ở trong quá khứ.");
-        }
+        // Bỏ qua kiểm tra ngày nếu thời gian giảm giá không thay đổi
+        LocalDate existingStartDate = discount.getStartDate().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate existingEndDate = discount.getEndDate().atZone(ZoneId.systemDefault()).toLocalDate();
+        boolean isDateUnchanged = startDate.equals(existingStartDate) && endDate.equals(existingEndDate);
 
-        if (discountModel.getPercent() <= 0 || discountModel.getPercent() > 100) {
-            throw new IllegalArgumentException("Phần trăm giảm giá phải lớn hơn 0 và không vượt quá 100.");
-        }
+        if (!isDateUnchanged) {
+            // Kiểm tra điều kiện ngày và phần trăm giảm giá
+            if (startDate.isBefore(today)) {
+                throw new IllegalArgumentException("Ngày bắt đầu không được ở trong quá khứ.");
+            }
 
-        if (endDate.isBefore(startDate)) {
-            throw new IllegalArgumentException("Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu.");
-        }
+            if (discountModel.getPercent() <= 0 || discountModel.getPercent() > 100) {
+                throw new IllegalArgumentException("Phần trăm giảm giá phải lớn hơn 0 và không vượt quá 100.");
+            }
 
-        // Kiểm tra loại phòng tồn tại
-        TypeRoom typeRoom = typeRoomRepository.findById(discountModel.getTypeRoomId())
-                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy loại phòng với ID: " + discountModel.getTypeRoomId()));
+            if (endDate.isBefore(startDate)) {
+                throw new IllegalArgumentException("Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu.");
+            }
 
-        // Kiểm tra thời gian trùng lặp với các giảm giá khác
-        List<Discount> existingDiscounts = discountRepository.findByRoomTypeId(typeRoom);
-        for (Discount existingDiscount : existingDiscounts) {
-            if (!existingDiscount.getId().equals(discountModel.getId())) { // Bỏ qua chính giảm giá đang cập nhật
-                LocalDate existingStartDate = existingDiscount.getStartDate().atZone(ZoneId.systemDefault()).toLocalDate();
-                LocalDate existingEndDate = existingDiscount.getEndDate().atZone(ZoneId.systemDefault()).toLocalDate();
+            // Kiểm tra thời gian trùng lặp với các giảm giá khác
+            List<Discount> existingDiscounts = discountRepository.findAll();
+            for (Discount existingDiscount : existingDiscounts) {
+                if (!existingDiscount.getId().equals(discountModel.getId())) { // Bỏ qua chính giảm giá đang cập nhật
+                    LocalDate otherStartDate = existingDiscount.getStartDate().atZone(ZoneId.systemDefault()).toLocalDate();
+                    LocalDate otherEndDate = existingDiscount.getEndDate().atZone(ZoneId.systemDefault()).toLocalDate();
 
-                if (!(endDate.isBefore(existingStartDate) || startDate.isAfter(existingEndDate))) {
-                    throw new IllegalArgumentException("Khoảng thời gian giảm giá bị trùng lặp với một giảm giá khác.");
+                    if (!(endDate.isBefore(otherStartDate) || startDate.isAfter(otherEndDate))) {
+                        throw new IllegalArgumentException("Khoảng thời gian giảm giá bị trùng lặp với một giảm giá khác.");
+                    }
                 }
             }
         }
@@ -164,11 +160,11 @@ public class DiscountService {
         discount.setPercent(discountModel.getPercent());
         discount.setStartDate(discountModel.getStartDate());
         discount.setEndDate(discountModel.getEndDate());
-        discount.setTypeRoom(typeRoom);
 
         discountRepository.save(discount);
         return convertToDto(discount);
     }
+
 
 
     public StatusResponseDto deletById(Integer id) {

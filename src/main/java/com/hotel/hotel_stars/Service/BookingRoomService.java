@@ -3,6 +3,8 @@ package com.hotel.hotel_stars.Service;
 import com.hotel.hotel_stars.DTO.*;
 import com.hotel.hotel_stars.Entity.Booking;
 import com.hotel.hotel_stars.Entity.BookingRoom;
+import com.hotel.hotel_stars.Entity.BookingRoomServiceRoom;
+import com.hotel.hotel_stars.Entity.StatusBooking;
 import com.hotel.hotel_stars.Entity.TypeRoom;
 import com.hotel.hotel_stars.Entity.TypeRoomImage;
 import com.hotel.hotel_stars.Repository.BookingRoomRepository;
@@ -40,6 +42,7 @@ public class BookingRoomService {
         return new TypeRoomDto(tr.getId(), tr.getTypeRoomName(), tr.getPrice(), tr.getBedCount(),
                 tr.getAcreage(), tr.getGuestLimit(), typeBedDto, tr.getDescribes(), typeRoomImageDtos);
     }
+
     public BookingRoomDto toDTO(BookingRoom bookingRoom) {
         BookingRoomDto bookingRoomDto = modelMapper.map(bookingRoom, BookingRoomDto.class);
 
@@ -63,7 +66,12 @@ public class BookingRoomService {
         bookingDto.setCreateAt(bookingRoom.getBooking().getCreateAt());
         bookingDto.setStartAt(bookingRoom.getBooking().getStartAt());
         bookingDto.setEndAt(bookingRoom.getBooking().getEndAt());
+        bookingDto.setDescriptions(bookingRoom.getBooking().getDescriptions());
         bookingDto.setStatusPayment(bookingRoom.getBooking().getStatusPayment());
+        StatusBookingDto statusBookingDto = new StatusBookingDto();
+        statusBookingDto.setStatusBookingName(bookingRoom.getBooking().getStatus().getStatusBookingName());
+        statusBookingDto.setId(bookingRoom.getBooking().getStatus().getId());
+        bookingDto.setStatusDto(statusBookingDto);
         bookingDto.setAccountDto(accountDto);
 
         FloorDto floorDto = new FloorDto();
@@ -117,5 +125,14 @@ public class BookingRoomService {
     	BookingRoom bookingRoom = bookingRoomRepository.findById(id).get();
     	return toDTO(bookingRoom);
     }
+    
+    public BookingRoomDto getBookingRoomByRoom(Integer idRoom) {
+        BookingRoom bookingRoom = bookingRoomRepository.findFirstBookingRoomByRoomIdAndStatusNotIn(idRoom);
+        if (bookingRoom == null) {
+            return null; // Trả về null nếu không tìm thấy
+        }
+        return toDTO(bookingRoom); // Chuyển đổi đối tượng sang DTO nếu tìm thấy
+    }
+
     //khôi
 }

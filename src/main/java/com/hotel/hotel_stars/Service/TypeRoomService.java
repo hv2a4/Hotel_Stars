@@ -1,26 +1,47 @@
 package com.hotel.hotel_stars.Service;
 
-import com.hotel.hotel_stars.DTO.*;
-import com.hotel.hotel_stars.DTO.Select.RoomTypeDetail;
-import com.hotel.hotel_stars.DTO.selectDTO.FindTypeRoomDto;
-import com.hotel.hotel_stars.Entity.*;
-import com.hotel.hotel_stars.Models.typeRoomModel;
-import com.hotel.hotel_stars.Repository.*;
-import com.hotel.hotel_stars.Repository.TypeBedRepository;
-import com.hotel.hotel_stars.Repository.TypeRoomImageRepository;
-import com.hotel.hotel_stars.utils.paramService;
-import com.hotel.hotel_stars.Models.TypeRoomAmenitiesTypeRoomModel;
-import com.hotel.hotel_stars.Models.amenitiesTypeRoomModel;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.hotel.hotel_stars.DTO.AmenitiesTypeRoomDto;
+import com.hotel.hotel_stars.DTO.FeedbackDto;
+import com.hotel.hotel_stars.DTO.TypeBedDto;
+import com.hotel.hotel_stars.DTO.TypeRoomAmenitiesTypeRoomDto;
+import com.hotel.hotel_stars.DTO.TypeRoomDto;
+import com.hotel.hotel_stars.DTO.TypeRoomImageDto;
+import com.hotel.hotel_stars.DTO.TypeRoomWithReviewsDTO;
+import com.hotel.hotel_stars.DTO.Select.RoomTypeDetail;
+import com.hotel.hotel_stars.DTO.selectDTO.FindTypeRoomDto;
+import com.hotel.hotel_stars.Entity.AmenitiesTypeRoom;
+import com.hotel.hotel_stars.Entity.Feedback;
+import com.hotel.hotel_stars.Entity.TypeBed;
+import com.hotel.hotel_stars.Entity.TypeRoom;
+import com.hotel.hotel_stars.Entity.TypeRoomAmenitiesTypeRoom;
+import com.hotel.hotel_stars.Entity.TypeRoomImage;
+import com.hotel.hotel_stars.Models.TypeRoomAmenitiesTypeRoomModel;
+import com.hotel.hotel_stars.Models.amenitiesTypeRoomModel;
+import com.hotel.hotel_stars.Models.typeRoomModel;
+import com.hotel.hotel_stars.Repository.AmenitiesTypeRoomRepository;
+import com.hotel.hotel_stars.Repository.FeedBackRepository;
+import com.hotel.hotel_stars.Repository.TypeBedRepository;
+import com.hotel.hotel_stars.Repository.TypeRoomAmenitiesTypeRoomRepository;
+import com.hotel.hotel_stars.Repository.TypeRoomImageRepository;
+import com.hotel.hotel_stars.Repository.TypeRoomRepository;
+import com.hotel.hotel_stars.Utils.paramService;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 
 @Service
 public class TypeRoomService {
@@ -346,58 +367,55 @@ public class TypeRoomService {
 //        }).collect(Collectors.toList()); // Collect the results into a List
 //    }
 
-public List<FindTypeRoomDto> getRoom(String startDates, String endDates, Integer guestLimit, Integer page, Integer size) {
-    LocalDate startDate = paramServices.convertStringToLocalDate(startDates);
-    LocalDate endDate = paramServices.convertStringToLocalDate(endDates);
+    public Page<FindTypeRoomDto> getRoom(String startDate, String endDate, Integer guestLimit, Pageable pageable) {
+        // Gọi repository với phân trang
+        LocalDate startDates = paramServices.convertStringToLocalDate(startDate);
+        LocalDate endDates = paramServices.convertStringToLocalDate(endDate);
+        Page<Object[]> result = typeRoomRepository.findAvailableRoomsWithPagination(startDates, endDates, guestLimit, pageable);
 
-    // Tính toán limit và offset cho phân trang
-    int limit = size;
-    int offset = (page - 1) * size;
+        // Chuyển đổi kết quả từ Object[] thành DTO
+        return result.map(results -> {
+            String roomId = (String) results[0];
+            List<Integer> listRoomId = Arrays.stream(roomId.split(",")).map(Integer::valueOf).toList();
+            String roomName = (String) results[1];
+            List<String> listRoomName = Arrays.stream(roomName.split(",")).map(String::valueOf).toList();
+            Integer roomTypeId = (Integer) results[2];
+            String roomTypeName = (String) results[3];
+            Double priceTypeRoom = (Double) results[4];
+            Double acreage = (Double) results[5];
+            Integer guestLimits = (Integer) results[6];
+            String amenitiesTypeRoomDetails = (String) results[7];
+            Double estCost = (Double) results[8];
+            String imagesString = (String) results[9];
 
-    // Gọi repository với phân trang
-    List<Object[]> result = typeRoomRepository.findAvailableRoomsWithPagination(startDate, endDate, guestLimit, limit, offset);
+            List<String> listImages = Arrays.stream(imagesString.split(","))
+                    .map(String::trim)
+                    .collect(Collectors.toList());
 
-    // Chuyển đổi kết quả từ Object[] thành DTO
-    return result.stream().map(results -> {
-        Integer roomId = (Integer) results[0];
-        String roomName = (String) results[1];
-        Integer roomTypeId = (Integer) results[2];
-        String roomTypeName = (String) results[3];
-        Double priceTypeRoom = (Double) results[4];
-        Double acreage = (Double) results[5];
-        Integer guestLimits = (Integer) results[6];
-        String amenitiesTypeRoomDetails = (String) results[7];
-        Double estCost = (Double) results[8];
-        String imagesString = (String) results[9];
+            List<String> amenitiesList = Arrays.stream(amenitiesTypeRoomDetails.split(","))
+                    .map(String::trim)
+                    .toList();
 
-        List<String> listImages = Arrays.stream(imagesString.split(","))
-                .map(String::trim)
-                .collect(Collectors.toList());
+            String describe = (String) results[10];
+            String bedName = (String) results[11];
+            List<String> bedNameList = Arrays.stream(bedName.split(","))
+                    .map(String::trim)
+                    .toList();
 
-        List<String> amenitiesList = Arrays.stream(amenitiesTypeRoomDetails.split(","))
-                .map(String::trim)
-                .toList();
-
-        String describe = (String) results[10];
-        String bedName = (String) results[11];
-        List<String> bedNameList = Arrays.stream(bedName.split(","))
-                .map(String::trim)
-                .toList();
-
-        return new FindTypeRoomDto(
-                roomId, roomName, roomTypeId, roomTypeName, priceTypeRoom, acreage, guestLimits,
-                amenitiesList, estCost, listImages, describe, bedNameList
-        );
-    }).toList();
-}
-
-    public long getTotalRoomCount(String startDates, String endDates, Integer guestLimit) {
-        Instant startDate = paramServices.stringToInstant(startDates);
-        Instant endDate = paramServices.stringToInstant(endDates);
-
-        // Gọi repository để đếm tổng số phòng có sẵn
-        return typeRoomRepository.countAvailableRooms(startDate, endDate, guestLimit);
+            return new FindTypeRoomDto(
+                    listRoomId, listRoomName, roomTypeId, roomTypeName, priceTypeRoom, acreage, guestLimits,
+                    amenitiesList, estCost, listImages, describe, bedNameList
+            );
+        });
     }
+
+
+//    public long getTotalRoomCount(String startDates, String endDates, Integer guestLimit) {
+//        Instant startDate = paramServices.stringToInstant(startDates);
+//        Instant endDate = paramServices.stringToInstant(endDates);
+//        // Gọi repository để đếm tổng số phòng có sẵn
+//        return typeRoomRepository.countAvailableRooms(startDate, endDate, guestLimit);
+//    }
 
     public List<RoomTypeDetail> getRoomTypeDetailById(Integer roomId) {
         List<Object[]> results = typeRoomRepository.findTypeRoomDetailsById(roomId); // Adjust the method call if needed

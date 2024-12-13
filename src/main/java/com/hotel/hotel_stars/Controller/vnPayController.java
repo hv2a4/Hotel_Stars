@@ -6,8 +6,9 @@ import com.hotel.hotel_stars.Repository.BookingRepository;
 import com.hotel.hotel_stars.Repository.DiscountAccountRepository;
 import com.hotel.hotel_stars.Repository.DiscountRepository;
 import com.hotel.hotel_stars.Repository.StatusBookingRepository;
-import com.hotel.hotel_stars.utils.SessionService;
-import com.hotel.hotel_stars.utils.paramService;
+
+import com.hotel.hotel_stars.Utils.SessionService;
+import com.hotel.hotel_stars.Utils.paramService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -50,7 +51,6 @@ public class vnPayController {
         String orderInfo = request.getParameter("vnp_OrderInfo");
         StatusBooking statusBooking= statusBookingRepository.findById(2).get();
         int paymentStatus = vnPayService.orderReturn(request);
-        System.out.println("code này vnpay");
         Booking booking = bookingRepository.findById(Integer.valueOf(orderInfo)).get();
         if( paymentStatus == 1){
             try {
@@ -80,6 +80,7 @@ public class vnPayController {
 
             paramServices.sendEmails(booking.getAccount().getEmail(),"thông tin đơn hàng",
                     paramServices.pdfDownload(idBk,booking,startDate,endDate ,formattedAmount,roomsString, paramServices.getImage()));
+
 
             try {
                 bookingRepository.save(booking);
@@ -120,7 +121,7 @@ public class vnPayController {
             booking.setStatusPayment(false);
             bookingRepository.save(booking);
             String paymentStatuss = "error";
-            String messages = "Thanh toán thất bại, đơn đặt phòng của bạn đã bị hủy";
+            String messages = "Thanh toán thất bại";
             String redirectUrl = null;
             redirectUrl = String.format(
                     "http://localhost:3000/client/booking-room?status=%s&message=%s",
@@ -134,5 +135,6 @@ public class vnPayController {
                 throw new RuntimeException(e);
             }
         }
+
     }
 }

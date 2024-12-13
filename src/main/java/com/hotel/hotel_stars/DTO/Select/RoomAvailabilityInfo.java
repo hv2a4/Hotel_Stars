@@ -8,8 +8,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RoomAvailabilityInfo {
-    private Integer roomId;                   // ID của phòng
-    private String roomName;                  // Tên phòng
+    private List<Integer> roomId;                   // ID của phòng
+    private List<String> roomName;                  // Tên phòng
     private Integer typeRoomId;               // ID loại phòng
     private String typeRoomName;              // Tên loại phòng
     private Double price;                     // Giá phòng

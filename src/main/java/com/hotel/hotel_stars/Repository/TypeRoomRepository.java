@@ -1,6 +1,8 @@
 package com.hotel.hotel_stars.Repository;
 
 import com.hotel.hotel_stars.Entity.TypeRoom;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -70,8 +72,8 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
 
     @Query(value = """
             SELECT
-                r.id AS roomId,
-                r.room_name,
+                GROUP_CONCAT(DISTINCT r.id ORDER BY r.id) AS roomId,
+                GROUP_CONCAT(DISTINCT r.room_name ORDER BY r.room_name) AS roomNames,
                 tr.id AS typeroomId,
                 tr.type_room_name,
                 tr.price,
@@ -115,44 +117,13 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
                 )
                 AND tr.guest_limit <= :guestLimit
             GROUP BY
-                tr.id, tr.type_room_name, tr.price, tr.acreage, tr.guest_limit, r.room_name, r.id, tr.describes
-            LIMIT :limit OFFSET :offset
+                tr.id
             """, nativeQuery = true)
-    List<Object[]> findAvailableRoomsWithPagination(
+    Page<Object[]> findAvailableRoomsWithPagination(
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
             @Param("guestLimit") Integer guestLimit,
-            @Param("limit") Integer limit,
-            @Param("offset") Integer offset);
-
-    @Query(value = """
-                SELECT COUNT(DISTINCT r.id)
-                FROM type_room tr
-                JOIN room r ON tr.id = r.type_room_id
-                LEFT JOIN booking_room br ON br.room_id = r.id
-                LEFT JOIN booking b ON br.booking_id = b.id
-                AND (
-                    :startDate <= DATE(b.end_at)
-                    AND :endDate >= DATE(b.start_at)
-                )
-                WHERE NOT EXISTS (
-                    SELECT 1
-                    FROM booking_room br_inner
-                    JOIN booking b_inner ON br_inner.booking_id = b_inner.id
-                    WHERE br_inner.room_id = r.id
-                    AND (
-                        DATE(b_inner.start_at) <= :endDate
-                        AND DATE(b_inner.end_at) >= :startDate
-                    ) AND b_inner.status_id != 6
-                )
-                AND tr.guest_limit <= :guestLimit
-            """, nativeQuery = true)
-    Integer countAvailableRooms(
-            @Param("startDate") Instant startDate,
-            @Param("endDate") Instant endDate,
-            @Param("guestLimit") Integer guestLimit
-    );
-
+            Pageable pageable);
 
     // kiểm tên loại phòng có tồn tại trong csdl
     boolean existsByTypeRoomName(String typeRoomName);

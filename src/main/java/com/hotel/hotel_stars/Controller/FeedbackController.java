@@ -22,4 +22,9 @@ public class FeedbackController {
     public ResponseEntity<List<FeedbackDto>> getAll(){
         return ResponseEntity.ok(feedbackService.convertListDTO());
     }
+
+    @GetMapping("get-all-use")
+    public ResponseEntity<?> getAllFeedback(){
+        return ResponseEntity.ok(feedbackService.getListUser());
+    }
 }

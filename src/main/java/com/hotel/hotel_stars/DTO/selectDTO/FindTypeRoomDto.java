@@ -10,8 +10,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FindTypeRoomDto {
-    Integer roomId;
-    String roomName;
+    List<Integer> roomId;
+    List<String> roomName;
     Integer typeRoomId;
     String typeRoomName;
     Double price;

@@ -1,29 +1,23 @@
 package com.hotel.hotel_stars.Exception;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.hotel.hotel_stars.DTO.StatusResponseDto;
 import com.hotel.hotel_stars.DTO.selectDTO.RoomAvailabilityResponse;
-import com.hotel.hotel_stars.Entity.*;
+import com.hotel.hotel_stars.Entity.Account;
+import com.hotel.hotel_stars.Entity.Room;
 import com.hotel.hotel_stars.Models.bookingModel;
 import com.hotel.hotel_stars.Repository.AccountRepository;
 import com.hotel.hotel_stars.Repository.RoomRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomRepository;
-import com.hotel.hotel_stars.Service.BookingService;
-import com.hotel.hotel_stars.utils.paramService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.*;
-
-import static java.util.Collections.*;
-import static java.util.List.of;
-
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import com.hotel.hotel_stars.Utils.paramService;
 
 @Service
 public class ErrorsService {
@@ -91,7 +85,7 @@ public class ErrorsService {
             errors.add(new ValidationError("room", "Id: " + rooms.getId() + ", " + "Phòng: " + rooms.getRoomName() + ", Loại phòng: " + rooms.getTypeRoom().getTypeRoomName() + ", Đã có người đặt rồi"));
             responseDto.setCode("400");
             responseDto.setStatus("error");
-            responseDto.setMessage("Id: " + rooms.getId() + ", " + "Phòng: " + rooms.getRoomName() + ", Loại phòng: " + rooms.getTypeRoom().getTypeRoomName() + ", Đã có người đặt rồi");
+            responseDto.setMessage("Từ: " + bookingModels.getStartDate() + " đến " + bookingModels.getEndDate() + "," + rooms.getRoomName()+", Đã có người đặt rồi");
             return responseDto;
         }
 

@@ -34,10 +34,8 @@ public class customerInformationModel {
     @Past(message = "Ngày sinh không thể là ngày trong tương lai")  // Kiểm tra ngày sinh hợp lệ
     private Instant birthday;
 
-    @NotBlank(message = "Vui lòng chọn ảnh mặt trước")
     private String imgFirstCard;
 
-    @NotBlank(message = "Vui lòng chọn ảnh mặt sau")
     private String imgLastCard;
 
 

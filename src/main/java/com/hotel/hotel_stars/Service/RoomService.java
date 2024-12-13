@@ -1,27 +1,5 @@
 package com.hotel.hotel_stars.Service;
 
-import com.hotel.hotel_stars.DTO.*;
-import com.hotel.hotel_stars.DTO.Select.RoomAvailabilityInfo;
-import com.hotel.hotel_stars.DTO.Select.RoomDetailResponseDTO;
-import com.hotel.hotel_stars.DTO.Select.PaginatedResponseDto;
-import com.hotel.hotel_stars.DTO.Select.RoomListBooking;
-import com.hotel.hotel_stars.DTO.selectDTO.countDto;
-import com.hotel.hotel_stars.Entity.*;
-import com.hotel.hotel_stars.Models.RoomModel;
-import com.hotel.hotel_stars.Repository.RoomRepository;
-import com.hotel.hotel_stars.Repository.TypeRoomImageRepository;
-import com.hotel.hotel_stars.utils.paramService;
-import com.hotel.hotel_stars.Repository.StatusRoomRepository;
-
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.sql.Date;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -29,13 +7,38 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
 
-import java.util.stream.Collectors;
+import com.hotel.hotel_stars.DTO.FloorDto;
+import com.hotel.hotel_stars.DTO.RoomDto;
+import com.hotel.hotel_stars.DTO.StatusResponseDto;
+import com.hotel.hotel_stars.DTO.StatusRoomDto;
+import com.hotel.hotel_stars.DTO.TypeBedDto;
+import com.hotel.hotel_stars.DTO.TypeRoomDto;
+import com.hotel.hotel_stars.DTO.Select.PaginatedResponseDto;
+import com.hotel.hotel_stars.DTO.Select.RoomAvailabilityInfo;
+import com.hotel.hotel_stars.DTO.Select.RoomDetailResponseDTO;
+import com.hotel.hotel_stars.DTO.Select.RoomListBooking;
+import com.hotel.hotel_stars.DTO.Select.RoomListDTO;
+import com.hotel.hotel_stars.DTO.selectDTO.countDto;
+import com.hotel.hotel_stars.Entity.Floor;
+import com.hotel.hotel_stars.Entity.Room;
+import com.hotel.hotel_stars.Entity.StatusRoom;
+import com.hotel.hotel_stars.Entity.TypeRoom;
+import com.hotel.hotel_stars.Entity.TypeRoomImage;
+import com.hotel.hotel_stars.Models.RoomModel;
+import com.hotel.hotel_stars.Repository.RoomRepository;
+import com.hotel.hotel_stars.Repository.StatusRoomRepository;
+import com.hotel.hotel_stars.Repository.TypeRoomImageRepository;
+import com.hotel.hotel_stars.Utils.paramService;
 
 @Service
 public class RoomService {
@@ -205,25 +208,26 @@ public class RoomService {
         LocalDate localDate = LocalDate.parse(dateString, formatter);
         return java.sql.Date.valueOf(localDate); // Trả về java.sql.Date
     }
+
     public LocalDate stringToLocalDate(String dateStr) {
         return LocalDate.parse(dateStr, DateTimeFormatter.ISO_DATE);
     }
 
     public PaginatedResponseDto<RoomDto> getAll(int page, int size, String sortBy, LocalDate startDate, LocalDate endDate,
-            Integer guestLimit) {
-Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+                                                Integer guestLimit) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
 
 // Chuyển đổi LocalDate thành Date hoặc Instant khi truyền vào JPA Query
-Instant startInstant = startDate != null ? startDate.atStartOfDay(ZoneId.systemDefault()).toInstant() : null;
-Instant endInstant = endDate != null ? endDate.atStartOfDay(ZoneId.systemDefault()).toInstant() : null;
+        Instant startInstant = startDate != null ? startDate.atStartOfDay(ZoneId.systemDefault()).toInstant() : null;
+        Instant endInstant = endDate != null ? endDate.atStartOfDay(ZoneId.systemDefault()).toInstant() : null;
 
-Page<Room> roomPage = roomRepository.findAvailableRoomsWithPagination(
-startInstant, endInstant, guestLimit, pageable
-);
+        Page<Room> roomPage = roomRepository.findAvailableRoomsWithPagination(
+                startInstant, endInstant, guestLimit, pageable
+        );
 
-List<RoomDto> roomDtos = roomPage.stream().map(this::convertToDto).collect(Collectors.toList());
-return new PaginatedResponseDto<>(roomDtos, page, roomPage.getTotalPages(), roomPage.getTotalElements());
-}
+        List<RoomDto> roomDtos = roomPage.stream().map(this::convertToDto).collect(Collectors.toList());
+        return new PaginatedResponseDto<>(roomDtos, page, roomPage.getTotalPages(), roomPage.getTotalElements());
+    }
 
     // public PaginatedResponseDto<RoomDto> getAll(int page, int size, String
     // sortBy, Instant startDate, Instant endDate, Integer guestLimit) {
@@ -266,8 +270,11 @@ return new PaginatedResponseDto<>(roomDtos, page, roomPage.getTotalPages(), room
     public Page<RoomAvailabilityInfo> getAvailableRooms(Pageable pageable) {
         Page<Object[]> result = roomRepository.findAvailableRooms(pageable);
         return result.map(row -> {
-            Integer roomId = (Integer) row[0];
+            String roomId = (String) row[0];
+            System.out.println(roomId);
+            List<Integer> IdRoom = Arrays.stream(String.valueOf(roomId).split(",")).map(String::trim).map(Integer::parseInt).toList();
             String roomName = (String) row[1];
+            List<String> listRoom = Arrays.stream(String.valueOf(roomName).split(",")).map(String::trim).toList();
             Integer typeRoomId = (Integer) row[2];
             String typeRoomName = (String) row[3];
             Double price = (Double) row[4];
@@ -280,18 +287,16 @@ return new PaginatedResponseDto<>(roomDtos, page, roomPage.getTotalPages(), room
             String amenitiesIds = (String) row[11];
             Double finalPrice = (Double) row[12]; // finalPrice from SQL query
             Double estCost = (Double) row[13]; // estCost from SQL query
-            Double percent = (Double) row[14]; // percent from SQL query
 
             RoomAvailabilityInfo roomAvailabilityInfo = new RoomAvailabilityInfo();
-            roomAvailabilityInfo.setRoomId(roomId);
-            roomAvailabilityInfo.setRoomName(roomName);
+            roomAvailabilityInfo.setRoomId(IdRoom);
+            roomAvailabilityInfo.setRoomName(listRoom);
             roomAvailabilityInfo.setTypeRoomId(typeRoomId);
             roomAvailabilityInfo.setTypeRoomName(typeRoomName);
             roomAvailabilityInfo.setPrice(price);
             roomAvailabilityInfo.setAcreage(acreage);
             roomAvailabilityInfo.setGuestLimit(guestLimit);
-            roomAvailabilityInfo
-                    .setAmenitiesDetails(Arrays.stream(amenitiesDetails.split(",")).map(String::trim).toList());
+            roomAvailabilityInfo.setAmenitiesDetails(Arrays.stream(amenitiesDetails.split(",")).map(String::trim).toList());
             roomAvailabilityInfo.setImageList(Arrays.asList(imageList.split(",")));
             roomAvailabilityInfo.setDescription(description);
             roomAvailabilityInfo.setBedNames(Arrays.asList(bedNames.split(",")));
@@ -300,8 +305,8 @@ return new PaginatedResponseDto<>(roomDtos, page, roomPage.getTotalPages(), room
 
             // Setting the additional fields
             roomAvailabilityInfo.setFinalPrice(finalPrice);
-            roomAvailabilityInfo.setEstCost(estCost);
-            roomAvailabilityInfo.setPercent(percent);
+            roomAvailabilityInfo.setEstCost(null);
+
 
             return roomAvailabilityInfo;
         });
@@ -365,14 +370,14 @@ return new PaginatedResponseDto<>(roomDtos, page, roomPage.getTotalPages(), room
         List<RoomListBooking> roomListBookings = new ArrayList<>();
         reusult.forEach(row -> {
 
-            Integer roomId =(Integer) row[0];
+            Integer roomId = (Integer) row[0];
             String roomName = (String) row[1];
             Integer floorId = (Integer) row[2];
             Integer typeRoomId = (Integer) row[3];
             String typeRoomName = (String) row[4];
-            Double price =(Double) row[5];
+            Double price = (Double) row[5];
             Integer bedCount = (Integer) row[6];
-            Double acreage =(Double) row[7];
+            Double acreage = (Double) row[7];
             Integer guestLimit = (Integer) row[8];
             String describes = (String) row[9];
             String imageName = (String) row[10];
@@ -395,5 +400,10 @@ return new PaginatedResponseDto<>(roomDtos, page, roomPage.getTotalPages(), room
             roomListBookings.add(roomListBooking);
         });
         return roomListBookings;
+    }
+
+    public List<RoomListDTO> getListById(Integer id) {
+        List<RoomListDTO> roomListDTOS = roomRepository.findRoomsByTypeId(id);
+        return roomListDTOS;
     }
 }

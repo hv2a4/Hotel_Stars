@@ -1,5 +1,37 @@
-package com.hotel.hotel_stars.utils;
+package com.hotel.hotel_stars.Utils;
 
+
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
+
+import javax.imageio.ImageIO;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
@@ -9,36 +41,13 @@ import com.hotel.hotel_stars.Entity.Account;
 import com.hotel.hotel_stars.Entity.Booking;
 import com.hotel.hotel_stars.Entity.Role;
 import com.hotel.hotel_stars.Repository.RoleRepository;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.tool.xml.XMLWorkerFontProvider;
 import com.itextpdf.tool.xml.XMLWorkerHelper;
+
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.security.GeneralSecurityException;
-import java.time.*;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.*;
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.pdf.PdfWriter;
-import com.itextpdf.text.pdf.BaseFont;
 
 
 @Service
@@ -365,102 +374,102 @@ public class paramService {
                 + "</html>";
     }
     public String pdfDownload(String id, Booking booking, LocalDate startDate, LocalDate endDate, String total, String rooms, String image) {
-          return  "<!DOCTYPE html>\n"
-                  + "<html lang=\"vi\">\n"
-                  + "<head>\n"
-                  + "    <meta charset=\"UTF-8\" />\n"
-                  + "    <title>Đơn đặt phòng</title>\n"
-                  + "    <style>\n"
-                  + "        body {\n"
-                  + "            font-family: 'Roboto', sans-serif;\n"
-                  + "            background-color: #fff;\n"
-                  + "            display: flex;\n"
-                  + "            justify-content: center;\n"
-                  + "            align-items: center;\n"
-                  + "            height: 100vh;\n"
-                  + "            margin: 0;\n"
-                  + "        }\n"
-                  + "        .ticket {\n"
-                  + "            display: flex;\n"
-                  + "            border: 2px dashed #444;\n"
-                  + "            border-radius: 15px;\n"
-                  + "            width: 600px;\n"
-                  + "            background-color: #1e293b;\n"
-                  + "            color: #cac6c6;\n"
-                  + "        }\n"
-                  + "        .ticket-left {\n"
-                  + "            flex: 3;\n"
-                  + "            padding: 20px;\n"
-                  + "        }\n"
-                  + "        .ticket-right {\n"
-                  + "            flex: 1;\n"
-                  + "            padding: 20px;\n"
-                  + "        }\n"
-                  + "        .ticket-right .qr-code {\n"
-                  + "            display: flex;\n"
-                  + "            align-items: center;\n"
-                  + "        }\n"
-                  + "        .ticket-right .qr-code img {\n"
-                  + "            margin-top: 108px;\n"
-                  + "        }\n"
-                  + "        .card .pdf {\n"
-                  + "            display: flex;\n"
-                  + "            justify-content: center;\n"
-                  + "            margin-top: 10px;\n"
-                  + "        }\n"
-                  + "        .card .pdf a {\n"
-                  + "            text-decoration: none;\n"
-                  + "            font-weight: 600;\n"
-                  + "        }\n"
-                  + "        h1, h2, h3 {\n"
-                  + "            margin: 0;\n"
-                  + "            text-transform: uppercase;\n"
-                  + "        }\n"
-                  + "        h1 {\n"
-                  + "            font-size: 48px;\n"
-                  + "            margin-top: 10px;\n"
-                  + "        }\n"
-                  + "        h2 {\n"
-                  + "            font-size: 20px;\n"
-                  + "        }\n"
-                  + "        h3 {\n"
-                  + "            text-align: center;\n"
-                  + "            background-color: #444;\n"
-                  + "            padding: 10px 0;\n"
-                  + "            border-radius: 5px;\n"
-                  + "        }\n"
-                  + "        p {\n"
-                  + "            margin: 5px 0;\n"
-                  + "            font-size: 16px;\n"
-                  + "        }\n"
-                  + "        .ticket-right p:last-child {\n"
-                  + "            text-align: center;\n"
-                  + "        }\n"
-                  + "    </style>\n"
-                  + "</head>\n"
-                  + "<body>\n"
-                  + "    <div class=\"card\">\n"
-                  + "        <div class=\"ticket\">\n"
-                  + "            <div class=\"ticket-left\">\n"
-                  + "                <h2>Đơn đặt phòng</h2>\n"
-                  + "                <h1>Hotel Stars</h1>\n"
-                  + "                <p>Mã đơn: <strong>" + id + "</strong></p>\n"
-                  + "                <p>Tên khách hàng: <strong>"+booking.getAccount().getUsername()+"</strong></p>\n"
-                  + "                <p>Số điện thoại: <strong>"+booking.getAccount().getPhone()+"</strong></p>\n"
-                  + "                <p>Ngày nhận: <strong>"+startDate+"</strong></p>\n"
-                  + "                <p>Ngày trả: <strong>"+endDate+"</strong></p>\n"
-                  + "                <p>Phòng: <strong>"+rooms+"</strong></p>\n"
-                  + "                <p>Tổng tiền: <strong>"+total+"</strong></p>\n"
-                  + "                <p>Trạng thái thanh toán: <strong>"+(booking.getStatusPayment() ? "Đã thanh toán" : "Chưa thanh toán")+"</strong></p>\n"
-                  + "            </div>\n"
-                  + "            <div class=\"ticket-right\">\n"
-                  + "                <div class=\"qr-code\">\n"
-                  + "                </div>\n"
-                  + "            </div>\n"
-                  + "        </div>\n"
-                  + "    </div>\n"
-                  + "</body>\n"
-                  + "</html>";
+        return  "<!DOCTYPE html>\n"
+                + "<html lang=\"vi\">\n"
+                + "<head>\n"
+                + "    <meta charset=\"UTF-8\" />\n"
+                + "    <title>Đơn đặt phòng</title>\n"
+                + "    <style>\n"
+                + "        body {\n"
+                + "            font-family: 'Roboto', sans-serif;\n"
+                + "            background-color: #fff;\n"
+                + "            display: flex;\n"
+                + "            justify-content: center;\n"
+                + "            align-items: center;\n"
+                + "            height: 100vh;\n"
+                + "            margin: 0;\n"
+                + "        }\n"
+                + "        .ticket {\n"
+                + "            display: flex;\n"
+                + "            border: 2px dashed #444;\n"
+                + "            border-radius: 15px;\n"
+                + "            width: 600px;\n"
+                + "            background-color: #1e293b;\n"
+                + "            color: #cac6c6;\n"
+                + "        }\n"
+                + "        .ticket-left {\n"
+                + "            flex: 3;\n"
+                + "            padding: 20px;\n"
+                + "        }\n"
+                + "        .ticket-right {\n"
+                + "            flex: 1;\n"
+                + "            padding: 20px;\n"
+                + "        }\n"
+                + "        .ticket-right .qr-code {\n"
+                + "            display: flex;\n"
+                + "            align-items: center;\n"
+                + "        }\n"
+                + "        .ticket-right .qr-code img {\n"
+                + "            margin-top: 108px;\n"
+                + "        }\n"
+                + "        .card .pdf {\n"
+                + "            display: flex;\n"
+                + "            justify-content: center;\n"
+                + "            margin-top: 10px;\n"
+                + "        }\n"
+                + "        .card .pdf a {\n"
+                + "            text-decoration: none;\n"
+                + "            font-weight: 600;\n"
+                + "        }\n"
+                + "        h1, h2, h3 {\n"
+                + "            margin: 0;\n"
+                + "            text-transform: uppercase;\n"
+                + "        }\n"
+                + "        h1 {\n"
+                + "            font-size: 48px;\n"
+                + "            margin-top: 10px;\n"
+                + "        }\n"
+                + "        h2 {\n"
+                + "            font-size: 20px;\n"
+                + "        }\n"
+                + "        h3 {\n"
+                + "            text-align: center;\n"
+                + "            background-color: #444;\n"
+                + "            padding: 10px 0;\n"
+                + "            border-radius: 5px;\n"
+                + "        }\n"
+                + "        p {\n"
+                + "            margin: 5px 0;\n"
+                + "            font-size: 16px;\n"
+                + "        }\n"
+                + "        .ticket-right p:last-child {\n"
+                + "            text-align: center;\n"
+                + "        }\n"
+                + "    </style>\n"
+                + "</head>\n"
+                + "<body>\n"
+                + "    <div class=\"card\">\n"
+                + "        <div class=\"ticket\">\n"
+                + "            <div class=\"ticket-left\">\n"
+                + "                <h2>Đơn đặt phòng</h2>\n"
+                + "                <h1>Hotel Stars</h1>\n"
+                + "                <p>Mã đơn: <strong>" + id + "</strong></p>\n"
+                + "                <p>Tên khách hàng: <strong>"+booking.getAccount().getUsername()+"</strong></p>\n"
+                + "                <p>Số điện thoại: <strong>"+booking.getAccount().getPhone()+"</strong></p>\n"
+                + "                <p>Ngày nhận: <strong>"+startDate+"</strong></p>\n"
+                + "                <p>Ngày trả: <strong>"+endDate+"</strong></p>\n"
+                + "                <p>Phòng: <strong>"+rooms+"</strong></p>\n"
+                + "                <p>Tổng tiền: <strong>"+total+"</strong></p>\n"
+                + "                <p>Trạng thái thanh toán: <strong>"+(booking.getStatusPayment() ? "Đã thanh toán" : "Chưa thanh toán")+"</strong></p>\n"
+                + "            </div>\n"
+                + "            <div class=\"ticket-right\">\n"
+                + "                <div class=\"qr-code\">\n"
+                + "                </div>\n"
+                + "            </div>\n"
+                + "        </div>\n"
+                + "    </div>\n"
+                + "</body>\n"
+                + "</html>";
     }
     public String generatePdf(String htmlContent, String fullName, String id) throws Exception {
         // Định nghĩa đường dẫn thư mục người dùng (Downloads)
