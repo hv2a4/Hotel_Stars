@@ -484,10 +484,10 @@ public class TypeRoomService {
             BigDecimal averageFeedBackBigDecimal = (BigDecimal) row[11];
             Double averageFeedBack = averageFeedBackBigDecimal.doubleValue();
             String accountName = (String) row[12];
-            List<String> accountNameList =Arrays.stream(accountName.split(",")).map(String::trim).toList();
+            List<String> accountNameList = Arrays.stream(accountName.split(",")).map(String::trim).toList();
 
             String imageName = (String) row[13];
-            List<String> imageNameList =Arrays.stream(imageName.split(",")).map(String::trim).toList();
+            List<String> imageNameList = Arrays.stream(imageName.split(",")).map(String::trim).toList();
             // Create and populate RoomTypeDetail object
             RoomTypeDetail detail = new RoomTypeDetail();
             detail.setTypeRoomId(typeRoomId);
@@ -502,9 +502,8 @@ public class TypeRoomService {
             detail.setAmenitiesList(amenitiesTypeRoomDtos);
             detail.setFeedBack(feedbackDtos);
             detail.setAverageFeedBack(averageFeedBack);
-            detail.setImageList(imageList);
-           detail.setAccountNames(accountNameList);
-
+            detail.setAccountNames(accountNameList);
+            detail.setImage(imageNameList);
             dtos.add(detail);
         });
 
