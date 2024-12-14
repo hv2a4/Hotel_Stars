@@ -24,6 +24,6 @@ public class RoomTypeDetail {
     private List<AmenitiesTypeRoomDto> amenitiesList;
     private List<FeedbackDto> feedBack;
     private Double averageFeedBack;
-    private List<String> accountName;
+    private List<String> accountNames;
     private List<String> Image;
 }

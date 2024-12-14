@@ -4,7 +4,7 @@ import com.hotel.hotel_stars.DTO.*;
 import com.hotel.hotel_stars.Entity.Account;
 import com.hotel.hotel_stars.Entity.Discount;
 import com.hotel.hotel_stars.Entity.DiscountAccount;
-import com.hotel.hotel_stars.Models.DiscountAccountModel;
+import com.hotel.hotel_stars.Models.DiscountAccountModels;
 import com.hotel.hotel_stars.Repository.AccountRepository;
 import com.hotel.hotel_stars.Repository.DiscountAccountRepository;
 import com.hotel.hotel_stars.Repository.DiscountRepository;
@@ -85,7 +85,7 @@ public class DiscountAccountService {
         return discountAccountList.stream().map(this::convertToDto).toList();
     }
 
-    public StatusResponseDto add(DiscountAccountModel discountAccountModel) {
+    public StatusResponseDto add(DiscountAccountModels discountAccountModel) {
         // Kiểm tra xem discountAccountModel có null không
         if (discountAccountModel == null) {
             return new StatusResponseDto("400", "FAILURE", "Dữ liệu không được để trống.");

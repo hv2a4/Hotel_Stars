@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DiscountAccountModel {
+public class DiscountAccountModels {
     Integer id;
 
     @NotNull(message = "Id discount không được để trống.")

@@ -15,7 +15,7 @@ import com.hotel.hotel_stars.DTO.BookingStatisticsDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import com.hotel.hotel_stars.DTO.selectDTO.BookingHistoryDTO;
+import com.hotel.hotel_stars.DTO.selectDTO.BookingHistoryDTOs;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.FileSystemResource;
@@ -50,8 +50,8 @@ import com.hotel.hotel_stars.Repository.BookingRepository;
 import com.hotel.hotel_stars.Repository.BookingRoomRepository;
 import com.hotel.hotel_stars.Repository.StatusBookingRepository;
 import com.hotel.hotel_stars.Service.BookingService;
-import com.hotel.hotel_stars.Utils.SessionService;
-import com.hotel.hotel_stars.Utils.paramService;
+import com.hotel.hotel_stars.utils.SessionService;
+import com.hotel.hotel_stars.utils.paramService;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -305,7 +305,7 @@ public class BookingController {
 	}
     @GetMapping("/booking-history-account")
     public ResponseEntity<?> getBookings(@RequestParam Integer accountId) {
-        List<BookingHistoryDTO> bookings = bookingService.getBookingsByAccountId(accountId);
+        List<BookingHistoryDTOs> bookings = bookingService.getBookingsByAccountId(accountId);
         return ResponseEntity.ok(bookings);
     }
 
@@ -313,4 +313,14 @@ public class BookingController {
     public ResponseEntity<?> getBookingByRoom(@PathVariable("id") Integer id) {
         return ResponseEntity.ok(bookingService.getBookingByRoom(id));
     }
+    @PutMapping("/cancel-booking/{id}")
+	public StatusResponseDto cancelBooking(@PathVariable("id") Integer id,
+			@RequestParam("descriptions") String descriptions) {
+		boolean flag = bookingService.cancelBooking(id, descriptions);
+		if (flag) {
+			return new StatusResponseDto("200", "success", "Hủy đặt phòng thành công");
+		} else {
+			return new StatusResponseDto("400", "error", "Hủy đặt phòng thất bại");
+		}
+	}
 }

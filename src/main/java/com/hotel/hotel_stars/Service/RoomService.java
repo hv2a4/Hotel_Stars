@@ -38,7 +38,7 @@ import com.hotel.hotel_stars.Models.RoomModel;
 import com.hotel.hotel_stars.Repository.RoomRepository;
 import com.hotel.hotel_stars.Repository.StatusRoomRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomImageRepository;
-import com.hotel.hotel_stars.Utils.paramService;
+import com.hotel.hotel_stars.utils.paramService;
 
 @Service
 public class RoomService {

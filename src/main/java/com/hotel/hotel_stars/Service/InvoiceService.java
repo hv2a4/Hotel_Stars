@@ -1,6 +1,8 @@
 package com.hotel.hotel_stars.Service;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -16,6 +18,7 @@ import com.hotel.hotel_stars.DTO.InvoiceStatisticsDTO2;
 import com.hotel.hotel_stars.DTO.StatusResponseDto;
 import com.hotel.hotel_stars.Entity.Booking;
 import com.hotel.hotel_stars.Entity.BookingRoom;
+import com.hotel.hotel_stars.Entity.BookingRoomServiceRoom;
 import com.hotel.hotel_stars.Entity.Invoice;
 import com.hotel.hotel_stars.Entity.Room;
 import com.hotel.hotel_stars.Entity.StatusBooking;
@@ -23,6 +26,7 @@ import com.hotel.hotel_stars.Entity.StatusRoom;
 import com.hotel.hotel_stars.Models.InvoiceModel;
 import com.hotel.hotel_stars.Repository.BookingRepository;
 import com.hotel.hotel_stars.Repository.BookingRoomRepository;
+import com.hotel.hotel_stars.Repository.BookingRoomServiceRoomRepository;
 import com.hotel.hotel_stars.Repository.InvoiceRepository;
 import com.hotel.hotel_stars.Repository.RoomRepository;
 import com.hotel.hotel_stars.Repository.StatusBookingRepository;
@@ -43,6 +47,8 @@ public class InvoiceService {
 	RoomRepository roomRepository;
 	@Autowired
 	StatusRoomRepository statusRoomRepository;
+	@Autowired
+	BookingRoomServiceRoomRepository bookingRoomServiceRoomRepository;
 
 	public InvoiceDto convertDto(Invoice invoice) {
 		InvoiceDto dto = new InvoiceDto();
@@ -80,12 +86,28 @@ public class InvoiceService {
 					.collect(Collectors.toList());
 			List<BookingRoom> bookingRooms = bookingRoomRepository.findByIdIn(idBookingRooms);
 			for (BookingRoom bookingRoom : bookingRooms) {
+				LocalDate startDate = booking.getStartAt().atZone(ZoneId.systemDefault()).toLocalDate();
+				LocalDate endDate = invoiceModel.getCreateAt().atZone(ZoneId.systemDefault()).toLocalDate();
+				Long days = ChronoUnit.DAYS.between(startDate, endDate);
+				if (days == 0) {
+					days = 1L;
+				}
 				Room room = roomRepository.findById(bookingRoom.getRoom().getId())
 						.orElseThrow(() -> new IllegalArgumentException("Phòng không tồn tại"));
 				StatusRoom statusRoom = statusRoomRepository.findById(5)
 						.orElseThrow(() -> new IllegalArgumentException("Trạng thái phòng không tồn tại"));
 				room.setStatusRoom(statusRoom);
+				List<BookingRoomServiceRoom> bookingRoomServiceRooms = bookingRoomServiceRoomRepository.findByBookingRoomId(bookingRoom.getId());
+				Double priceService = bookingRoomServiceRooms.stream()
+	                    .mapToDouble(BookingRoomServiceRoom::getPrice)
+	                    .sum();
+				Double price = room.getTypeRoom().getPrice() * days + priceService;
+				System.out.println(room.getTypeRoom().getPrice());
+				System.out.println(days);
+				System.out.println(priceService);
+				System.out.println(price);
 				bookingRoom.setCheckOut(invoiceModel.getCreateAt());
+				bookingRoom.setPrice(price);
 			}
 			bookingRoomRepository.saveAll(bookingRooms);
 			roomRepository.saveAll(bookingRooms.stream().map(BookingRoom::getRoom).collect(Collectors.toList()));

@@ -2,7 +2,7 @@ package com.hotel.hotel_stars.Controller;
 
 import com.hotel.hotel_stars.DTO.DiscountAccountDto;
 import com.hotel.hotel_stars.DTO.StatusResponseDto;
-import com.hotel.hotel_stars.Models.DiscountAccountModel;
+import com.hotel.hotel_stars.Models.DiscountAccountModels;
 import com.hotel.hotel_stars.Service.DiscountAccountService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +24,7 @@ public class DiscountAccountController {
     }
 
     @PostMapping("/add")
-    public StatusResponseDto addDiscountAccount(@Valid @RequestBody DiscountAccountModel discountAccountModel) {
+    public StatusResponseDto addDiscountAccount(@Valid @RequestBody DiscountAccountModels discountAccountModel) {
         return discountAccountService.add(discountAccountModel);
     }
 }

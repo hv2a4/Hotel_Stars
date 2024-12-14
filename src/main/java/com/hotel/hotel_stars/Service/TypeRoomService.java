@@ -38,7 +38,7 @@ import com.hotel.hotel_stars.Repository.TypeBedRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomAmenitiesTypeRoomRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomImageRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomRepository;
-import com.hotel.hotel_stars.Utils.paramService;
+import com.hotel.hotel_stars.utils.paramService;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -502,8 +502,8 @@ public class TypeRoomService {
             detail.setAmenitiesList(amenitiesTypeRoomDtos);
             detail.setFeedBack(feedbackDtos);
             detail.setAverageFeedBack(averageFeedBack);
-            detail.setAccountName(accountNameList);
-            detail.setImage(imageNameList);
+            detail.setImageList(imageList);
+           detail.setAccountNames(accountNameList);
 
             dtos.add(detail);
         });

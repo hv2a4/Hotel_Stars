@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class BookingHistoryDTO {
+public class BookingHistoryDTOs {
     private Integer bkId;
     private String bkFormat;
     private String createAt;

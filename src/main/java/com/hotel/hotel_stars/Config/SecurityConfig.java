@@ -554,6 +554,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/booking/update-status/**").permitAll()
                                 .requestMatchers("/api/booking/update-checkIn/**").permitAll()
                                 .requestMatchers("/api/booking-infomation/booking-room").permitAll()
+                                .requestMatchers("/api/booking/booking-history-account").permitAll()
                                 .requestMatchers("/api/booking-room/list-booking-room").permitAll()
                                 .requestMatchers("/api/customer-info/add").permitAll()
                                 .requestMatchers("/api/customer-info/update/**").permitAll()

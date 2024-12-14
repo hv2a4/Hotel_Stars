@@ -17,7 +17,7 @@ import com.hotel.hotel_stars.Models.bookingModel;
 import com.hotel.hotel_stars.Repository.AccountRepository;
 import com.hotel.hotel_stars.Repository.RoomRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomRepository;
-import com.hotel.hotel_stars.Utils.paramService;
+import com.hotel.hotel_stars.utils.paramService;
 
 @Service
 public class ErrorsService {

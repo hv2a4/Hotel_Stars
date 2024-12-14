@@ -6,9 +6,9 @@ import com.hotel.hotel_stars.Repository.BookingRepository;
 import com.hotel.hotel_stars.Repository.DiscountAccountRepository;
 import com.hotel.hotel_stars.Repository.DiscountRepository;
 import com.hotel.hotel_stars.Repository.StatusBookingRepository;
+import com.hotel.hotel_stars.utils.SessionService;
+import com.hotel.hotel_stars.utils.paramService;
 
-import com.hotel.hotel_stars.Utils.SessionService;
-import com.hotel.hotel_stars.Utils.paramService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
