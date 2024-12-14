@@ -27,6 +27,4 @@ public class BookingHistoryDTO {
     private String combinedServiceNames;
     private Double combinedTotalServices;
     private Double totalBooking;
-    private Float discountPercents;
-    private String discountNames;
 }

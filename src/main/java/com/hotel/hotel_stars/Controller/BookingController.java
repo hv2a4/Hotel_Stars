@@ -195,10 +195,6 @@ public class BookingController {
                 double discountAmount = total * (booking.getDiscountPercent() / 100);
                 total = total - discountAmount;
             }
-            if(booking.getDiscountPercent()!=null && booking.getDiscountPercent()!=null){
-                double discountAmount = total * (booking.getDiscountPercent() / 100);
-                total=total-discountAmount;
-            }
             String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
             LocalDate startDate = paramServices.convertInstallToLocalDate(booking.getStartAt());
             LocalDate endDate = paramServices.convertInstallToLocalDate(booking.getEndAt());
@@ -255,7 +251,8 @@ public class BookingController {
                     }
                     int totalAsInt = (int) total;
                     System.out.println("totals: " + totalAsInt);
-                    String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+                    String baseUrl = request.getScheme() + "://" + request.getServerName() + ":"
+                            + request.getServerPort();
                     response = paramServices.messageSuccessApi(201, "success",
                             "Đặt phòng thành công");
                     response.put("vnPayURL",
