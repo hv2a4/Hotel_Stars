@@ -198,7 +198,7 @@ public class BookingService {
         }
         return true;
     }
-
+    //nghia
     public Booking sendBookingEmail(bookingModel bookingModels) {
         Booking booking = new Booking();
         Optional<Account> accounts = accountRepository.findByUsername(bookingModels.getUserName());
@@ -247,6 +247,7 @@ public class BookingService {
         }
         return null;
     }
+    //nghia
     public Boolean addBookingOffline(bookingModel bookingModels) {
         Booking booking = new Booking();
         Optional<Account> accounts = accountRepository.findByUsername(bookingModels.getUserName());
@@ -573,6 +574,7 @@ public class BookingService {
 
 //khôi
 
+    //nghia
     public List<BookingHistoryDTO> getBookingsByAccountId(Integer accountId) {
         List<Object[]> results = bookingRepository.findBookingsByAccountId(accountId);
        if(results == null){
@@ -600,6 +602,6 @@ public class BookingService {
                 (Double) objects[18]
         )).collect(Collectors.toList());
     }
-
+//nghia
 
 }
