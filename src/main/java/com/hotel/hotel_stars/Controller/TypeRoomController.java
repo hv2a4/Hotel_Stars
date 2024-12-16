@@ -1,10 +1,8 @@
 package com.hotel.hotel_stars.Controller;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
 
+import com.hotel.hotel_stars.Repository.TypeRoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -52,6 +50,8 @@ public class TypeRoomController {
 
     @Autowired
     paramService paramService;
+    @Autowired
+    TypeRoomRepository typeRoomRepository;
 
     @GetMapping("/getAll")
     public ResponseEntity<?> getAllTypeRooms() {
@@ -188,15 +188,21 @@ public class TypeRoomController {
             @RequestParam String startDate,
             @RequestParam String endDate,
             @RequestParam Integer guestLimit,
+            @RequestParam (required = false) Integer typeRoomID,
             @RequestParam(defaultValue = "1") Integer page, // Mặc định là trang 1
             @RequestParam(defaultValue = "10") Integer size // Mặc định là 10 bản ghi/trang
     ) {
-
         // Tạo Pageable từ page và size
         Pageable pageable = PageRequest.of(page - 1, size);
-
+        Integer processedTypeRoomID = Optional.ofNullable(typeRoomID)
+                .filter(id -> id != 0)
+                .orElse(null);
+        boolean isValidTypeRoomID = typeRoomRepository.existsById(typeRoomID);
+        if (!isValidTypeRoomID) {
+            processedTypeRoomID = null; // Gán NULL nếu typeRoomID không hợp lệ
+        }
         // Fetch dữ liệu phòng với phân trang từ service
-        Page<FindTypeRoomDto> rooms = trservice.getRoom(startDate, endDate, guestLimit, pageable);
+        Page<FindTypeRoomDto> rooms = trservice.getRoom(startDate, endDate, guestLimit, processedTypeRoomID,pageable);
 
         // Lấy tổng số phòng và tổng số trang từ Page object
         long totalItems = rooms.getTotalElements();

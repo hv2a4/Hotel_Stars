@@ -367,11 +367,12 @@ public class TypeRoomService {
 //        }).collect(Collectors.toList()); // Collect the results into a List
 //    }
 
-    public Page<FindTypeRoomDto> getRoom(String startDate, String endDate, Integer guestLimit, Pageable pageable) {
+    public Page<FindTypeRoomDto> getRoom(String startDate, String endDate, Integer guestLimit, Integer typeRoomID,Pageable pageable) {
         // Gọi repository với phân trang
+
         LocalDate startDates = paramServices.convertStringToLocalDate(startDate);
         LocalDate endDates = paramServices.convertStringToLocalDate(endDate);
-        Page<Object[]> result = typeRoomRepository.findAvailableRoomsWithPagination(startDates, endDates, guestLimit, pageable);
+        Page<Object[]> result = typeRoomRepository.findAvailableRoomsWithPagination(startDates, endDates, guestLimit, typeRoomID,pageable);
 
         // Chuyển đổi kết quả từ Object[] thành DTO
         return result.map(results -> {
