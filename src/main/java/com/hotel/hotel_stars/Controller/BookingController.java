@@ -253,7 +253,8 @@ public class BookingController {
                     }
                     int totalAsInt = (int) total;
                     System.out.println("totals: " + totalAsInt);
-                    String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+                    String baseUrl = request.getScheme() + "://" + request.getServerName() + ":"
+                            + request.getServerPort();
                     response = paramServices.messageSuccessApi(201, "success",
                             "Đặt phòng thành công");
                     response.put("vnPayURL",
