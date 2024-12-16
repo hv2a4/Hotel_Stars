@@ -38,7 +38,7 @@ import com.hotel.hotel_stars.Repository.TypeBedRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomAmenitiesTypeRoomRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomImageRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomRepository;
-import com.hotel.hotel_stars.Utils.paramService;
+import com.hotel.hotel_stars.utils.paramService;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -410,21 +410,15 @@ public class TypeRoomService {
     }
 
 
-//    public long getTotalRoomCount(String startDates, String endDates, Integer guestLimit) {
-//        Instant startDate = paramServices.stringToInstant(startDates);
-//        Instant endDate = paramServices.stringToInstant(endDates);
-//        // Gọi repository để đếm tổng số phòng có sẵn
-//        return typeRoomRepository.countAvailableRooms(startDate, endDate, guestLimit);
-//    }
-
     public List<RoomTypeDetail> getRoomTypeDetailById(Integer roomId) {
         List<Object[]> results = typeRoomRepository.findTypeRoomDetailsById(roomId); // Adjust the method call if needed
         List<RoomTypeDetail> dtos = new ArrayList<>();
 
         results.forEach(row -> {
+
             Integer typeRoomId = (Integer) row[0];
             String typeRoomName = (String) row[1];
-            Double price = (Double) row[2]; // Changed from Integer to Double
+            Double price = (Double) row[2];
             Integer bedCount = (Integer) row[3];
             Double acreage = (Double) row[4];
             Integer guestLimit = (Integer) row[5];
@@ -441,37 +435,59 @@ public class TypeRoomService {
             List<Integer> amenitiesList = new ArrayList<>();
             if (row[9] != null) {
                 amenitiesList = Arrays.stream(((String) row[9]).split(","))
-                        .map(Integer::parseInt) // Convert each string to Integer
+                        .map(Integer::parseInt)
                         .toList();
             }
+            System.out.println("số 9: " + row[9]);
             List<AmenitiesTypeRoom> amenitiesTypeRooms = amenitiesTypeRoomRepository.findAllById(amenitiesList);
             List<AmenitiesTypeRoomDto> amenitiesTypeRoomDtos = amenitiesTypeRooms.stream()
                     .map(amenitiesTypeRoom -> new AmenitiesTypeRoomDto(
                             amenitiesTypeRoom.getId(), // Hoặc các trường khác cần thiết
-                            amenitiesTypeRoom.getAmenitiesTypeRoomName() // Chuyển các trường khác nếu cần
+                            amenitiesTypeRoom.getAmenitiesTypeRoomName()
                     ))
                     .toList();
 
-            List<Integer> feedBack = new ArrayList<>();
-            if (row[10] != null) {
-                feedBack = Arrays.stream(((String) row[10]).split(","))
-                        .map(Integer::parseInt)
-                        .toList();
+
+            List<FeedbackDto> feedbackDtos = new ArrayList<>();
+            if (row[10] instanceof Integer) {
+                // If row[10] is an Integer, you can create a single FeedbackDto
+                int feedBackId = (Integer) row[10];
+                Optional<Feedback> feedbackOpt = feedBackRepository.findById(feedBackId);
+                feedbackOpt.ifPresent(feedback -> {
+                    FeedbackDto feedbackDto = new FeedbackDto();
+                    feedbackDto.setId(feedback.getId());
+                    feedbackDto.setStars(feedback.getStars());
+                    feedbackDto.setContent(feedback.getContent());
+                    feedbackDto.setRatingStatus(feedback.getRatingStatus());
+                    feedbackDto.setCreateAt(feedback.getCreateAt());
+                    feedbackDtos.add(feedbackDto);
+                });
+            } else if (row[10] instanceof String) {
+                // If row[10] is a String, split it by commas and process each feedback ID
+                String[] feedbackIds = ((String) row[10]).split(",");
+                for (String feedbackIdStr : feedbackIds) {
+                    int feedBackId = Integer.parseInt(feedbackIdStr.trim());
+                    Optional<Feedback> feedbackOpt = feedBackRepository.findById(feedBackId);
+                    feedbackOpt.ifPresent(feedback -> {
+                        FeedbackDto feedbackDto = new FeedbackDto();
+                        feedbackDto.setId(feedback.getId());
+                        feedbackDto.setStars(feedback.getStars());
+                        feedbackDto.setContent(feedback.getContent());
+                        feedbackDto.setRatingStatus(feedback.getRatingStatus());
+                        feedbackDto.setCreateAt(feedback.getCreateAt());
+                        feedbackDtos.add(feedbackDto);
+                    });
+                }
             }
 
-            List<Feedback> feedbacks = feedBackRepository.findAllById(feedBack);
-            List<FeedbackDto> feedbackDtos = feedbacks.stream().map(feedback -> new FeedbackDto(
-                    feedback.getId(),
-                    feedback.getContent(),
-                    feedback.getStars(),
-                    feedback.getCreateAt(),
-                    feedback.getRatingStatus(),
-                    null)).toList();
 
             BigDecimal averageFeedBackBigDecimal = (BigDecimal) row[11];
             Double averageFeedBack = averageFeedBackBigDecimal.doubleValue();
             String accountName = (String) row[12];
+            List<String> accountNameList = Arrays.stream(accountName.split(",")).map(String::trim).toList();
+
             String imageName = (String) row[13];
+            List<String> imageNameList = Arrays.stream(imageName.split(",")).map(String::trim).toList();
             // Create and populate RoomTypeDetail object
             RoomTypeDetail detail = new RoomTypeDetail();
             detail.setTypeRoomId(typeRoomId);
@@ -486,11 +502,11 @@ public class TypeRoomService {
             detail.setAmenitiesList(amenitiesTypeRoomDtos);
             detail.setFeedBack(feedbackDtos);
             detail.setAverageFeedBack(averageFeedBack);
-            detail.setAccountName(accountName);
-            detail.setImage(imageName);
+            detail.setAccountNames(accountNameList);
+            detail.setImage(imageNameList);
             dtos.add(detail);
         });
-
         return dtos;
     }
+
 }

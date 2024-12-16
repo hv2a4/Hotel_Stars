@@ -1,13 +1,14 @@
 package com.hotel.hotel_stars.Repository;
 
-import com.hotel.hotel_stars.DTO.Select.AccountRoleDTO;
-import com.hotel.hotel_stars.Entity.Account;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.util.List;
-import java.util.Optional;
+import com.hotel.hotel_stars.DTO.Select.AccountRoleDTOs;
+import com.hotel.hotel_stars.Entity.Account;
 
 public interface AccountRepository extends JpaRepository<Account, Integer> {
     Optional<Account> findByUsername(String userName);
@@ -46,8 +47,8 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
     @EntityGraph(attributePaths = {"bookingList"})
     List<Account> findAll();
 
-    @Query("SELECT new com.hotel.hotel_stars.DTO.Select.AccountRoleDTO(a.id, a.fullname, a.avatar, r.roleName) " +
+    @Query("SELECT new com.hotel.hotel_stars.DTO.Select.AccountRoleDTOs(a.id, a.fullname, a.avatar, r.roleName) " +
             "FROM Account a JOIN a.role r " +
             "WHERE r.roleName = 'Staff'")
-    List<AccountRoleDTO> findAccountsWithRoleStaff();
+    List<AccountRoleDTOs> findAccountsWithRoleStaff();
 }

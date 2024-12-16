@@ -76,12 +76,17 @@ public class CustomerInformationService {
     }
 
     // Cập nhật khách hàng
-    public CustomerInformationDto updateCustomerInformation(Integer customerId, customerInformationModel customerInformationModel) {
+    public CustomerInformationDto updateCustomerInformation(Integer id, customerInformationModel customerInformationModel, Integer idBookingRoom) {
         List<String> errorMessages = new ArrayList<>(); // Danh sách lưu trữ các thông báo lỗi
         System.out.println(customerInformationModel);
+        System.out.println(id);
         // Kiểm tra xem khách hàng có tồn tại không
-        Optional<CustomerInformation> existingCustomerOpt = customerInformationRepository.findById(customerId);
-
+        BookingRoomCustomerInformation bookingRoomCustomerInformation = bookingRoomCustomerInformationRepository.findById(id).get();
+//        System.out.println(bookingRoomCustomerInformation.getBookingRoom().getId());
+        BookingRoom bookingRoom = bookingRoomRepository.findById(idBookingRoom).get();
+        System.out.println("bookingRooom"+bookingRoom.getId());
+        Optional<CustomerInformation> existingCustomerOpt = customerInformationRepository.findById(bookingRoomCustomerInformation.getCustomerInformation().getId());
+        
         // Kiểm tra nếu không tìm thấy khách hàng
         if (existingCustomerOpt.isEmpty()) {
             errorMessages.add("Khách hàng không tồn tại");
@@ -94,7 +99,6 @@ public class CustomerInformationService {
 
         // Lấy khách hàng đã tồn tại
         CustomerInformation existingCustomer = existingCustomerOpt.get();
-        System.out.println(customerInformationModel);
         try {
             // Cập nhật thông tin khách hàng
             existingCustomer.setPhone(customerInformationModel.getPhone());
@@ -105,6 +109,8 @@ public class CustomerInformationService {
             existingCustomer.setImgFirstCard(null);
             existingCustomer.setImgLastCard(null);
 
+            bookingRoomCustomerInformation.setBookingRoom(bookingRoom);
+            bookingRoomCustomerInformationRepository.save(bookingRoomCustomerInformation);
             // Lưu thay đổi vào cơ sở dữ liệu
             CustomerInformation updatedCustomer = customerInformationRepository.save(existingCustomer);
 

@@ -76,12 +76,17 @@ public class SecurityConfig {
                                                 .permitAll()
                                                 .requestMatchers("/vnpay-payment").permitAll()
                                                 .requestMatchers("/api/booking/downloadPdf").permitAll()
+                                                .requestMatchers("/api/booking/booking-history-account").permitAll()
                                                 // All
                                                 // khoi
                                                 .requestMatchers("/api/discount/get-discount-account").permitAll()
                                                 .requestMatchers("/api/account/add-account-staff").permitAll()
                                                 // khoi
                                                 // vu
+                                                //tuong
+                                                .requestMatchers("/api/discount/get-discount-by-date").permitAll()
+                                                .requestMatchers("/api/discount-accounts/add").hasAnyAuthority("Customer", "HotelOwner")
+                                                //tuong
                                                 .requestMatchers(
                                                                 "/api/account/account-by-id/{username}",
                                                                 "/api/account/toggleDelete/{id}",
@@ -542,9 +547,14 @@ public class SecurityConfig {
                                 .requestMatchers("/api/room").permitAll()
                                 .requestMatchers("/api/booking/booking-offline").permitAll()
                                 .requestMatchers("/api/booking").permitAll()
+                                .requestMatchers("/api/booking/reservation").permitAll()
+                                .requestMatchers("/api/invoice/statistics").permitAll()
+                                .requestMatchers("/api/invoice/statistics2").permitAll()
+                                .requestMatchers("/api/booking/by-start-date-with-invoice").permitAll()
                                 .requestMatchers("/api/booking/update-status/**").permitAll()
                                 .requestMatchers("/api/booking/update-checkIn/**").permitAll()
                                 .requestMatchers("/api/booking-infomation/booking-room").permitAll()
+                                .requestMatchers("/api/booking/booking-history-account").permitAll()
                                 .requestMatchers("/api/booking-room/list-booking-room").permitAll()
                                 .requestMatchers("/api/customer-info/add").permitAll()
                                 .requestMatchers("/api/customer-info/update/**").permitAll()

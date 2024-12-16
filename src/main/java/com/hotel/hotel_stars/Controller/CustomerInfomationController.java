@@ -55,9 +55,9 @@ public class CustomerInfomationController {
 
     // API sửa thông tin khách hàng
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateCustomerInformation(@PathVariable Integer id, @Valid @RequestBody customerInformationModel customerModel) {
+    public ResponseEntity<?> updateCustomerInformation(@PathVariable Integer id, @Valid @RequestBody customerInformationModel customerModel, @RequestParam("bookingRoomId") Integer idBookingRoom) {
         try {
-            CustomerInformationDto updatedCustomer = customerInformationService.updateCustomerInformation(id, customerModel);
+            CustomerInformationDto updatedCustomer = customerInformationService.updateCustomerInformation(id, customerModel,idBookingRoom);
             Map<String, Object> response = new HashMap<>();
             response.put("code", 200);
             response.put("message", "Cập nhật thành công");

@@ -44,62 +44,73 @@ public class BookingRoomService {
     }
 
     public BookingRoomDto toDTO(BookingRoom bookingRoom) {
-        BookingRoomDto bookingRoomDto = modelMapper.map(bookingRoom, BookingRoomDto.class);
+		BookingRoomDto bookingRoomDto = modelMapper.map(bookingRoom, BookingRoomDto.class);
 
-        RoleDto roleDto = new RoleDto();
-        roleDto.setId(bookingRoom.getBooking().getAccount().getRole().getId());
-        roleDto.setRoleName(bookingRoom.getBooking().getAccount().getRole().getRoleName());
+		RoleDto roleDto = new RoleDto();
+		roleDto.setId(bookingRoom.getBooking().getAccount().getRole().getId());
+		roleDto.setRoleName(bookingRoom.getBooking().getAccount().getRole().getRoleName());
 
-        AccountDto accountDto = new AccountDto();
-        accountDto.setId(bookingRoom.getBooking().getAccount().getId());
-        accountDto.setUsername(bookingRoom.getBooking().getAccount().getUsername());
-        accountDto.setFullname(bookingRoom.getBooking().getAccount().getFullname());
-        accountDto.setPhone(bookingRoom.getBooking().getAccount().getPhone());
-        accountDto.setEmail(bookingRoom.getBooking().getAccount().getEmail());
-        accountDto.setAvatar(bookingRoom.getBooking().getAccount().getAvatar());
-        accountDto.setGender(bookingRoom.getBooking().getAccount().getGender());
-        accountDto.setIsDelete(bookingRoom.getBooking().getAccount().getIsDelete());
-        accountDto.setRoleDto(roleDto);
+		FloorDto floorDto = new FloorDto();
+		floorDto.setId(bookingRoom.getRoom().getFloor().getId());
+		floorDto.setFloorName(bookingRoom.getRoom().getFloor().getFloorName());
 
-        BookingDto bookingDto = new BookingDto();
-        bookingDto.setId(bookingRoom.getBooking().getId());
-        bookingDto.setCreateAt(bookingRoom.getBooking().getCreateAt());
-        bookingDto.setStartAt(bookingRoom.getBooking().getStartAt());
-        bookingDto.setEndAt(bookingRoom.getBooking().getEndAt());
-        bookingDto.setDescriptions(bookingRoom.getBooking().getDescriptions());
-        bookingDto.setStatusPayment(bookingRoom.getBooking().getStatusPayment());
-        StatusBookingDto statusBookingDto = new StatusBookingDto();
-        statusBookingDto.setStatusBookingName(bookingRoom.getBooking().getStatus().getStatusBookingName());
-        statusBookingDto.setId(bookingRoom.getBooking().getStatus().getId());
-        bookingDto.setStatusDto(statusBookingDto);
-        bookingDto.setAccountDto(accountDto);
+		TypeBedDto typeBedDto = new TypeBedDto();
+		typeBedDto.setId(bookingRoom.getRoom().getTypeRoom().getId());
+		typeBedDto.setBedName(bookingRoom.getRoom().getTypeRoom().getTypeRoomName());
 
-        FloorDto floorDto = new FloorDto();
-        floorDto.setId(bookingRoom.getRoom().getFloor().getId());
-        floorDto.setFloorName(bookingRoom.getRoom().getFloor().getFloorName());
+	    AccountDto accountDto = null;
+	    if (bookingRoom.getAccount() != null) {
+	        accountDto = new AccountDto();
+	        accountDto.setId(bookingRoom.getAccount().getId());
+	        accountDto.setUsername(bookingRoom.getAccount().getUsername());
+	        accountDto.setFullname(bookingRoom.getAccount().getFullname());
+	        accountDto.setPhone(bookingRoom.getAccount().getPhone());
+	        accountDto.setEmail(bookingRoom.getAccount().getEmail());
+	        accountDto.setAvatar(bookingRoom.getAccount().getAvatar());
+	        accountDto.setGender(bookingRoom.getAccount().getGender());
+	        accountDto.setIsDelete(bookingRoom.getAccount().getIsDelete());
+	        accountDto.setRoleDto(roleDto);
+	    }
 
-        TypeBedDto typeBedDto = new TypeBedDto();
-        typeBedDto.setId(bookingRoom.getRoom().getTypeRoom().getId());
-        typeBedDto.setBedName(bookingRoom.getRoom().getTypeRoom().getTypeRoomName());
+		BookingDto bookingDto = new BookingDto();
+		bookingDto.setId(bookingRoom.getBooking().getId());
+		bookingDto.setCreateAt(bookingRoom.getBooking().getCreateAt());
+		bookingDto.setStartAt(bookingRoom.getBooking().getStartAt());
+		bookingDto.setEndAt(bookingRoom.getBooking().getEndAt());
+		bookingDto.setDescriptions(bookingRoom.getBooking().getDescriptions());
+		bookingDto.setStatusPayment(bookingRoom.getBooking().getStatusPayment());
+		StatusBookingDto statusBookingDto = new StatusBookingDto();
+		statusBookingDto.setStatusBookingName(bookingRoom.getBooking().getStatus().getStatusBookingName());
+		statusBookingDto.setId(bookingRoom.getBooking().getStatus().getId());
+		bookingDto.setStatusDto(statusBookingDto);
+		AccountDto accountBookingDto = new AccountDto();
+		accountBookingDto.setId(bookingRoom.getBooking().getAccount().getId());
+		accountBookingDto.setUsername(bookingRoom.getBooking().getAccount().getUsername());
+		accountBookingDto.setFullname(bookingRoom.getBooking().getAccount().getFullname());
+		accountBookingDto.setPhone(bookingRoom.getBooking().getAccount().getPhone());
+		accountBookingDto.setEmail(bookingRoom.getBooking().getAccount().getEmail());
+		accountBookingDto.setAvatar(bookingRoom.getBooking().getAccount().getAvatar());
+		accountBookingDto.setGender(bookingRoom.getBooking().getAccount().getGender());
+		accountBookingDto.setIsDelete(bookingRoom.getBooking().getAccount().getIsDelete());
+		bookingDto.setAccountDto(accountBookingDto);
 
+		StatusRoomDto statusRoomDto = new StatusRoomDto();
+		statusRoomDto.setId(bookingRoom.getRoom().getStatusRoom().getId());
+		statusRoomDto.setStatusRoomName(bookingRoom.getRoom().getStatusRoom().getStatusRoomName());
 
+		RoomDto roomDto = new RoomDto();
+		roomDto.setId(bookingRoom.getRoom().getId());
+		roomDto.setRoomName(bookingRoom.getRoom().getRoomName());
+		roomDto.setFloorDto(floorDto);
+		roomDto.setStatusRoomDto(statusRoomDto);
+		roomDto.setTypeRoomDto(convertTypeRoomDto(bookingRoom.getRoom().getTypeRoom()));
+		// Ánh xạ các đối tượng đầy đủ của Booking và Room
+		bookingRoomDto.setBooking(bookingDto);
+		bookingRoomDto.setAccountDto(accountDto);
+		bookingRoomDto.setRoom(roomDto);
 
-        StatusRoomDto statusRoomDto = new StatusRoomDto();
-        statusRoomDto.setId(bookingRoom.getRoom().getStatusRoom().getId());
-        statusRoomDto.setStatusRoomName(bookingRoom.getRoom().getStatusRoom().getStatusRoomName());
-
-        RoomDto roomDto = new RoomDto();
-        roomDto.setId(bookingRoom.getRoom().getId());
-        roomDto.setRoomName(bookingRoom.getRoom().getRoomName());
-        roomDto.setFloorDto(floorDto);
-        roomDto.setStatusRoomDto(statusRoomDto);
-        roomDto.setTypeRoomDto(convertTypeRoomDto(bookingRoom.getRoom().getTypeRoom()));
-        // Ánh xạ các đối tượng đầy đủ của Booking và Room
-        bookingRoomDto.setBooking(bookingDto);
-        bookingRoomDto.setRoom(roomDto);
-
-        return bookingRoomDto;
-    }
+		return bookingRoomDto;
+	}
 
     public List<BookingRoomDto> convertListDto(List<BookingRoom> bookingRoom){
     	return bookingRoom.stream().map(this::toDTO).toList();

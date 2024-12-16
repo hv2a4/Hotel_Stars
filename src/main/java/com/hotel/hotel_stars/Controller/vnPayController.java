@@ -1,5 +1,22 @@
 package com.hotel.hotel_stars.Controller;
 
+import com.hotel.hotel_stars.Config.VNPayService;
+import com.hotel.hotel_stars.Entity.*;
+import com.hotel.hotel_stars.Repository.BookingRepository;
+import com.hotel.hotel_stars.Repository.DiscountAccountRepository;
+import com.hotel.hotel_stars.Repository.DiscountRepository;
+import com.hotel.hotel_stars.Repository.StatusBookingRepository;
+import com.hotel.hotel_stars.utils.SessionService;
+import com.hotel.hotel_stars.utils.paramService;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -9,23 +26,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.hotel.hotel_stars.Config.VNPayService;
-import com.hotel.hotel_stars.Entity.Booking;
-import com.hotel.hotel_stars.Entity.BookingRoom;
-import com.hotel.hotel_stars.Entity.StatusBooking;
-import com.hotel.hotel_stars.Repository.BookingRepository;
-import com.hotel.hotel_stars.Repository.StatusBookingRepository;
-import com.hotel.hotel_stars.Utils.SessionService;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @CrossOrigin("*")
@@ -33,11 +35,15 @@ public class vnPayController {
     @Autowired
     VNPayService vnPayService;
     @Autowired
-    private com.hotel.hotel_stars.Utils.paramService paramServices;
+    private paramService paramServices;
     @Autowired
     private StatusBookingRepository statusBookingRepository;
     @Autowired
     private BookingRepository bookingRepository;
+    @Autowired
+    private DiscountRepository discountRepository;
+    @Autowired
+    private DiscountAccountRepository discountAccountRepositorys;
     @Autowired
     SessionService sessionService;
     @GetMapping("/vnpay-payment")
@@ -62,7 +68,7 @@ public class vnPayController {
                 total=total-discountAmount;
             }
             System.out.println();
-            String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
+String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
             LocalDate startDate=paramServices.convertInstallToLocalDate(booking.getStartAt());
             LocalDate endDate=paramServices.convertInstallToLocalDate(booking.getEndAt());
             booking.setStatus(statusBooking);
@@ -103,12 +109,19 @@ public class vnPayController {
                 throw new RuntimeException(e);
             }
         }else{
+            if(booking.getDiscountName()!=null && booking.getDiscountPercent()!=null){
+                System.out.println("mã này đã hồi phục");
+                Discount discount = (discountRepository.findByDiscountName(booking.getDiscountName())!=null)?discountRepository.findByDiscountName(booking.getDiscountName()):null;
+                DiscountAccount discountAccount= discountAccountRepositorys.findByDiscountAndAccount(discount.getId(),booking.getAccount().getId());
+                discountAccount.setStatusDa(false);
+                discountAccountRepositorys.save(discountAccount);
+            }
             StatusBooking statusBooking1 = statusBookingRepository.findById(6).get();
             booking.setStatus(statusBooking1);
             booking.setStatusPayment(false);
             bookingRepository.save(booking);
-            String paymentStatuss = "error";
-            String messages = "Thanh toán thất bại, đơn đặt phòng của bạn đã bị hủy";
+String paymentStatuss = "error";
+            String messages = "Thanh toán thất bại";
             String redirectUrl = null;
             redirectUrl = String.format(
                     "http://localhost:3000/client/booking-room?status=%s&message=%s",
