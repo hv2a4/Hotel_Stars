@@ -575,7 +575,9 @@ public class BookingService {
 
     public List<BookingHistoryDTO> getBookingsByAccountId(Integer accountId) {
         List<Object[]> results = bookingRepository.findBookingsByAccountId(accountId);
-
+       if(results == null){
+           return null;
+       }
         return results.stream().map(objects -> new BookingHistoryDTO(
                 (Integer) objects[0],  // bk_id
                 (String) objects[1],   // bkformat

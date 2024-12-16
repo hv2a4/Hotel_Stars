@@ -103,7 +103,46 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
             JOIN
                 type_room_image tpi ON tpi.type_room_id = tr.id
             JOIN
-                type_bed on tr.type_bed_id = type_bed.id
+                type_bed ON tr.type_bed_id = type_bed.id
+            WHERE
+                NOT EXISTS (
+                    SELECT 1
+                    FROM booking_room br_inner
+                    JOIN booking b_inner ON br_inner.booking_id = b_inner.id
+                    WHERE br_inner.room_id = r.id
+                    AND (
+                        DATE(b_inner.start_at) <= :endDate
+                        AND DATE(b_inner.end_at) >= :startDate
+                    )  AND b_inner.status_id NOT IN (1, 6)
+                )AND (:typeRoomID IS NULL OR tr.id = :typeRoomID)
+            GROUP BY
+                tr.id
+            ORDER BY
+                (CASE
+                    WHEN tr.guest_limit = :guestLimit THEN 1  
+                    WHEN tr.guest_limit > :guestLimit THEN 2  
+                    WHEN tr.guest_limit < :guestLimit THEN 3  
+                END),
+                (CASE
+                    WHEN tr.guest_limit > :guestLimit THEN tr.guest_limit
+                    WHEN tr.guest_limit < :guestLimit THEN -tr.guest_limit
+                    ELSE 0                                      
+                END)
+            """,
+            countQuery = """
+            SELECT COUNT(DISTINCT tr.id)
+            FROM
+                type_room tr
+            JOIN
+                room r ON tr.id = r.type_room_id
+            LEFT JOIN
+                booking_room br ON br.room_id = r.id
+            LEFT JOIN
+                booking b ON br.booking_id = b.id
+                AND (
+                    :startDate <= DATE(b.end_at)
+                    AND :endDate >= DATE(b.start_at)
+                )
             WHERE
                 NOT EXISTS (
                     SELECT 1
@@ -115,15 +154,15 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
                         AND DATE(b_inner.end_at) >= :startDate
                     )  AND b_inner.status_id NOT IN (1, 6)
                 )
-                AND tr.guest_limit <= :guestLimit
-            GROUP BY
-                tr.id
-            """, nativeQuery = true)
+            """,
+            nativeQuery = true)
     Page<Object[]> findAvailableRoomsWithPagination(
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
             @Param("guestLimit") Integer guestLimit,
+            @Param("typeRoomID") Integer typeRoomID,
             Pageable pageable);
+
 
     // kiểm tên loại phòng có tồn tại trong csdl
     boolean existsByTypeRoomName(String typeRoomName);
