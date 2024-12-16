@@ -506,7 +506,6 @@ public class TypeRoomService {
             detail.setImage(imageNameList);
             dtos.add(detail);
         });
-
         return dtos;
     }
 
