@@ -224,4 +224,22 @@ public class TypeRoomController {
     public ResponseEntity<?> getBookingByAccount(@PathVariable("id") Integer id) {
         return ResponseEntity.ok(bookingService.getListByAccountId(id));
     }
+    @GetMapping("/find-all-type-room")
+    public ResponseEntity<?> findAllTypeRoomGroupRoom(
+            @RequestParam(defaultValue = "1") Integer page, // Mặc định là trang 1
+            @RequestParam(defaultValue = "10") Integer size // Mặc định là 10 bản ghi/trang
+    ) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+
+        Page<FindTypeRoomDto> rooms = trservice.getTypeRoomGroupRoom(pageable);
+
+        // Lấy tổng số phòng và tổng số trang từ Page object
+        long totalItems = rooms.getTotalElements();
+        int totalPages = rooms.getTotalPages();
+
+        // Tạo đối tượng response chứa dữ liệu phân trang
+        PaginatedResponse<FindTypeRoomDto> response = new PaginatedResponse<>(rooms.getContent(), totalItems, totalPages, page, size);
+
+        return ResponseEntity.ok(response);
+    }
 }

@@ -509,5 +509,44 @@ public class TypeRoomService {
         });
         return dtos;
     }
+    public Page<FindTypeRoomDto> getTypeRoomGroupRoom(Pageable pageable) {
+        // Gọi repository với phân trang
 
+        Page<Object[]> result = typeRoomRepository.findAllListTypeRoom(pageable);
+
+        // Chuyển đổi kết quả từ Object[] thành DTO
+        return result.map(results -> {
+            String roomId = (String) results[0];
+            List<Integer> listRoomId = Arrays.stream(roomId.split(",")).map(Integer::valueOf).toList();
+            String roomName = (String) results[1];
+            List<String> listRoomName = Arrays.stream(roomName.split(",")).map(String::valueOf).toList();
+            Integer roomTypeId = (Integer) results[2];
+            String roomTypeName = (String) results[3];
+            Double priceTypeRoom = (Double) results[4];
+            Double acreage = (Double) results[5];
+            Integer guestLimits = (Integer) results[6];
+            String amenitiesTypeRoomDetails = (String) results[7];
+            Double estCost = (Double) results[8];
+            String imagesString = (String) results[9];
+
+            List<String> listImages = Arrays.stream(imagesString.split(","))
+                    .map(String::trim)
+                    .collect(Collectors.toList());
+
+            List<String> amenitiesList = Arrays.stream(amenitiesTypeRoomDetails.split(","))
+                    .map(String::trim)
+                    .toList();
+
+            String describe = (String) results[10];
+            String bedName = (String) results[11];
+            List<String> bedNameList = Arrays.stream(bedName.split(","))
+                    .map(String::trim)
+                    .toList();
+
+            return new FindTypeRoomDto(
+                    listRoomId, listRoomName, roomTypeId, roomTypeName, priceTypeRoom, acreage, guestLimits,
+                    amenitiesList, estCost, listImages, describe, bedNameList
+            );
+        });
+    }
 }

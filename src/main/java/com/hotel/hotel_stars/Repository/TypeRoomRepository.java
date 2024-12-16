@@ -14,61 +14,62 @@ import java.util.Optional;
 
 public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
 
-//    @Query(value = """
-//            SELECT
-//                r.id AS roomId,
-//                r.room_name,
-//                tr.id AS typeroomId,
-//                tr.type_room_name,
-//                tr.price,
-//                tr.acreage,
-//                tr.guest_limit,
-//                GROUP_CONCAT(DISTINCT CONCAT(atr.amenities_type_room_name) SEPARATOR ', ') AS amenitiesTypeRoomDetails,
-//                -- Estimate cost without considering discounts
-//                (TIMESTAMPDIFF(DAY, :startDate, :endDate) * tr.price) AS estCost,
-//                GROUP_CONCAT(DISTINCT tpi.image_name) AS image_name,
-//                tr.describes,
-//                type_bed.bed_name
-//            FROM
-//                type_room tr
-//            JOIN
-//                room r ON tr.id = r.type_room_id
-//            LEFT JOIN
-//                booking_room br ON br.room_id = r.id
-//            LEFT JOIN
-//                booking b ON br.booking_id = b.id
-//                AND (
-//                    :startDate <= DATE(b.end_at)
-//                    AND :endDate >= DATE(b.start_at)
-//                )
-//            JOIN
-//                type_room_amenities_type_room trat ON tr.id = trat.type_room_id
-//            JOIN
-//                amenities_type_room atr ON trat.amenities_type_room_id = atr.id
-//            JOIN
-//                type_room_image tpi ON tpi.type_room_id = tr.id
-//            JOIN
-//                type_bed on tr.type_bed_id = type_bed.id
-//            WHERE
-//                NOT EXISTS (
-//                    SELECT 1
-//                    FROM booking_room br_inner
-//                    JOIN booking b_inner ON br_inner.booking_id = b_inner.id
-//                    WHERE br_inner.room_id = r.id
-//                    AND (
-//                        DATE(b_inner.start_at) <= :endDate
-//                        AND DATE(b_inner.end_at) >= :startDate
-//                    )
-//                )
-//                AND tr.guest_limit <= :guestLimit
-//            GROUP BY
-//                tr.id, tr.type_room_name, tr.price, tr.acreage, tr.guest_limit, r.room_name, r.id, tr.describes
-//            """, nativeQuery = true)
-//    List<Object[]> findAvailableRooms(
-//            @Param("startDate") Instant startDate,
-//            @Param("endDate") Instant endDate,
-//            @Param("guestLimit") Integer guestLimit);
-
+    // @Query(value = """
+    // SELECT
+    // r.id AS roomId,
+    // r.room_name,
+    // tr.id AS typeroomId,
+    // tr.type_room_name,
+    // tr.price,
+    // tr.acreage,
+    // tr.guest_limit,
+    // GROUP_CONCAT(DISTINCT CONCAT(atr.amenities_type_room_name) SEPARATOR ', ') AS
+    // amenitiesTypeRoomDetails,
+    // -- Estimate cost without considering discounts
+    // (TIMESTAMPDIFF(DAY, :startDate, :endDate) * tr.price) AS estCost,
+    // GROUP_CONCAT(DISTINCT tpi.image_name) AS image_name,
+    // tr.describes,
+    // type_bed.bed_name
+    // FROM
+    // type_room tr
+    // JOIN
+    // room r ON tr.id = r.type_room_id
+    // LEFT JOIN
+    // booking_room br ON br.room_id = r.id
+    // LEFT JOIN
+    // booking b ON br.booking_id = b.id
+    // AND (
+    // :startDate <= DATE(b.end_at)
+    // AND :endDate >= DATE(b.start_at)
+    // )
+    // JOIN
+    // type_room_amenities_type_room trat ON tr.id = trat.type_room_id
+    // JOIN
+    // amenities_type_room atr ON trat.amenities_type_room_id = atr.id
+    // JOIN
+    // type_room_image tpi ON tpi.type_room_id = tr.id
+    // JOIN
+    // type_bed on tr.type_bed_id = type_bed.id
+    // WHERE
+    // NOT EXISTS (
+    // SELECT 1
+    // FROM booking_room br_inner
+    // JOIN booking b_inner ON br_inner.booking_id = b_inner.id
+    // WHERE br_inner.room_id = r.id
+    // AND (
+    // DATE(b_inner.start_at) <= :endDate
+    // AND DATE(b_inner.end_at) >= :startDate
+    // )
+    // )
+    // AND tr.guest_limit <= :guestLimit
+    // GROUP BY
+    // tr.id, tr.type_room_name, tr.price, tr.acreage, tr.guest_limit, r.room_name,
+    // r.id, tr.describes
+    // """, nativeQuery = true)
+    // List<Object[]> findAvailableRooms(
+    // @Param("startDate") Instant startDate,
+    // @Param("endDate") Instant endDate,
+    // @Param("guestLimit") Integer guestLimit);
 
     @Query(value = """
             SELECT
@@ -119,50 +120,47 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
                 tr.id
             ORDER BY
                 (CASE
-                    WHEN tr.guest_limit = :guestLimit THEN 1  
-                    WHEN tr.guest_limit > :guestLimit THEN 2  
-                    WHEN tr.guest_limit < :guestLimit THEN 3  
+                    WHEN tr.guest_limit = :guestLimit THEN 1
+                    WHEN tr.guest_limit > :guestLimit THEN 2
+                    WHEN tr.guest_limit < :guestLimit THEN 3
                 END),
                 (CASE
                     WHEN tr.guest_limit > :guestLimit THEN tr.guest_limit
                     WHEN tr.guest_limit < :guestLimit THEN -tr.guest_limit
-                    ELSE 0                                      
+                    ELSE 0
                 END)
-            """,
-            countQuery = """
-                                SELECT COUNT(DISTINCT tr.id)
-                                FROM
-                                    type_room tr
-                                JOIN
-                                    room r ON tr.id = r.type_room_id
-                                LEFT JOIN
-                                    booking_room br ON br.room_id = r.id
-                                LEFT JOIN
-                                    booking b ON br.booking_id = b.id
-                                    AND (
-                                        :startDate <= DATE(b.end_at)
-                                        AND :endDate >= DATE(b.start_at)
+            """, countQuery = """
+                SELECT COUNT(DISTINCT tr.id)
+                FROM
+                    type_room tr
+                JOIN
+                    room r ON tr.id = r.type_room_id
+                LEFT JOIN
+                    booking_room br ON br.room_id = r.id
+                LEFT JOIN
+                    booking b ON br.booking_id = b.id
+                    AND (
+                        :startDate <= DATE(b.end_at)
+                        AND :endDate >= DATE(b.start_at)
                     )
-                                WHERE
-                                    NOT EXISTS (
-                                        SELECT 1
-                                        FROM booking_room br_inner
-                                        JOIN booking b_inner ON br_inner.booking_id = b_inner.id
-                                        WHERE br_inner.room_id = r.id
-                                        AND (
-                                            DATE(b_inner.start_at) <= :endDate
-                                            AND DATE(b_inner.end_at) >= :startDate
-                                        )  AND b_inner.status_id NOT IN ( 6)
-                                    )
-                                """,
-            nativeQuery = true)
+            WHERE
+                    NOT EXISTS (
+                        SELECT 1
+                        FROM booking_room br_inner
+                        JOIN booking b_inner ON br_inner.booking_id = b_inner.id
+                        WHERE br_inner.room_id = r.id
+                        AND (
+                            DATE(b_inner.start_at) <= :endDate
+                            AND DATE(b_inner.end_at) >= :startDate
+                        )  AND b_inner.status_id NOT IN ( 6)
+                    )
+                """, nativeQuery = true)
     Page<Object[]> findAvailableRoomsWithPagination(
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
             @Param("guestLimit") Integer guestLimit,
             @Param("typeRoomID") Integer typeRoomID,
             Pageable pageable);
-
 
     // kiểm tên loại phòng có tồn tại trong csdl
     boolean existsByTypeRoomName(String typeRoomName);
@@ -205,7 +203,7 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
                ORDER BY
                    totalReviews DESC, averageStars DESC
                LIMIT 3;
-               
+
             """, nativeQuery = true)
     List<Object[]> findTop3TypeRoomsWithGoodReviews();
 
@@ -243,7 +241,7 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
               AND f.stars IS NOT NULL    -- Đảm bảo có đánh giá sao
             GROUP BY tr.id, tr.type_room_name, tr.price, tr.bed_count, tr.acreage, tr.guest_limit, tr.describes,
                      tb.bed_name;
-               
+
                      """, nativeQuery = true)
     List<Object[]> findTypeRoomDetailsById(Integer roomId);
 
@@ -265,6 +263,43 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
             "    AND b_inner.status_id NOT IN (1, 6) " +
             ")", nativeQuery = true)
     Long countAvailableRoom(@Param("roomId") Integer roomId,
-                            @Param("startDate") LocalDate startDate,
-                            @Param("endDate") LocalDate endDate);
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
+
+    @Query(value = """
+             SELECT
+                GROUP_CONCAT(DISTINCT r.id ORDER BY r.id) AS roomId,
+                GROUP_CONCAT(DISTINCT r.room_name ORDER BY r.room_name) AS roomNames,
+                tr.id AS typeroomId,
+                tr.type_room_name,
+                tr.price,
+                tr.acreage,
+                tr.guest_limit,
+                GROUP_CONCAT(DISTINCT CONCAT(atr.amenities_type_room_name) SEPARATOR ', ') AS amenitiesTypeRoomDetails,
+                NULL AS estCost, -- Không cần tính chi phí vì không có startDate và endDate
+                GROUP_CONCAT(DISTINCT tpi.image_name) AS image_name,
+                tr.describes,
+                type_bed.bed_name
+            FROM
+                type_room tr
+            JOIN
+                room r ON tr.id = r.type_room_id
+            LEFT JOIN
+                booking_room br ON br.room_id = r.id
+            LEFT JOIN
+                booking b ON br.booking_id = b.id
+            JOIN
+                type_room_amenities_type_room trat ON tr.id = trat.type_room_id
+            JOIN
+                amenities_type_room atr ON trat.amenities_type_room_id = atr.id
+            JOIN
+                type_room_image tpi ON tpi.type_room_id = tr.id
+            JOIN
+                type_bed ON tr.type_bed_id = type_bed.id
+
+            GROUP BY
+                tr.id
+             """, nativeQuery = true)
+    Page<Object[]> findAllListTypeRoom(Pageable pageable);
+
 }

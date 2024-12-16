@@ -130,7 +130,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 	List<Object[]> getBookingStatisticsByDateRange(@Param("startDate") LocalDate startDate,
 			@Param("endDate") LocalDate endDate);
 
-	@Query("SELECT b FROM Booking b " + 
+	@Query("SELECT b FROM Booking b " +
 			"JOIN b.invoice i " +
 			"WHERE DATE(i.createAt) = :date")
 	List<Booking> findBookingsByStartAtWithInvoice(@Param("date") LocalDate date);
@@ -269,5 +269,4 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
     ORDER BY bk.id DESC
 """, nativeQuery = true)
 	List<Object[]> findBookingsByAccountId(@Param("accountId") Integer accountId);
-
 }

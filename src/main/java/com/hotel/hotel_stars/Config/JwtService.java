@@ -50,7 +50,8 @@ public class JwtService {
             claims.put("fullname",u.getFullname());
             System.out.println(u.getRole().getRoleName()+"111");
         });
-
+        System.out.println("thời gian hiện tại: "+new Date(System.currentTimeMillis()));
+        System.out.println("thời gian hết hạn: "+new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 6 ));
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(user.get().getUsername())

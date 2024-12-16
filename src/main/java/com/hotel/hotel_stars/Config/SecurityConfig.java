@@ -50,12 +50,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration configuration = new CorsConfiguration();
                     configuration.setAllowedOriginPatterns(List.of("http://localhost:*")); // Mẫu
-                    // miền//
-                    // Thay
-                    // đổi
-                    // miền
-                    // nếu
-                    // cần
+
                     configuration.setAllowedMethods(
                             Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
@@ -101,6 +96,7 @@ public class SecurityConfig {
                                                                 "/api/account/getAll",
                                                                 "/api/booking-room/getAll",
                                                                 "/api/type-room/get-list-room",
+                                                                "/api/type-room/find-all-type-room",
                                                                 "/api/type-room/detail-type-room",
                                                                 "/api/room/list-room-filter",
                                                                 "/api/room/details",
