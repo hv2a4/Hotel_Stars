@@ -24,4 +24,11 @@ public interface DiscountRepository extends JpaRepository<Discount, Integer> {
             "AND CURDATE() BETWEEN DATE(ds.start_date) AND DATE(ds.end_date) and da.status_da=0",
             nativeQuery = true)
     List<Discount> findDiscountsByUsername(@Param("username") String username);
+
+    @Query(value = "SELECT * " +
+            "FROM discount ds " +
+            "WHERE ds.id NOT IN  (SELECT da.discount_id FROM discount_account da WHERE da.account_id = :id_account) " +
+            "AND CONVERT_TZ(:currentTime, '+00:00', '+07:00') BETWEEN ds.start_date AND ds.end_date;",
+            nativeQuery = true)
+    Discount findDiscountsByDate(@Param("currentTime") String currentTime, @Param("id_account") Integer id_account);
 }

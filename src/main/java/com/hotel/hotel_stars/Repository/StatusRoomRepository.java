@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 public interface StatusRoomRepository extends JpaRepository<StatusRoom, Integer> {
     boolean existsByStatusRoomName(String statusRoomName);
     
-    @Query("SELECT sr FROM StatusRoom sr WHERE sr.id <> ?1 and sr.id in (3,5,6)")
+    @Query("SELECT sr FROM StatusRoom sr WHERE sr.id <> ?1 and sr.id in (3,5,4)")
     List<StatusRoom> findAllExcludingId(Integer excludedId);
 
 }

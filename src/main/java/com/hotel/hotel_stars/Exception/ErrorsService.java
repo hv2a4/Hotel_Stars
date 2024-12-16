@@ -3,9 +3,11 @@ package com.hotel.hotel_stars.Exception;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import com.hotel.hotel_stars.Entity.Booking;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +19,7 @@ import com.hotel.hotel_stars.Models.bookingModel;
 import com.hotel.hotel_stars.Repository.AccountRepository;
 import com.hotel.hotel_stars.Repository.RoomRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomRepository;
-import com.hotel.hotel_stars.Utils.paramService;
+import com.hotel.hotel_stars.utils.paramService;
 
 @Service
 public class ErrorsService {
@@ -56,6 +58,30 @@ public class ErrorsService {
         RoomAvailabilityResponse response = isRoomAvailable(bookingModels.getRoomId(), bookingModels.getStartDate(), bookingModels.getEndDate());
         System.out.println(response.isAllRoomsAvailable());
 
+
+        System.out.println(account.get().getBookingList().getLast());
+        Optional<Booking> booking = account.get().getBookingList().stream()
+                .max(Comparator.comparingInt(Booking::getId));
+
+
+        if(booking.get().getStatus().getId()==1){
+            responseDto.setCode("400");
+            responseDto.setStatus("error");
+            responseDto.setMessage("Đơn đặt phòng gần đây nhất chưa được bạn xác nhận. Vui lòng kiểm tra.");
+            return responseDto;
+        }
+        if(booking.get().getStatus().getId()==2){
+            responseDto.setCode("400");
+            responseDto.setStatus("error");
+            responseDto.setMessage("Đơn đặt phòng gần nhất của bạn đang chờ khách sạn xác nhận. Vui lòng đợi.");
+            return responseDto;
+        }
+        if(bookingModels.getRoomId().size()>7){
+            responseDto.setCode("400");
+            responseDto.setStatus("error");
+            responseDto.setMessage("Vui lòng không đặt quá 7 phòng trong một lần.");
+            return responseDto;
+        }
         if (!account.isPresent()) {
             responseDto.setCode("400");
             responseDto.setStatus("error");

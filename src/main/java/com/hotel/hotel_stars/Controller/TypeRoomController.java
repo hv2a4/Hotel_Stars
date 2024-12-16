@@ -32,7 +32,7 @@ import com.hotel.hotel_stars.Models.typeRoomModel;
 import com.hotel.hotel_stars.Service.AccountService;
 import com.hotel.hotel_stars.Service.BookingService;
 import com.hotel.hotel_stars.Service.TypeRoomService;
-import com.hotel.hotel_stars.Utils.paramService;
+import com.hotel.hotel_stars.utils.paramService;
 
 import jakarta.validation.Valid;
 
@@ -188,7 +188,7 @@ public class TypeRoomController {
             @RequestParam String startDate,
             @RequestParam String endDate,
             @RequestParam Integer guestLimit,
-            @RequestParam (required = false) Integer typeRoomID,
+            @RequestParam (defaultValue = "0", required = false) Integer typeRoomID,
             @RequestParam(defaultValue = "1") Integer page, // Mặc định là trang 1
             @RequestParam(defaultValue = "10") Integer size // Mặc định là 10 bản ghi/trang
     ) {
@@ -223,5 +223,23 @@ public class TypeRoomController {
     @GetMapping("/accountId/{id}")
     public ResponseEntity<?> getBookingByAccount(@PathVariable("id") Integer id) {
         return ResponseEntity.ok(bookingService.getListByAccountId(id));
+    }
+    @GetMapping("/find-all-type-room")
+    public ResponseEntity<?> findAllTypeRoomGroupRoom(
+            @RequestParam(defaultValue = "1") Integer page, // Mặc định là trang 1
+            @RequestParam(defaultValue = "10") Integer size // Mặc định là 10 bản ghi/trang
+    ) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+
+        Page<FindTypeRoomDto> rooms = trservice.getTypeRoomGroupRoom(pageable);
+
+        // Lấy tổng số phòng và tổng số trang từ Page object
+        long totalItems = rooms.getTotalElements();
+        int totalPages = rooms.getTotalPages();
+
+        // Tạo đối tượng response chứa dữ liệu phân trang
+        PaginatedResponse<FindTypeRoomDto> response = new PaginatedResponse<>(rooms.getContent(), totalItems, totalPages, page, size);
+
+        return ResponseEntity.ok(response);
     }
 }

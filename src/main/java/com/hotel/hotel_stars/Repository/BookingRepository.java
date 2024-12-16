@@ -1,5 +1,6 @@
 package com.hotel.hotel_stars.Repository;
 
+import com.hotel.hotel_stars.DTO.BookingStatisticsDTO;
 import com.hotel.hotel_stars.DTO.Select.CustomerReservation;
 import com.hotel.hotel_stars.Entity.Booking;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,6 +11,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -101,9 +103,39 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 	// khoi
 	@Query("SELECT b FROM Booking b JOIN b.bookingRooms br WHERE br.room.id = :roomId AND b.status.id IN (2, 4,6, 7,8)")
 	List<Booking> findBookingsByRoomId(@Param("roomId") Integer roomId);
+
+	@Query(value = """
+			SELECT
+			    DATE(i.create_at) AS bookingDate,
+			    COUNT(b.id) AS totalBookings,
+			    COUNT(br.id) AS totalRoomsBooked,
+			    SUM(i.total_amount) AS totalBookingValue,
+			    SUM(CASE
+			        WHEN b.status_payment = TRUE THEN i.total_amount
+			        ELSE 0
+			    END) AS totalPaid
+			FROM
+			    booking b
+			INNER JOIN
+			    invoice i ON b.id = i.booking_id
+			LEFT JOIN
+			    booking_room br ON b.id = br.booking_id
+			WHERE
+			    i.create_at BETWEEN :startDate AND :endDate
+			GROUP BY
+			    DATE(i.create_at)
+			ORDER BY
+			    bookingDate
+			""", nativeQuery = true)
+	List<Object[]> getBookingStatisticsByDateRange(@Param("startDate") LocalDate startDate,
+			@Param("endDate") LocalDate endDate);
+
+	@Query("SELECT b FROM Booking b " +
+			"JOIN b.invoice i " +
+			"WHERE DATE(i.createAt) = :date")
+	List<Booking> findBookingsByStartAtWithInvoice(@Param("date") LocalDate date);
+
 	// khoi
-
-
 
 
 	@Query(value = """
@@ -184,7 +216,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
         CASE 
             WHEN ags.serviceRoomName IS NULL AND arsh.serviceHotelName IS NULL THEN NULL
             ELSE CONCAT(
-IFNULL(ags.serviceRoomName, ''), 
+                IFNULL(ags.serviceRoomName, ''), 
                 IF(ags.serviceRoomName IS NOT NULL AND arsh.serviceHotelName IS NOT NULL, ', ', ''), 
                 IFNULL(arsh.serviceHotelName, '')
             )

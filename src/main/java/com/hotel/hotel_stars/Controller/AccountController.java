@@ -1,9 +1,9 @@
 package com.hotel.hotel_stars.Controller;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
 
+import com.hotel.hotel_stars.Entity.Account;
+import com.hotel.hotel_stars.Entity.Booking;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +29,7 @@ import com.hotel.hotel_stars.Models.changePasswordModel;
 import com.hotel.hotel_stars.Repository.AccountRepository;
 import com.hotel.hotel_stars.Service.AccountService;
 import com.hotel.hotel_stars.Service.TypeRoomService;
-import com.hotel.hotel_stars.Utils.paramService;
+import com.hotel.hotel_stars.utils.paramService;
 
 import jakarta.validation.Valid;
 
@@ -57,15 +57,13 @@ public class AccountController {
 	private TypeRoomService typeRoomService;
 
 //    @GetMapping("/getAll")
-//    public ResponseEntity<?> getAllAccounts() {
-//        System.out.println(paramServices.localdatetimeToInsant(LocalDateTime.now()));
+//    public ResponseEntity<?> getAllAccounts( @RequestParam (defaultValue = "0", required = false) Integer id) {
+//
 //        return ResponseEntity.ok("ạksfasj");
 //    }
 
 	@GetMapping("/getAll")
-	public ResponseEntity<?> getAllAccounts() {
-		return ResponseEntity.ok(accountService.getAllAccounts());
-	}
+	public ResponseEntity<?> getAllAccounts() {return ResponseEntity.ok(accountService.getAllAccounts());}
 
 	@GetMapping("/{id}")
 	public ResponseEntity<?> getById(@PathVariable("id") Integer id) {

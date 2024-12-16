@@ -10,10 +10,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import com.hotel.hotel_stars.DTO.BookingStatisticsDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import com.hotel.hotel_stars.DTO.selectDTO.BookingHistoryDTO;
+import com.hotel.hotel_stars.DTO.selectDTO.BookingHistoryDTOs;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.FileSystemResource;
@@ -48,8 +50,8 @@ import com.hotel.hotel_stars.Repository.BookingRepository;
 import com.hotel.hotel_stars.Repository.BookingRoomRepository;
 import com.hotel.hotel_stars.Repository.StatusBookingRepository;
 import com.hotel.hotel_stars.Service.BookingService;
-import com.hotel.hotel_stars.Utils.SessionService;
-import com.hotel.hotel_stars.Utils.paramService;
+import com.hotel.hotel_stars.utils.SessionService;
+import com.hotel.hotel_stars.utils.paramService;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -90,11 +92,10 @@ public class BookingController {
     }
 
 
-
     @PutMapping("/update-checkIn/{id}")
     public ResponseEntity<?> updateCheckIn(@PathVariable("id") Integer id,
-            @RequestParam("roomId") List<Integer> roomId,
-            @RequestBody List<bookingRoomModel> model) {
+                                           @RequestParam("roomId") List<Integer> roomId,
+                                           @RequestBody List<bookingRoomModel> model) {
         Map<String, String> response = new HashMap<String, String>();
         boolean update = bookingService.updateStatusCheckInBooking(id, roomId, model);
 
@@ -228,6 +229,7 @@ public class BookingController {
     }
 
     @PostMapping("/sendBooking")
+
     public ResponseEntity<?> postBooking(@Valid @RequestBody bookingModel bookingModels, HttpServletRequest request) {
         Map<String, String> response = new HashMap<String, String>();
 
@@ -272,7 +274,7 @@ public class BookingController {
 
     @PutMapping("/update-status/{id}/{idStatus}")
     public ResponseEntity<?> updateStatus(@PathVariable("id") Integer idBooking,
-            @PathVariable("idStatus") Integer idStatus, @RequestBody bookingModelNew bookingModel) {
+                                          @PathVariable("idStatus") Integer idStatus, @RequestBody bookingModelNew bookingModel) {
         // Gọi phương thức updateStatusBooking từ service
         Map<String, String> response = new HashMap<String, String>();
         boolean update = bookingService.updateStatusBooking(idBooking, idStatus, bookingModel);
@@ -286,9 +288,38 @@ public class BookingController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
+
+    @GetMapping("/reservation")
+    public ResponseEntity<List<BookingStatisticsDTO>> getBookingStatistics(
+            @RequestParam("startDate") LocalDate startDate, @RequestParam("endDate") LocalDate endDate) {
+        List<BookingStatisticsDTO> statistics = bookingService.getStatistics(startDate, endDate);
+        return ResponseEntity.ok(statistics);
+    }
+
+    @GetMapping("/by-start-date-with-invoice")
+    public ResponseEntity<?> getBookingsByStartAtWithInvoice(@RequestParam("date") LocalDate date) {
+        return ResponseEntity.ok(bookingService.getBookingsByStartAtWithInvoice(date));
+    }
+
     @GetMapping("/booking-history-account")
     public ResponseEntity<?> getBookings(@RequestParam Integer accountId) {
-        List<BookingHistoryDTO> bookings = bookingService.getBookingsByAccountId(accountId);
+        List<BookingHistoryDTOs> bookings = bookingService.getBookingsByAccountId(accountId);
         return ResponseEntity.ok(bookings);
+    }
+
+    @GetMapping("/booking-by-room/{id}")
+    public ResponseEntity<?> getBookingByRoom(@PathVariable("id") Integer id) {
+        return ResponseEntity.ok(bookingService.getBookingByRoom(id));
+    }
+
+    @PutMapping("/cancel-booking/{id}")
+    public StatusResponseDto cancelBooking(@PathVariable("id") Integer id,
+                                           @RequestParam("descriptions") String descriptions) {
+        boolean flag = bookingService.cancelBooking(id, descriptions);
+        if (flag) {
+            return new StatusResponseDto("200", "success", "Hủy đặt phòng thành công");
+        } else {
+            return new StatusResponseDto("400", "error", "Hủy đặt phòng thất bại");
+        }
     }
 }

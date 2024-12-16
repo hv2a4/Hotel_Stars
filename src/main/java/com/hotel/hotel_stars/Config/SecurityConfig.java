@@ -50,12 +50,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration configuration = new CorsConfiguration();
                     configuration.setAllowedOriginPatterns(List.of("http://localhost:*")); // Mẫu
-                    // miền//
-                    // Thay
-                    // đổi
-                    // miền
-                    // nếu
-                    // cần
+
                     configuration.setAllowedMethods(
                             Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
@@ -83,6 +78,10 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/account/add-account-staff").permitAll()
                                                 // khoi
                                                 // vu
+                                                //tuong
+                                                .requestMatchers("/api/discount/get-discount-by-date").permitAll()
+                                                .requestMatchers("/api/discount-accounts/add").hasAnyAuthority("Customer", "HotelOwner")
+                                                //tuong
                                                 .requestMatchers(
                                                                 "/api/account/account-by-id/{username}",
                                                                 "/api/account/toggleDelete/{id}",
@@ -97,6 +96,7 @@ public class SecurityConfig {
                                                                 "/api/account/getAll",
                                                                 "/api/booking-room/getAll",
                                                                 "/api/type-room/get-list-room",
+                                                                "/api/type-room/find-all-type-room",
                                                                 "/api/type-room/detail-type-room",
                                                                 "/api/room/list-room-filter",
                                                                 "/api/room/details",
@@ -543,9 +543,14 @@ public class SecurityConfig {
                                 .requestMatchers("/api/room").permitAll()
                                 .requestMatchers("/api/booking/booking-offline").permitAll()
                                 .requestMatchers("/api/booking").permitAll()
+                                .requestMatchers("/api/booking/reservation").permitAll()
+                                .requestMatchers("/api/invoice/statistics").permitAll()
+                                .requestMatchers("/api/invoice/statistics2").permitAll()
+                                .requestMatchers("/api/booking/by-start-date-with-invoice").permitAll()
                                 .requestMatchers("/api/booking/update-status/**").permitAll()
                                 .requestMatchers("/api/booking/update-checkIn/**").permitAll()
                                 .requestMatchers("/api/booking-infomation/booking-room").permitAll()
+                                .requestMatchers("/api/booking/booking-history-account").permitAll()
                                 .requestMatchers("/api/booking-room/list-booking-room").permitAll()
                                 .requestMatchers("/api/customer-info/add").permitAll()
                                 .requestMatchers("/api/customer-info/update/**").permitAll()

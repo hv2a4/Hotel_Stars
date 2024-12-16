@@ -55,7 +55,7 @@ public class Booking {
     private StatusBooking status;
 
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
-    List<BookingRoom> bookingRooms  = new ArrayList<>(); ;
+    List<BookingRoom> bookingRooms  = new ArrayList<>();
     
     @OneToMany(mappedBy = "booking")
     @JsonManagedReference

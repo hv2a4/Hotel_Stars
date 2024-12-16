@@ -1,4 +1,4 @@
-package com.hotel.hotel_stars.Utils;
+package com.hotel.hotel_stars.utils;
 
 
 import java.awt.image.BufferedImage;
@@ -128,10 +128,19 @@ public class paramService {
     }
 
     public Instant stringToInstant(String dateString) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate localDate = LocalDate.parse(dateString, formatter);
-        return localDate.atStartOfDay(ZoneId.of("UTC")).toInstant();
+        try {
+            // Định dạng đầy đủ với thời gian và múi giờ
+            DateTimeFormatter fullFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+                    .withZone(ZoneId.of("UTC"));
+            return Instant.from(fullFormatter.parse(dateString));
+        } catch (Exception e) {
+            DateTimeFormatter dateOnlyFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                    .withZone(ZoneId.of("UTC"));
+            LocalDate localDate = LocalDate.parse(dateString, dateOnlyFormatter);
+            return localDate.atStartOfDay(ZoneId.of("UTC")).toInstant();
+        }
     }
+
     public Instant stringToInstantBK(String dateString, int hour, int minute) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         try {
@@ -145,25 +154,30 @@ public class paramService {
             throw new IllegalArgumentException("Invalid date format: " + dateString, e);
         }
     }
+
     public LocalDate convertStringToLocalDate(String dateStr) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         return LocalDate.parse(dateStr, formatter);
     }
+
     public Instant localdatetimeToInsant(LocalDateTime localDateTime) {
         ZoneId zoneId = ZoneId.of("UTC");
         return localDateTime.atZone(zoneId).toInstant();
     }
-    public Instant localDateToInstant(LocalDateTime localDateTime ) {
+
+    public Instant localDateToInstant(LocalDateTime localDateTime) {
         ZonedDateTime vietnamTime = LocalDateTime.now().atZone(ZoneId.of("Asia/Saigon"));
         System.out.println("thời gian2: " + LocalDateTime.now());
         Instant instantNow = vietnamTime.toInstant();
         System.out.println("thời gian1: " + instantNow);
         return instantNow;
     }
+
     public LocalDate convertInstallToLocalDate(Instant install) {
         // Convert Instant to LocalDate using the system default timezone
         return install.atZone(ZoneId.systemDefault()).toLocalDate();
     }
+
     public BufferedImage getImageFromUrl(String imageUrl) {
         try {
             // Mở kết nối tới URL
@@ -189,6 +203,7 @@ public class paramService {
         }
         return null;
     }
+
     public String generateHtml(String title, String message, String content) {
         return "<!DOCTYPE html>" +
                 "<html lang=\"vi\">" +
@@ -214,9 +229,7 @@ public class paramService {
     }
 
 
-
-
-    public String confirmBookings(String id, Booking booking, LocalDate startDate, LocalDate endDate, String total, String rooms,String image) {
+    public String confirmBookings(String id, Booking booking, LocalDate startDate, LocalDate endDate, String total, String rooms, String image) {
         return "<!DOCTYPE html>\n"
                 + "<html lang=\"en\">\n"
                 + "<head>\n"
@@ -298,27 +311,28 @@ public class paramService {
                 + "                <h2>Đơn đặt phòng</h2>\n"
                 + "                <h1>Hotel Stars</h1>\n"
                 + "                <p>Mã đơn: <strong>" + id + "</strong></p>\n"
-                + "                <p>Tên khách hàng: <strong>"+booking.getAccount().getUsername()+"</strong></p>\n"
-                + "                <p>Số điện thoại: <strong>"+booking.getAccount().getPhone()+"</strong></p>\n"
-                + "                <p>Ngày nhận: <strong>"+startDate+"</strong></p>\n"
-                + "                <p>Ngày trả: <strong>"+endDate+"</strong></p>\n"
-                + "                <p>Phòng: <strong>"+rooms+"</strong></p>\n"
-                + "                <p>Tổng tiền: <strong>"+total+"</strong></p>\n"
-                + "                <p>Trạng thái thanh toán: <strong>"+(booking.getStatusPayment() ? "Đã thanh toán" : "Chưa thanh toán")+"</strong></p>\n"
+                + "                <p>Tên khách hàng: <strong>" + booking.getAccount().getUsername() + "</strong></p>\n"
+                + "                <p>Số điện thoại: <strong>" + booking.getAccount().getPhone() + "</strong></p>\n"
+                + "                <p>Ngày nhận: <strong>" + startDate + "</strong></p>\n"
+                + "                <p>Ngày trả: <strong>" + endDate + "</strong></p>\n"
+                + "                <p>Phòng: <strong>" + rooms + "</strong></p>\n"
+                + "                <p>Tổng tiền: <strong>" + total + "</strong></p>\n"
+                + "                <p>Trạng thái thanh toán: <strong>" + (booking.getStatusPayment() ? "Đã thanh toán" : "Chưa thanh toán") + "</strong></p>\n"
                 + "            </div>\n"
                 + "            <div class=\"ticket-right\">\n"
                 + "                <div class=\"qr-code\">\n"
-                + "                    <img src="+image+" alt width=\"150\">\n"
+                + "                    <img src=" + image + " alt width=\"150\">\n"
                 + "                </div>\n"
                 + "            </div>\n"
                 + "        </div>\n"
                 + "        <div class=\"pdf\">\n"
-                + "            <a href=\"http://localhost:8080/api/booking/downloadPdf?id="+booking.getId()+"\">Tải xuống pdf</a>\n"
+                + "            <a href=\"http://localhost:8080/api/booking/downloadPdf?id=" + booking.getId() + "\">Tải xuống pdf</a>\n"
                 + "        </div>\n"
                 + "    </div>\n"
                 + "</body>\n"
                 + "</html>";
     }
+
     public String generateBookingEmail(String id, String fullName, String token, LocalDate startDate, LocalDate endDate, String total, String rooms) {
         return "<!DOCTYPE html>\n"
                 + "<html lang=\"vi\">\n"
@@ -373,6 +387,7 @@ public class paramService {
                 + "</body>\n"
                 + "</html>";
     }
+
     public String pdfDownload(String id, Booking booking, LocalDate startDate, LocalDate endDate, String total, String rooms, String image) {
         return  "<!DOCTYPE html>\n"
                 + "<html lang=\"vi\">\n"
@@ -471,6 +486,7 @@ public class paramService {
                 + "</body>\n"
                 + "</html>";
     }
+
     public String generatePdf(String htmlContent, String fullName, String id) throws Exception {
         // Định nghĩa đường dẫn thư mục người dùng (Downloads)
         String userHome = System.getProperty("user.home");
@@ -513,8 +529,9 @@ public class paramService {
         // Trả về đường dẫn file PDF
         return filePath;
     }
-    public String contentEmail(String token){
-        return  "<!DOCTYPE html>\n"
+
+    public String contentEmail(String token) {
+        return "<!DOCTYPE html>\n"
                 + "<html lang=\"vi\">\n"
                 + "<head>\n"
                 + "    <meta charset=\"UTF-8\">\n"
@@ -541,14 +558,15 @@ public class paramService {
                 + "    <p>Xin chào Bạn</p>\n"
                 + "    <p>Bạn đã yêu cầu thay đổi mật khẩu cho tài khoản của mình tại Hotel Start.</p>\n"
                 + "    <p>Để xác nhận việc thay đổi mật khẩu, vui lòng nhấp vào liên kết bên dưới:</p>\n"
-                + "    <p><a href=\"http://localhost:8080/api/account/updatePassword?token="+token+"\" class=\"button\" style=\"color: white;\">Xác Nhận Đổi Mật Khẩu</a></p>\n"
+                + "    <p><a href=\"http://localhost:8080/api/account/updatePassword?token=" + token + "\" class=\"button\" style=\"color: white;\">Xác Nhận Đổi Mật Khẩu</a></p>\n"
                 + "    <p>Nếu bạn không yêu cầu thay đổi mật khẩu, xin vui lòng bỏ qua email này hoặc liên hệ với chúng tôi để được hỗ trợ.</p>\n"
                 + "    <p>Trân trọng,<br>Hotel Start</p>\n"
                 + "</div>\n"
                 + "</body>\n"
                 + "</html>";
     }
-    public String getImage(){
+
+    public String getImage() {
         return "https://firebasestorage.googleapis.com/v0/b/myprojectimg-164dd.appspot.com/o/files%2F846f674e-5f3d-4164-aa1a-1241189ac18e?alt=media&token=db0c0472-07ec-4436-a3e3-9ba74cd47a8a";
     }
 }

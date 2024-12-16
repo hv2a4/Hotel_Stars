@@ -6,9 +6,9 @@ import com.hotel.hotel_stars.Repository.BookingRepository;
 import com.hotel.hotel_stars.Repository.DiscountAccountRepository;
 import com.hotel.hotel_stars.Repository.DiscountRepository;
 import com.hotel.hotel_stars.Repository.StatusBookingRepository;
+import com.hotel.hotel_stars.utils.SessionService;
+import com.hotel.hotel_stars.utils.paramService;
 
-import com.hotel.hotel_stars.Utils.SessionService;
-import com.hotel.hotel_stars.Utils.paramService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -68,7 +68,7 @@ public class vnPayController {
                 total=total-discountAmount;
             }
             System.out.println();
-            String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
+String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
             LocalDate startDate=paramServices.convertInstallToLocalDate(booking.getStartAt());
             LocalDate endDate=paramServices.convertInstallToLocalDate(booking.getEndAt());
             booking.setStatus(statusBooking);
@@ -120,7 +120,7 @@ public class vnPayController {
             booking.setStatus(statusBooking1);
             booking.setStatusPayment(false);
             bookingRepository.save(booking);
-            String paymentStatuss = "error";
+String paymentStatuss = "error";
             String messages = "Thanh toán thất bại";
             String redirectUrl = null;
             redirectUrl = String.format(

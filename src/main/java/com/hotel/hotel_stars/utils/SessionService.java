@@ -1,4 +1,4 @@
-package com.hotel.hotel_stars.Utils;
+package com.hotel.hotel_stars.utils;
 
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;

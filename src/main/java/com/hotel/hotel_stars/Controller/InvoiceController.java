@@ -1,5 +1,7 @@
 package com.hotel.hotel_stars.Controller;
 
+import java.time.LocalDate;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -32,4 +34,18 @@ public class InvoiceController {
 	public StatusResponseDto addInvoice(@RequestBody InvoiceModel invoiceModel) {
 		return invoiceService.addInvoice(invoiceModel);
 	}
+	
+	//khoi
+	@GetMapping("/statistics")
+    public ResponseEntity<?> getStatistics(
+            @RequestParam("startDate") LocalDate startDate,
+            @RequestParam("endDate") LocalDate endDate) {
+        return ResponseEntity.ok(invoiceService.getInvoiceStatistics(startDate, endDate));
+    }
+	@GetMapping("/statistics2")
+    public ResponseEntity<?> getStatistics2(@RequestParam("startDate") LocalDate startDate,
+    		 @RequestParam("endDate") LocalDate endDate) {
+        return ResponseEntity.ok(invoiceService.getInvoiceStatisticsByDateRange(startDate, endDate));
+    }
+	//khoi
 }
