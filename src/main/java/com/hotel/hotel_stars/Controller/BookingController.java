@@ -307,6 +307,34 @@ public class BookingController {
         return ResponseEntity.ok(bookings);
     }
 
+    public List<BookingHistoryDTOs> getBookingsByAccountId(Integer accountId) {
+        List<Object[]> results = bookingRepository.findBookingsByAccountId(accountId);
+        if (results == null) {
+            return null;
+        }
+        return results.stream().map(objects -> new BookingHistoryDTOs(
+                (Integer) objects[0],  // bk_id
+                (String) objects[1],   // bkformat
+                (String) objects[2],   // create_at
+                (String) objects[3],   // start_at
+                (String) objects[4],   // end_at
+                (String) objects[5],   // fullname
+                (String) objects[6],   // avatar
+                (Integer) objects[7],  // statusBkID
+                (String) objects[8],   // statusBkName
+                (Integer) objects[9],  // iv_id
+                (Double) objects[10],  // totalRoom
+                (Integer) objects[11], // fb_id
+                (String) objects[12],  // content
+                (Integer) objects[13], // stars
+                (String) objects[14],  // roomInfo
+                (String) objects[15],  // image
+                (String) objects[16],  // combinedServiceNames
+                (Double) objects[17],  // combinedTotalServices
+                (Double) objects[18]
+        )).collect(Collectors.toList());
+    }
+
     @GetMapping("/booking-by-room/{id}")
     public ResponseEntity<?> getBookingByRoom(@PathVariable("id") Integer id) {
         return ResponseEntity.ok(bookingService.getBookingByRoom(id));
