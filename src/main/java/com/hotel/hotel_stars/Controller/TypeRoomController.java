@@ -188,7 +188,7 @@ public class TypeRoomController {
             @RequestParam String startDate,
             @RequestParam String endDate,
             @RequestParam Integer guestLimit,
-            @RequestParam (required = false) Integer typeRoomID,
+            @RequestParam (defaultValue = "0", required = false) Integer typeRoomID,
             @RequestParam(defaultValue = "1") Integer page, // Mặc định là trang 1
             @RequestParam(defaultValue = "10") Integer size // Mặc định là 10 bản ghi/trang
     ) {

@@ -113,7 +113,7 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
                     AND (
                         DATE(b_inner.start_at) <= :endDate
                         AND DATE(b_inner.end_at) >= :startDate
-                    )  AND b_inner.status_id NOT IN (1, 6)
+                    )  AND b_inner.status_id NOT IN (6)
                 )AND (:typeRoomID IS NULL OR tr.id = :typeRoomID)
             GROUP BY
                 tr.id
@@ -130,31 +130,31 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
                 END)
             """,
             countQuery = """
-            SELECT COUNT(DISTINCT tr.id)
-            FROM
-                type_room tr
-            JOIN
-                room r ON tr.id = r.type_room_id
-            LEFT JOIN
-                booking_room br ON br.room_id = r.id
-            LEFT JOIN
-                booking b ON br.booking_id = b.id
-                AND (
-                    :startDate <= DATE(b.end_at)
-                    AND :endDate >= DATE(b.start_at)
-                )
-            WHERE
-                NOT EXISTS (
-                    SELECT 1
-                    FROM booking_room br_inner
-                    JOIN booking b_inner ON br_inner.booking_id = b_inner.id
-                    WHERE br_inner.room_id = r.id
-                    AND (
-                        DATE(b_inner.start_at) <= :endDate
-                        AND DATE(b_inner.end_at) >= :startDate
-                    )  AND b_inner.status_id NOT IN (1, 6)
-                )
-            """,
+                                SELECT COUNT(DISTINCT tr.id)
+                                FROM
+                                    type_room tr
+                                JOIN
+                                    room r ON tr.id = r.type_room_id
+                                LEFT JOIN
+                                    booking_room br ON br.room_id = r.id
+                                LEFT JOIN
+                                    booking b ON br.booking_id = b.id
+                                    AND (
+                                        :startDate <= DATE(b.end_at)
+                                        AND :endDate >= DATE(b.start_at)
+                    )
+                                WHERE
+                                    NOT EXISTS (
+                                        SELECT 1
+                                        FROM booking_room br_inner
+                                        JOIN booking b_inner ON br_inner.booking_id = b_inner.id
+                                        WHERE br_inner.room_id = r.id
+                                        AND (
+                                            DATE(b_inner.start_at) <= :endDate
+                                            AND DATE(b_inner.end_at) >= :startDate
+                                        )  AND b_inner.status_id NOT IN ( 6)
+                                    )
+                                """,
             nativeQuery = true)
     Page<Object[]> findAvailableRoomsWithPagination(
             @Param("startDate") LocalDate startDate,
@@ -214,37 +214,37 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
 
     @Query(value = """
 
-            SELECT tr.id                                                AS typeRoomId,
-          tr.type_room_name                                      AS typeRoomName,
-          tr.price                                               AS price,
-          tr.bed_count                                           AS bedCount,
-          tr.acreage                                             AS acreage,
-          tr.guest_limit                                         AS guestLimit,
-          tr.describes                                           AS describes,
-          tb.bed_name                                            AS bedName,
-          GROUP_CONCAT(DISTINCT tri.image_name)                  AS imageList,
-          GROUP_CONCAT(DISTINCT tratr.amenities_type_room_id)    AS amenitiesList,
-          GROUP_CONCAT(DISTINCT f.id)                            AS feedbackList,
-          AVG(f.stars)                                           AS averageStars,
-          GROUP_CONCAT(DISTINCT acc.fullname)                    AS accountName,
-          GROUP_CONCAT(DISTINCT acc.avatar)                      AS accountAvatar
-   FROM type_room tr
-            JOIN type_bed tb ON tr.type_bed_id = tb.id
-            LEFT JOIN type_room_image tri ON tr.id = tri.type_room_id
-            LEFT JOIN type_room_amenities_type_room tratr ON tr.id = tratr.type_room_id
-            LEFT JOIN room r ON tr.id = r.type_room_id
-            LEFT JOIN booking_room br ON r.id = br.room_id
-            LEFT JOIN booking b ON br.booking_id = b.id
-            LEFT JOIN invoice i ON b.id = i.booking_id AND i.invoice_status = true
-            LEFT JOIN feedback f ON i.id = f.invoice_id
-            LEFT JOIN accounts acc ON b.account_id = acc.id
-   WHERE tr.id = ?1
-     AND f.content IS NOT NULL  -- Đảm bảo có phản hồi
-     AND f.stars IS NOT NULL    -- Đảm bảo có đánh giá sao
-   GROUP BY tr.id, tr.type_room_name, tr.price, tr.bed_count, tr.acreage, tr.guest_limit, tr.describes,
-            tb.bed_name;
-   
-            """, nativeQuery = true)
+                     SELECT tr.id                                                AS typeRoomId,
+                   tr.type_room_name                                      AS typeRoomName,
+                   tr.price                                               AS price,
+                   tr.bed_count                                           AS bedCount,
+                   tr.acreage                                             AS acreage,
+                   tr.guest_limit                                         AS guestLimit,
+                   tr.describes                                           AS describes,
+                   tb.bed_name                                            AS bedName,
+                   GROUP_CONCAT(DISTINCT tri.image_name)                  AS imageList,
+                   GROUP_CONCAT(DISTINCT tratr.amenities_type_room_id)    AS amenitiesList,
+                   GROUP_CONCAT(DISTINCT f.id)                            AS feedbackList,
+                   AVG(f.stars)                                           AS averageStars,
+                   GROUP_CONCAT(DISTINCT acc.fullname)                    AS accountName,
+                   GROUP_CONCAT(DISTINCT acc.avatar)                      AS accountAvatar
+            FROM type_room tr
+                     JOIN type_bed tb ON tr.type_bed_id = tb.id
+                     LEFT JOIN type_room_image tri ON tr.id = tri.type_room_id
+                     LEFT JOIN type_room_amenities_type_room tratr ON tr.id = tratr.type_room_id
+                     LEFT JOIN room r ON tr.id = r.type_room_id
+                     LEFT JOIN booking_room br ON r.id = br.room_id
+                     LEFT JOIN booking b ON br.booking_id = b.id
+                     LEFT JOIN invoice i ON b.id = i.booking_id AND i.invoice_status = true
+                     LEFT JOIN feedback f ON i.id = f.invoice_id
+                     LEFT JOIN accounts acc ON b.account_id = acc.id
+            WHERE tr.id = ?1
+              AND f.content IS NOT NULL  -- Đảm bảo có phản hồi
+              AND f.stars IS NOT NULL    -- Đảm bảo có đánh giá sao
+            GROUP BY tr.id, tr.type_room_name, tr.price, tr.bed_count, tr.acreage, tr.guest_limit, tr.describes,
+                     tb.bed_name;
+               
+                     """, nativeQuery = true)
     List<Object[]> findTypeRoomDetailsById(Integer roomId);
 
     Optional<TypeRoom> findByTypeRoomName(String typeRoomName);
