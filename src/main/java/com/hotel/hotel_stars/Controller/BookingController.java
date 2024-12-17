@@ -229,7 +229,6 @@ public class BookingController {
     }
 
     @PostMapping("/sendBooking")
-
     public ResponseEntity<?> postBooking(@Valid @RequestBody bookingModel bookingModels, HttpServletRequest request) {
         Map<String, String> response = new HashMap<String, String>();
 
