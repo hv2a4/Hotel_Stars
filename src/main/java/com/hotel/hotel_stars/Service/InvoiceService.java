@@ -82,6 +82,7 @@ public class InvoiceService {
 					.orElseThrow(() -> new IllegalArgumentException("Trạng thái đặt phòng không tồn tại"));
 			booking.setStatus(statusBooking);
 			booking.setStatusPayment(true);
+			booking.setEndAt(invoiceModel.getCreateAt());
 			List<Integer> idBookingRooms = booking.getBookingRooms().stream().map(BookingRoom::getId)
 					.collect(Collectors.toList());
 			List<BookingRoom> bookingRooms = bookingRoomRepository.findByIdIn(idBookingRooms);
@@ -99,13 +100,9 @@ public class InvoiceService {
 				room.setStatusRoom(statusRoom);
 				List<BookingRoomServiceRoom> bookingRoomServiceRooms = bookingRoomServiceRoomRepository.findByBookingRoomId(bookingRoom.getId());
 				Double priceService = bookingRoomServiceRooms.stream()
-	                    .mapToDouble(BookingRoomServiceRoom::getPrice)
-	                    .sum();
+					    .mapToDouble(service -> service.getPrice() * service.getQuantity())
+					    .sum();
 				Double price = room.getTypeRoom().getPrice() * days + priceService;
-				System.out.println(room.getTypeRoom().getPrice());
-				System.out.println(days);
-				System.out.println(priceService);
-				System.out.println(price);
 				bookingRoom.setCheckOut(invoiceModel.getCreateAt());
 				bookingRoom.setPrice(price);
 			}
@@ -150,6 +147,51 @@ public class InvoiceService {
 	                })
 	                .collect(Collectors.toList());
 	    }
+	 
+	 public StatusResponseDto hoanthanhbaotri(InvoiceModel invoiceModel) {
+			try {
+				Booking booking = bookingRepository.findById(invoiceModel.getBookingId())
+						.orElseThrow(() -> new IllegalArgumentException("Booking không tồn tại"));
+				Invoice invoice = new Invoice();
+				invoice.setBooking(booking);
+				invoice.setCreateAt(invoiceModel.getCreateAt());
+				invoice.setInvoiceStatus(true);
+				invoice.setTotalAmount(0.0);
+				StatusBooking statusBooking = statusBookingRepository.findById(8)
+						.orElseThrow(() -> new IllegalArgumentException("Trạng thái đặt phòng không tồn tại"));
+				booking.setStatus(statusBooking);
+				booking.setStatusPayment(true);
+				booking.setEndAt(invoiceModel.getCreateAt());
+				List<Integer> idBookingRooms = booking.getBookingRooms().stream().map(BookingRoom::getId)
+						.collect(Collectors.toList());
+				List<BookingRoom> bookingRooms = bookingRoomRepository.findByIdIn(idBookingRooms);
+				for (BookingRoom bookingRoom : bookingRooms) {
+					LocalDate startDate = booking.getStartAt().atZone(ZoneId.systemDefault()).toLocalDate();
+					LocalDate endDate = invoiceModel.getCreateAt().atZone(ZoneId.systemDefault()).toLocalDate();
+					Long days = ChronoUnit.DAYS.between(startDate, endDate);
+					if (days == 0) {
+						days = 1L;
+					}
+					Room room = roomRepository.findById(bookingRoom.getRoom().getId())
+							.orElseThrow(() -> new IllegalArgumentException("Phòng không tồn tại"));
+					StatusRoom statusRoom = statusRoomRepository.findById(5)
+							.orElseThrow(() -> new IllegalArgumentException("Trạng thái phòng không tồn tại"));
+					room.setStatusRoom(statusRoom);
+					bookingRoom.setCheckOut(invoiceModel.getCreateAt());
+				}
+				bookingRoomRepository.saveAll(bookingRooms);
+				roomRepository.saveAll(bookingRooms.stream().map(BookingRoom::getRoom).collect(Collectors.toList()));
+				bookingRepository.save(booking);
+				invoiceRepository.save(invoice);
+
+				return new StatusResponseDto("200", "success", "Hóa đơn đã được tạo thành công");
+
+			} catch (IllegalArgumentException e) {
+				return new StatusResponseDto("404", "error", e.getMessage());
+			} catch (Exception e) {
+				return new StatusResponseDto("500", "error", "Đã xảy ra lỗi khi tạo hóa đơn: " + e.getMessage());
+			}
+		}
 	// khoi
 
 }

@@ -689,6 +689,7 @@ public class BookingService {
 		dto.setEndAt(booking.getEndAt());
 		dto.setId(booking.getId());
 		dto.setStartAt(booking.getStartAt());
+		dto.setDisCountName(booking.getDiscountName());
 		dto.setDescriptions(booking.getDescriptions());
 		dto.setStatusBookingDto(
 				new StatusBookingDto(booking.getStatus().getId(), booking.getStatus().getStatusBookingName()));
@@ -708,15 +709,15 @@ public class BookingService {
 		return dto;
 	}
 
-	public List<accountHistoryDto> getAllBooking(String filterType, LocalDate startDate, LocalDate endDate) {
+	public List<accountHistoryDto> getAllBooking(LocalDate startDate, LocalDate endDate) {
 		// Nếu không có filterType, startDate, hoặc endDate, trả về toàn bộ danh sách
-		if (filterType == null && startDate == null && endDate == null) {
+		if (startDate == null && endDate == null) {
 			return bookingRepository.findAll().stream().sorted(Comparator.comparing(Booking::getCreateAt).reversed()) // Sắp
 					.map(this::convertToDto).collect(Collectors.toList());
 		}
 
 		// Gọi repository để lấy danh sách theo điều kiện
-		List<Booking> bookings = bookingRepository.findBookingsByTime(filterType, startDate, endDate);
+		List<Booking> bookings = bookingRepository.findBookingsByTime(startDate, endDate);
 
 		// Sắp xếp danh sách giảm dần theo createAt
 		bookings.sort(Comparator.comparing(Booking::getCreateAt).reversed());
@@ -869,34 +870,68 @@ public class BookingService {
 				(Double) objects[17], // combinedTotalServices
 				(Double) objects[18])).collect(Collectors.toList());
 	}
-//    public List<BookingHistoryDTO> getBookingsByAccountId2(Integer accountId) {
-//        List<Booking> booking = bookingRepository.findByAccount_Id(accountId);
-//
-//    }
-	// List<Object[]> results =
-	// bookingRepository.findBookingsByAccountId(accountId);
-//
-//        return results.stream().map(objects -> new BookingHistoryDTO(
-//                (Integer) objects[0],  // bk_id
-//                (String) objects[1],   // bkformat
-//                (String) objects[2],   // create_at
-//                (String) objects[3],   // start_at
-//                (String) objects[4],   // end_at
-//                (String) objects[5],   // fullname
-//                (String) objects[6],   // avatar
-//                (Integer) objects[7],  // statusBkID
-//                (String) objects[8],   // statusBkName
-//                (Integer) objects[9],  // iv_id
-//                (Double) objects[10],  // totalRoom
-//                (Integer) objects[11], // fb_id
-//                (String) objects[12],  // content
-//                (Integer) objects[13], // stars
-//                (String) objects[14],  // roomInfo
-//                (String) objects[15],  // image
-//                (String) objects[16],  // combinedServiceNames
-//                (Double) objects[17],  // combinedTotalServices
-//                (Double) objects[18]
-//        )).collect(Collectors.toList());
-//    }
-//
+	public Boolean checkCreatMaintenanceSchedule(Integer bookingId, List<Integer> roomId, String username) {
+		Booking booking = bookingRepository.findById(bookingId)
+				.orElseThrow(() -> new RuntimeException("Booking not found"));
+		Account account = accountRepository.findByUsername(username).get();
+		System.out.println(account);
+		// Tính số ngày chính xác
+		LocalDate startDate = booking.getStartAt().atZone(ZoneId.systemDefault()).toLocalDate();
+		LocalDate endDate = booking.getEndAt().atZone(ZoneId.systemDefault()).toLocalDate();
+		Long days = ChronoUnit.DAYS.between(startDate, endDate);
+		if (days == 0) {
+			days = 1L;
+		}
+
+		for (Integer id : roomId) {
+			Room room = roomRepository.findById(id).orElseThrow(() -> new RuntimeException("Room not found"));
+			BookingRoom bookingRoom = new BookingRoom();
+
+			// Tính giá đã áp dụng khuyến mãi
+
+			// Thiết lập giá tổng (giá mỗi ngày * số ngày)
+			bookingRoom.setBooking(booking);
+			bookingRoom.setCheckIn(booking.getStartAt());
+			bookingRoom.setRoom(room);
+			bookingRoom.setAccount(account);
+
+			try {
+				bookingRoomRepository.save(bookingRoom);
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new RuntimeException("Error saving BookingRoom", e);
+			}
+		}
+		return true;
+	}
+	
+	public Boolean createMaintenanceSchedule(bookingModel bookingModels, String usename) {
+		Booking booking = new Booking();
+		Optional<Account> accounts = accountRepository.findByUsername(bookingModels.getUserName());
+		Optional<StatusBooking> statusBooking = statusBookingRepository.findById(10);
+		MethodPayment methodPayment = methodPaymentRepository.findById(1).get();
+		String startDateWithFixedTime = bookingModels.getStartDate().split("T")[0] + "T14:00:00Z";
+		String endDateWithFixedTime = bookingModels.getEndDate().split("T")[0] + "T12:00:00Z";
+		Instant starDateIns = paramServices.stringToInstant(startDateWithFixedTime).minus(7, ChronoUnit.HOURS);
+		Instant endDateIns = paramServices.stringToInstant(endDateWithFixedTime).minus(7, ChronoUnit.HOURS);
+
+		booking.setAccount(accounts.get());
+		booking.setStartAt(starDateIns);
+		booking.setEndAt(endDateIns);
+		booking.setStatus(statusBooking.get());
+		booking.setStatusPayment(false);
+		booking.setDescriptions("Bảo trì");
+		booking.setMethodPayment(methodPayment);
+		booking.setCreateAt(LocalDateTime.now());
+		try {
+			bookingRepository.save(booking);
+			if (checkCreatMaintenanceSchedule(booking.getId(), bookingModels.getRoomId(), usename)) {
+				return true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+		return false;
+	}
 }

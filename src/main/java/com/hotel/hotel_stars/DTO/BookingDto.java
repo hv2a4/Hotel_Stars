@@ -33,5 +33,6 @@ public class BookingDto implements Serializable {
     StatusBookingDto statusDto;
     AccountDto accountDto;
     MethodPaymentDto methodPaymentDto;
+    String discountName;
     //List<BookingRoomDto> bookingRooms;
 }

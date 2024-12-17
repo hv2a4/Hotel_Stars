@@ -89,7 +89,9 @@ public class AccountService {
                                 booking.getMethodPayment() != null
                                         ? new MethodPaymentDto(booking.getMethodPayment().getId(),
                                                 booking.getMethodPayment().getMethodPaymentName())
-                                        : null))
+                                        : null,
+                                        booking.getDiscountName())
+                        		)
                         .collect(Collectors.toList())
                 : Collections.emptyList();
 

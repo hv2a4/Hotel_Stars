@@ -21,4 +21,5 @@ public class accountHistoryDto {
     MethodPaymentDto methodPaymentDto;
     List<BookingRoomDto> bookingRooms;
     List<InvoiceDto> invoiceDtos;
+    String disCountName;
 }

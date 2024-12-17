@@ -220,8 +220,8 @@ public interface TypeRoomRepository extends JpaRepository<TypeRoom, Integer> {
             "        ON br_inner.booking_id = b_inner.id " +
             "    WHERE br_inner.room_id = r_inner.id " +
             "    AND ( " +
-            "        DATE(b_inner.start_at) <= :endDate " +
-            "        AND DATE(b_inner.end_at) >= :startDate " +
+            "        DATE(b_inner.start_at) < :endDate " +
+            "        AND DATE(b_inner.end_at) > :startDate " +
             "    ) " + // Removed the `+` sign here
             "    AND b_inner.status_id NOT IN (1, 6) " +
             ")", nativeQuery = true)
