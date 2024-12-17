@@ -47,6 +47,17 @@ public class DiscountService {
         return convertToDto(discount);
     }
 
+    public List<Object[]> getDiscountByAccount(Integer id_account) {
+        List<Object[]> results = discountRepository.findDiscountsByAccount(id_account);
+
+        if (results == null || results.isEmpty()) {
+            return null;
+        }
+
+        return results;
+    }
+
+
     public DiscountDto convertToDto(Discount discount) {
         DiscountDto discountDto = modelMapper.map(discount, DiscountDto.class);
         return discountDto;

@@ -26,5 +26,6 @@ public class FeedbackModel {
 
     @NotNull(message = "Không được để trống trạng thái")
     private Boolean ratingStatus;
+
     private Integer IdInvoice;
 }

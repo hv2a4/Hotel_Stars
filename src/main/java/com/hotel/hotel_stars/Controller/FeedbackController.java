@@ -1,6 +1,7 @@
 package com.hotel.hotel_stars.Controller;
 
 import com.hotel.hotel_stars.DTO.FeedbackDto;
+import com.hotel.hotel_stars.Entity.Feedback;
 import com.hotel.hotel_stars.Service.FeedbackService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -26,5 +27,15 @@ public class FeedbackController {
     @GetMapping("get-all-use")
     public ResponseEntity<?> getAllFeedback(){
         return ResponseEntity.ok(feedbackService.getListUser());
+    }
+
+    @GetMapping("getAllDC")
+    public ResponseEntity<?> getAllDC(){
+        return ResponseEntity.ok(feedbackService.getAllFeedbackDC());
+    }
+
+    @GetMapping("getAllDPH")
+    public ResponseEntity<?> getAllDPH(){
+        return ResponseEntity.ok(feedbackService.getAllFeedbackDPH());
     }
 }

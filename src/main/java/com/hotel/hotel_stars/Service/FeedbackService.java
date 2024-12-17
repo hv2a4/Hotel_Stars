@@ -16,6 +16,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class FeedbackService {
@@ -27,6 +28,9 @@ public class FeedbackService {
 
     @Autowired
     InvoiceRepository invoiceRepository;
+
+    @Autowired
+    MessageService messageService;
 
     public FeedbackDto convertDTO(Feedback feedback) {
         // Chuyển đổi Feedback sang FeedbackDto
@@ -82,5 +86,26 @@ public class FeedbackService {
             e.printStackTrace();
             return false;
         }
+    }
+ public List<Object[]> getAllFeedbackDC () {
+     List<Object[]> feedbackList = feedBackRepository.getAll();
+     List<Object[]> feedbacks = new ArrayList<>();
+     for (Object[] row : feedbackList) {
+         if(messageService.getMessageById(Integer.parseInt(String.valueOf(row[0]))) == null) {
+             feedbacks.add(row);
+         }
+     }
+     return feedbacks;
+ }
+
+    public List<Object[]> getAllFeedbackDPH () {
+        List<Object[]> feedbackList = feedBackRepository.getAll();
+        List<Object[]> feedbacks = new ArrayList<>();
+        for (Object[] row : feedbackList) {
+            if(messageService.getMessageById(Integer.parseInt(String.valueOf(row[0]))) != null) {
+                feedbacks.add(row);
+            }
+        }
+        return feedbacks;
     }
 }
