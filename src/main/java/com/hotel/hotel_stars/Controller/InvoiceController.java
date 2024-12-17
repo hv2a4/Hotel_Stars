@@ -40,6 +40,15 @@ public class InvoiceController {
 	}
 	
 	//khoi
+	
+	@GetMapping("/getAll-statistics")
+	public ResponseEntity<?> getInvoiceStatisticsAll() {
+        return ResponseEntity.ok(invoiceService.getInvoiceStatisticsAll());
+    }
+	@GetMapping("/getAll-reservation")
+	public ResponseEntity<?> getStatisticsAll() {
+		return ResponseEntity.ok(invoiceService.getStatisticsAll());
+	}
 	@GetMapping("/statistics")
     public ResponseEntity<?> getStatistics(
             @RequestParam("startDate") LocalDate startDate,
@@ -51,5 +60,7 @@ public class InvoiceController {
     		 @RequestParam("endDate") LocalDate endDate) {
         return ResponseEntity.ok(invoiceService.getInvoiceStatisticsByDateRange(startDate, endDate));
     }
+	
+	
 	//khoi
 }

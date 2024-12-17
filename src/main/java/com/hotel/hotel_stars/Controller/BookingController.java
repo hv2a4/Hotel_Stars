@@ -122,13 +122,11 @@ public class BookingController {
     public ResponseEntity<?> postBookingOffline(@Valid @RequestBody bookingModel bookingModels) {
         Map<String, String> response = new HashMap<String, String>();
         errorsServices.errorBooking(bookingModels);
-        Boolean flag = bookingService.addBookingOffline(bookingModels);
-        if (flag == true) {
-            response = paramServices.messageSuccessApi(201, "success", "Đặt phòng thành công");
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        accountHistoryDto flag = bookingService.addBookingOffline(bookingModels);
+        if (flag != null) {
+            return ResponseEntity.ok(flag);
         } else {
-            response = paramServices.messageSuccessApi(400, "error", "Đặt phòng thất bại");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            return ResponseEntity.ok(flag);
         }
     }
 
