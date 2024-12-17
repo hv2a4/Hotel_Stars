@@ -32,9 +32,9 @@ public class DiscountService {
 
     public List<DiscountDto> getDiscountByAccount(String userName) {
         List<Discount> discounts = discountRepository.findDiscountsByUsername(userName);
-       if(discounts == null || discounts.isEmpty()){
-           return null;
-       }
+        if (discounts == null || discounts.isEmpty()) {
+            return null;
+        }
         return discounts.stream().map(this::convertToDto).toList();
     }
 
@@ -44,7 +44,7 @@ public class DiscountService {
         String currentTime = zonedNow.format(DateTimeFormatter.ISO_ZONED_DATE_TIME);
 
         Discount discount = discountRepository.findDiscountsByDate(currentTime, id_account);
-        if(discount == null){
+        if (discount == null) {
             return null;
         }
         return convertToDto(discount);
@@ -69,7 +69,6 @@ public class DiscountService {
         Discount discount = discountRepository.findById(id).orElse(null);
         return convertToDto(discount);
     }
-
 
 
     public StatusResponseDto saveDiscountDto(DiscountModel discountModel) {
@@ -143,9 +142,6 @@ public class DiscountService {
             return new StatusResponseDto("500", "FAILURE", "Lỗi trong quá trình thêm giảm giá: " + e.getMessage());
         }
     }
-
-
-
 
 
     public DiscountDto updateDiscountDto(DiscountModel discountModel) {
@@ -231,8 +227,6 @@ public class DiscountService {
     }
 
 
-
-
     public StatusResponseDto deletById(Integer id) {
         // Kiểm tra xem giảm giá có tồn tại trước khi xóa
         if (!discountRepository.existsById(id)) {
@@ -249,7 +243,7 @@ public class DiscountService {
     }
 
     public List<DiscountDto> getDiscountsByName(String discountName) {
-    	List<Discount> discount = discountRepository.findByDiscountNames(discountName);
+        List<Discount> discount = discountRepository.findByDiscountNames(discountName);
         return discount.stream().map(this::convertToDto).toList();
     }
 

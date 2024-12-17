@@ -148,11 +148,15 @@ public class BookingController {
             String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
             LocalDate startDate = paramServices.convertInstallToLocalDate(booking.getStartAt());
             LocalDate endDate = paramServices.convertInstallToLocalDate(booking.getEndAt());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+            String startDateStr = startDate.format(formatter);
+            String endDateStr = endDate.format(formatter);
             booking.setStatus(statusBooking.get());
             String roomsString = bookingRoomList.stream()
                     .map(bookingRoom -> bookingRoom.getRoom().getRoomName()) // Extract roomName from each BookingRoom
                     .collect(Collectors.joining(", "));
-            String idBk = "Bk" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "" + booking.getId();
+            String idBk = "BK" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + "TT" + booking.getId();
             System.out.println("chuỗi: " + roomsString);
             try {
                 bookingRepository.save(booking);
@@ -160,10 +164,10 @@ public class BookingController {
                 e.printStackTrace();
             }
             paramServices.sendEmails(booking.getAccount().getEmail(), "thông tin đơn hàng",
-                    paramServices.pdfDownload(idBk, booking, startDate, endDate, formattedAmount, roomsString,
+                    paramServices.pdfDownload(idBk, booking, startDateStr, endDateStr, formattedAmount, roomsString,
                             paramServices.getImage()));
             return ResponseEntity
-                    .ok(paramServices.confirmBookings(idBk, booking, startDate, endDate, formattedAmount, roomsString,
+                    .ok(paramServices.confirmBookings(idBk, booking, startDateStr, endDateStr, formattedAmount, roomsString,
                             paramServices.getImage()));
         } catch (ExpiredJwtException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -198,17 +202,21 @@ public class BookingController {
             String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
             LocalDate startDate = paramServices.convertInstallToLocalDate(booking.getStartAt());
             LocalDate endDate = paramServices.convertInstallToLocalDate(booking.getEndAt());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+            String startDateStr = startDate.format(formatter);
+            String endDateStr = endDate.format(formatter);
             String roomsString = bookingRoomList.stream()
                     .map(bookingRoom -> bookingRoom.getRoom().getRoomName()) // Extract roomName from each BookingRoom
                     .collect(Collectors.joining(", "));
-            String idBk = "Bk" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + "" + booking.getId();
+            String idBk = "BK" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + "TT" + booking.getId();
 
             paramServices.sendEmails(booking.getAccount().getEmail(), "thông tin đơn hàng",
-                    paramServices.confirmBookings(idBk, booking, startDate, endDate, formattedAmount, roomsString,
+                    paramServices.confirmBookings(idBk, booking, startDateStr, endDateStr, formattedAmount, roomsString,
                             paramServices.getImage()));
 
             String filePath = paramServices.generatePdf(
-                    paramServices.pdfDownload(idBk, booking, startDate, endDate, formattedAmount, roomsString,
+                    paramServices.pdfDownload(idBk, booking, startDateStr, endDateStr, formattedAmount, roomsString,
                             paramServices.getImage()),
                     booking.getAccount().getFullname(), idBk);
 
@@ -339,22 +347,27 @@ public class BookingController {
     }
 
     @PutMapping("/cancel-booking/{id}")
-	public StatusResponseDto cancelBooking(@PathVariable("id") Integer id,
-			@RequestParam("descriptions") String descriptions) {
-		boolean flag = bookingService.cancelBooking(id, descriptions);
-		if (flag) {
-			return new StatusResponseDto("200", "success", "Hủy đặt phòng thành công");
-		} else {
-			return new StatusResponseDto("400", "error", "Hủy đặt phòng thất bại");
-		}
-	}
+    public StatusResponseDto cancelBooking(@PathVariable("id") Integer id,
+                                           @RequestParam("descriptions") String descriptions) {
+        boolean flag = bookingService.cancelBooking(id, descriptions);
+        if (flag) {
+            return new StatusResponseDto("200", "success", "Hủy đặt phòng thành công");
+        } else {
+            return new StatusResponseDto("400", "error", "Hủy đặt phòng thất bại");
+        }
+    }
+
     @PostMapping("/booking-maintenance")
     public ResponseEntity<?> postMaintenanceSchedule(@Valid @RequestBody bookingModel bookingModels, @RequestParam("userName") String username) {
+        System.out.println(bookingModels.getUserName());
         Map<String, String> response = new HashMap<String, String>();
+        System.out.println("2");
         StatusResponseDto errorBookings = errorsServices.errorBooking(bookingModels);
+        System.out.println("3");
         if (errorBookings != null) {
             return ResponseEntity.ok(errorBookings);
         }
+        System.out.println("4");
         Boolean flag = bookingService.createMaintenanceSchedule(bookingModels, username);
         if (flag == true) {
             response = paramServices.messageSuccessApi(201, "success", "Tạo lịch thành công");

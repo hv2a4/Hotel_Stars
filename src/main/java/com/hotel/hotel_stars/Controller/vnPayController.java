@@ -46,13 +46,14 @@ public class vnPayController {
     private DiscountAccountRepository discountAccountRepositorys;
     @Autowired
     SessionService sessionService;
+
     @GetMapping("/vnpay-payment")
     public void handleVNPayPayment(HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException {
         String orderInfo = request.getParameter("vnp_OrderInfo");
-        StatusBooking statusBooking= statusBookingRepository.findById(2).get();
+        StatusBooking statusBooking = statusBookingRepository.findById(2).get();
         int paymentStatus = vnPayService.orderReturn(request);
         Booking booking = bookingRepository.findById(Integer.valueOf(orderInfo)).get();
-        if( paymentStatus == 1){
+        if (paymentStatus == 1) {
             try {
                 if (orderInfo != null) {
                     orderInfo = URLDecoder.decode(orderInfo, "UTF-8");
@@ -63,24 +64,27 @@ public class vnPayController {
 
             List<BookingRoom> bookingRoomList = booking.getBookingRooms();
             double total = bookingRoomList.stream().mapToDouble(BookingRoom::getPrice).sum();
-            if(booking.getDiscountPercent()!=null && booking.getDiscountPercent()!=null){
+            if (booking.getDiscountPercent() != null && booking.getDiscountPercent() != null) {
                 double discountAmount = total * (booking.getDiscountPercent() / 100);
-                total=total-discountAmount;
+                total = total - discountAmount;
             }
             System.out.println();
-String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
-            LocalDate startDate=paramServices.convertInstallToLocalDate(booking.getStartAt());
-            LocalDate endDate=paramServices.convertInstallToLocalDate(booking.getEndAt());
+            String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
+            LocalDate startDate = paramServices.convertInstallToLocalDate(booking.getStartAt());
+            LocalDate endDate = paramServices.convertInstallToLocalDate(booking.getEndAt());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+            String startDateStr = startDate.format(formatter);
+            String endDateStr = endDate.format(formatter);
             booking.setStatus(statusBooking);
             String roomsString = bookingRoomList.stream()
                     .map(bookingRoom -> bookingRoom.getRoom().getRoomName())  // Extract roomName from each BookingRoom
                     .collect(Collectors.joining(", "));
-            String idBk = "Bk" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + "" + booking.getId();
+            String idBk = "BK" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + "TT" + booking.getId();
             booking.setStatusPayment(true);
 
-            paramServices.sendEmails(booking.getAccount().getEmail(),"thông tin đơn hàng",
-                    paramServices.pdfDownload(idBk,booking,startDate,endDate ,formattedAmount,roomsString, paramServices.getImage()));
-
+            paramServices.sendEmails(booking.getAccount().getEmail(), "thông tin đơn hàng",
+                    paramServices.pdfDownload(idBk, booking, startDateStr, endDateStr, formattedAmount, roomsString, paramServices.getImage()));
 
             try {
                 bookingRepository.save(booking);
@@ -108,11 +112,11 @@ String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")
 
                 throw new RuntimeException(e);
             }
-        }else{
-            if(booking.getDiscountName()!=null && booking.getDiscountPercent()!=null){
+        } else {
+            if (booking.getDiscountName() != null && booking.getDiscountPercent() != null) {
                 System.out.println("mã này đã hồi phục");
-                Discount discount = (discountRepository.findByDiscountName(booking.getDiscountName())!=null)?discountRepository.findByDiscountName(booking.getDiscountName()):null;
-                DiscountAccount discountAccount= discountAccountRepositorys.findByDiscountAndAccount(discount.getId(),booking.getAccount().getId());
+                Discount discount = (discountRepository.findByDiscountName(booking.getDiscountName()) != null) ? discountRepository.findByDiscountName(booking.getDiscountName()) : null;
+                DiscountAccount discountAccount = discountAccountRepositorys.findByDiscountAndAccount(discount.getId(), booking.getAccount().getId());
                 discountAccount.setStatusDa(false);
                 discountAccountRepositorys.save(discountAccount);
             }
@@ -120,7 +124,7 @@ String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")
             booking.setStatus(statusBooking1);
             booking.setStatusPayment(false);
             bookingRepository.save(booking);
-String paymentStatuss = "error";
+            String paymentStatuss = "error";
             String messages = "Thanh toán thất bại";
             String redirectUrl = null;
             redirectUrl = String.format(

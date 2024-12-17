@@ -58,30 +58,6 @@ public class ErrorsService {
         RoomAvailabilityResponse response = isRoomAvailable(bookingModels.getRoomId(), bookingModels.getStartDate(), bookingModels.getEndDate());
         System.out.println(response.isAllRoomsAvailable());
 
-
-        System.out.println(account.get().getBookingList().getLast());
-        Optional<Booking> booking = account.get().getBookingList().stream()
-                .max(Comparator.comparingInt(Booking::getId));
-
-
-        if(booking.get().getStatus().getId()==1){
-            responseDto.setCode("400");
-            responseDto.setStatus("error");
-            responseDto.setMessage("Đơn đặt phòng gần đây nhất chưa được bạn xác nhận. Vui lòng kiểm tra.");
-            return responseDto;
-        }
-        if(booking.get().getStatus().getId()==2){
-            responseDto.setCode("400");
-            responseDto.setStatus("error");
-            responseDto.setMessage("Đơn đặt phòng gần nhất của bạn đang chờ khách sạn xác nhận. Vui lòng đợi.");
-            return responseDto;
-        }
-        if(bookingModels.getRoomId().size()>7){
-            responseDto.setCode("400");
-            responseDto.setStatus("error");
-            responseDto.setMessage("Vui lòng không đặt quá 7 phòng trong một lần.");
-            return responseDto;
-        }
         if (!account.isPresent()) {
             responseDto.setCode("400");
             responseDto.setStatus("error");
