@@ -31,4 +31,8 @@ public interface DiscountRepository extends JpaRepository<Discount, Integer> {
             "AND CONVERT_TZ(:currentTime, '+00:00', '+07:00') BETWEEN ds.start_date AND ds.end_date;",
             nativeQuery = true)
     Discount findDiscountsByDate(@Param("currentTime") String currentTime, @Param("id_account") Integer id_account);
+    
+    @Query("select d from Discount d where d.discountName = ?1")
+    List<Discount> findByDiscountNames(String discountName);
+
 }

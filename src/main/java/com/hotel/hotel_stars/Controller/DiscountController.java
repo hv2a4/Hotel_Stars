@@ -103,5 +103,11 @@ public class DiscountController {
         StatusResponseDto response = discountService.deletById(id);
         return new ResponseEntity<>(response, HttpStatus.valueOf(Integer.parseInt(response.getCode())));
     }
+    
+    
+    @GetMapping("/discount-name-booking")
+    public ResponseEntity<?> getDiscountBooking(@RequestParam("discount") String discountName){
+    	return ResponseEntity.ok(discountService.getDiscountsByName(discountName));
+    }
 
 }

@@ -84,10 +84,9 @@ public class BookingController {
     // khoi
     @GetMapping("")
     public ResponseEntity<List<accountHistoryDto>> getBookings(
-            @RequestParam(required = false) String filterType,
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) LocalDate endDate) {
-        List<accountHistoryDto> bookings = bookingService.getAllBooking(filterType, startDate, endDate);
+        List<accountHistoryDto> bookings = bookingService.getAllBooking(startDate, endDate);
         return ResponseEntity.ok(bookings);
     }
 
@@ -340,13 +339,29 @@ public class BookingController {
     }
 
     @PutMapping("/cancel-booking/{id}")
-    public StatusResponseDto cancelBooking(@PathVariable("id") Integer id,
-                                           @RequestParam("descriptions") String descriptions) {
-        boolean flag = bookingService.cancelBooking(id, descriptions);
-        if (flag) {
-            return new StatusResponseDto("200", "success", "Hủy đặt phòng thành công");
+	public StatusResponseDto cancelBooking(@PathVariable("id") Integer id,
+			@RequestParam("descriptions") String descriptions) {
+		boolean flag = bookingService.cancelBooking(id, descriptions);
+		if (flag) {
+			return new StatusResponseDto("200", "success", "Hủy đặt phòng thành công");
+		} else {
+			return new StatusResponseDto("400", "error", "Hủy đặt phòng thất bại");
+		}
+	}
+    @PostMapping("/booking-maintenance")
+    public ResponseEntity<?> postMaintenanceSchedule(@Valid @RequestBody bookingModel bookingModels, @RequestParam("userName") String username) {
+        Map<String, String> response = new HashMap<String, String>();
+        StatusResponseDto errorBookings = errorsServices.errorBooking(bookingModels);
+        if (errorBookings != null) {
+            return ResponseEntity.ok(errorBookings);
+        }
+        Boolean flag = bookingService.createMaintenanceSchedule(bookingModels, username);
+        if (flag == true) {
+            response = paramServices.messageSuccessApi(201, "success", "Tạo lịch thành công");
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } else {
-            return new StatusResponseDto("400", "error", "Hủy đặt phòng thất bại");
+            response = paramServices.messageSuccessApi(400, "error", "Tạo lịch thất bại");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 }

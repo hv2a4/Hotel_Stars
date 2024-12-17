@@ -34,6 +34,10 @@ public class InvoiceController {
 	public StatusResponseDto addInvoice(@RequestBody InvoiceModel invoiceModel) {
 		return invoiceService.addInvoice(invoiceModel);
 	}
+	@PostMapping("/maintenance")
+	public StatusResponseDto hoanthanhbaotri(@RequestBody InvoiceModel invoiceModel) {
+		return invoiceService.hoanthanhbaotri(invoiceModel);
+	}
 	
 	//khoi
 	@GetMapping("/statistics")

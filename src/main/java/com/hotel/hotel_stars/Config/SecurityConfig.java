@@ -203,7 +203,6 @@ public class SecurityConfig {
 
                                                 .requestMatchers(
                                                                 "/api/account/login",
-                                                                "api/discount/**",
                                                                 "/api/account/update-account-staff/{id}",
                                                                 "/api/account/delete-account-staff/{id}",
                                                                 "api/hotel/update-hotel/{id}",
@@ -398,7 +397,6 @@ public class SecurityConfig {
 
                                 .requestMatchers(
                                         "/api/account/login",
-                                        "api/discount/**",
                                         "/api/account/update-account-staff/{id}",
                                         "/api/account/delete-account-staff/{id}",
                                         "api/hotel/update-hotel/{id}",
@@ -546,6 +544,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/booking/reservation").permitAll()
                                 .requestMatchers("/api/invoice/statistics").permitAll()
                                 .requestMatchers("/api/invoice/statistics2").permitAll()
+                                .requestMatchers("/api/invoice/maintenance").permitAll()
                                 .requestMatchers("/api/booking/by-start-date-with-invoice").permitAll()
                                 .requestMatchers("/api/booking/update-status/**").permitAll()
                                 .requestMatchers("/api/booking/update-checkIn/**").permitAll()
@@ -564,6 +563,8 @@ public class SecurityConfig {
                                 .requestMatchers("/api/booking-room-service-room/**").permitAll()
                                 .requestMatchers("/api/booking-room-service-room/post-service").permitAll()
                                 .requestMatchers("/api/booking-room/getByRoom/**").permitAll()
+                                .requestMatchers("/api/booking/booking-maintenance").permitAll()
+                                .requestMatchers("/api/discount/discount-name-booking").permitAll()
                         // khoi
                         // vu
 

@@ -5,6 +5,7 @@ import com.hotel.hotel_stars.DTO.StatusResponseDto;
 import com.hotel.hotel_stars.Entity.Discount;
 import com.hotel.hotel_stars.Entity.TypeRoom;
 import com.hotel.hotel_stars.Models.DiscountModel;
+import com.hotel.hotel_stars.Repository.DiscountAccountRepository;
 import com.hotel.hotel_stars.Repository.DiscountRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomRepository;
 import org.modelmapper.ModelMapper;
@@ -26,6 +27,8 @@ public class DiscountService {
     ModelMapper modelMapper;
     @Autowired
     TypeRoomRepository typeRoomRepository;
+    @Autowired
+    DiscountAccountRepository discountAccountRepository;
 
     public List<DiscountDto> getDiscountByAccount(String userName) {
         List<Discount> discounts = discountRepository.findDiscountsByUsername(userName);
@@ -245,5 +248,9 @@ public class DiscountService {
         }
     }
 
+    public List<DiscountDto> getDiscountsByName(String discountName) {
+    	List<Discount> discount = discountRepository.findByDiscountNames(discountName);
+        return discount.stream().map(this::convertToDto).toList();
+    }
 
 }

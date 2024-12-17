@@ -87,21 +87,20 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 	List<Booking> findByAccount_Id(Integer accountId);
 
 	@Query(value = """
-			SELECT b
-			FROM Booking b
-			WHERE
-			    (:filterType = '1' AND DATE(b.startAt) BETWEEN :startDate AND :endDate)
-			    OR (:filterType = '2' AND WEEK(b.startAt) = WEEK(:startDate) AND WEEK(b.startAt) = WEEK(:endDate))
-			    OR (:filterType = '3' AND MONTH(b.startAt) = MONTH(:startDate) AND MONTH(b.startAt) = MONTH(:endDate))
-			    OR (:filterType IS NULL AND DATE(b.startAt) BETWEEN :startDate AND :endDate)
-			    OR (:startDate IS NULL AND :endDate IS NULL)
-			ORDER BY b.createAt DESC
-			""")
-	List<Booking> findBookingsByTime(@Param("filterType") String filterType, @Param("startDate") LocalDate startDate,
-			@Param("endDate") LocalDate endDate);
+		    SELECT b
+		    FROM Booking b
+		    WHERE
+		        (:startDate IS NOT NULL AND :endDate IS NOT NULL AND DATE(b.startAt) BETWEEN :startDate AND :endDate)
+		    ORDER BY b.createAt DESC
+		    """)
+		List<Booking> findBookingsByTime(
+		    @Param("startDate") LocalDate startDate,
+		    @Param("endDate") LocalDate endDate
+		);
+
 
 	// khoi
-	@Query("SELECT b FROM Booking b JOIN b.bookingRooms br WHERE br.room.id = :roomId AND b.status.id IN (2, 4,6, 7,8)")
+	@Query("SELECT b FROM Booking b JOIN b.bookingRooms br WHERE br.room.id = :roomId AND b.status.id IN (2, 4,6, 7,8,10)")
 	List<Booking> findBookingsByRoomId(@Param("roomId") Integer roomId);
 
 	@Query(value = """
