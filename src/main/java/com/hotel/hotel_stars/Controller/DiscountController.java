@@ -23,6 +23,7 @@ import java.util.NoSuchElementException;
 public class DiscountController {
     @Autowired
     DiscountService discountService;
+
     @Autowired
     private TypeRoomRepository typeRoomRepository;
     @Autowired
@@ -46,6 +47,11 @@ public class DiscountController {
     @GetMapping("get-discount-by-date")
     public ResponseEntity<?> getDiscountByDate(@RequestParam Integer id_account) {
         return ResponseEntity.ok(discountService.getDiscountByDate(id_account));
+    }
+
+    @GetMapping("get-discount-by-account")
+    public ResponseEntity<?> getDiscountByAccount(@RequestParam Integer id_account) {
+        return ResponseEntity.ok(discountService.getDiscountByAccount(id_account));
     }
 
     @GetMapping("get-by-id/{id}")

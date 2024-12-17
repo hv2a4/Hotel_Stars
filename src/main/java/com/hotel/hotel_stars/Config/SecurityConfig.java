@@ -79,8 +79,11 @@ public class SecurityConfig {
                                                 // khoi
                                                 // vu
                                                 //tuong
-                                                .requestMatchers("/api/discount/get-discount-by-date").permitAll()
+                                                .requestMatchers("/api/discount/get-discount-by-date", "/api/discount/get-discount-by-account").permitAll()
                                                 .requestMatchers("/api/discount-accounts/add").hasAnyAuthority("Customer", "HotelOwner")
+                                                 .requestMatchers("/api/messages/getAll", "/api/messages/add", "/api/messages/find-by-id/**",
+                                                 "/api/feedback/getAllDC", "/api/feedback/getAllDPH")
+                                                 .hasAnyAuthority("HotelOwner")
                                                 //tuong
                                                 .requestMatchers(
                                                                 "/api/account/account-by-id/{username}",
