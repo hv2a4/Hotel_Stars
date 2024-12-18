@@ -153,10 +153,9 @@ public class RoomService {
                 return new StatusResponseDto("409", "Conflict", "Tên phòng đã tồn tại ở một phòng khác");
             }
             // Add more validations as needed
-            if (roomModel.getStatusRoomId() != null &&
+            if (roomModel.getStatusRoomId() != null && roomModel.getStatusRoomId() != room.getStatusRoom().getId() &&
                     roomModel.getStatusRoomId() != 6 &&
                     roomModel.getStatusRoomId() != 8) {
-
                 List<BookingRoom> bookingRooms = bookingRoomRepository.findAll();
                 for (BookingRoom bookingRoom : bookingRooms) {
                     Instant now = Instant.now();
