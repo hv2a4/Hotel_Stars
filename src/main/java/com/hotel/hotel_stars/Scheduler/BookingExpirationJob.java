@@ -18,7 +18,7 @@ public class BookingExpirationJob {
     BookingRepository bookingRepository;
     @Autowired
     StatusBookingRepository statusBookingRepository;
-    @Scheduled(fixedRate = 300000) // 2 phút = 120000 or 15 phút = 900000 (120000 ms) â
+    @Scheduled(fixedRate = 300000) // 2 phút = 120000 or 15 phút = 900000 or 5 phút = 300000 (120000 ms) â
     public void cancelExpiredBookings() {
         List<Booking> bookings=bookingRepository.findAll();
         LocalDateTime now = LocalDateTime.now();
@@ -28,6 +28,7 @@ public class BookingExpirationJob {
                         && (booking.getStatus().getId() == 1 || booking.getStatus().getId() == 2)) // Lọc các booking đã hết hạn
                 .forEach(booking -> {
                     System.out.println("id: "+booking.getId());
+                    booking.setDescriptions("Hủy do chưa xác nhận!");
                     booking.setStatus(statusBooking); // Cập nhật trạng thái
                     bookingRepository.save(booking); // Lưu thay đổi
                 });

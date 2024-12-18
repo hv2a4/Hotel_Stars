@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -39,13 +40,11 @@ public class FeedbackService {
         // Chuyển đổi Account sang AccountDto trước khi gán vào BookingDto
         AccountDto accountDto = modelMapper.map(feedback.getInvoice().getBooking().getAccount(), AccountDto.class);
 
-
         // Gán InvoiceDto vào FeedbackDto
-        //      feedbackDto.setInvoiceDto(invoiceDto);
+        // feedbackDto.setInvoiceDto(invoiceDto);
 
         return feedbackDto;
     }
-
 
     public List<FeedbackDto> convertListDTO() {
         List<Feedback> feedbackList = feedBackRepository.findAll();
@@ -87,25 +86,45 @@ public class FeedbackService {
             return false;
         }
     }
- public List<Object[]> getAllFeedbackDC () {
-     List<Object[]> feedbackList = feedBackRepository.getAll();
-     List<Object[]> feedbacks = new ArrayList<>();
-     for (Object[] row : feedbackList) {
-         if(messageService.getMessageById(Integer.parseInt(String.valueOf(row[0]))) == null) {
-             feedbacks.add(row);
-         }
-     }
-     return feedbacks;
- }
 
-    public List<Object[]> getAllFeedbackDPH () {
+    public List<Object[]> getAllFeedbackDC() {
         List<Object[]> feedbackList = feedBackRepository.getAll();
         List<Object[]> feedbacks = new ArrayList<>();
         for (Object[] row : feedbackList) {
-            if(messageService.getMessageById(Integer.parseInt(String.valueOf(row[0]))) != null) {
+            if (messageService.getMessageById(Integer.parseInt(String.valueOf(row[0]))) == null) {
                 feedbacks.add(row);
             }
         }
         return feedbacks;
+    }
+
+    public List<Object[]> getAllFeedbackDPH() {
+        List<Object[]> feedbackList = feedBackRepository.getAll();
+        List<Object[]> feedbacks = new ArrayList<>();
+        for (Object[] row : feedbackList) {
+            if (messageService.getMessageById(Integer.parseInt(String.valueOf(row[0]))) != null) {
+                feedbacks.add(row);
+            }
+        }
+        return feedbacks;
+    }
+
+    public Feedback postFeedback(FeedbackModel feedbackModel) {
+        System.out.println(feedbackModel.getIdInvoice());
+        Feedback feedback = new Feedback();
+        Invoice invoice = invoiceRepository.findById(feedbackModel.getIdInvoice()).get();
+        System.out.println(invoice.getId());
+        feedback.setContent(feedbackModel.getContent());
+        feedback.setStars(feedbackModel.getStars());
+        feedback.setRatingStatus(true);
+        feedback.setCreateAt(Instant.now());
+        feedback.setInvoice(invoice);
+        try {
+            feedBackRepository.save(feedback);
+            return feedback;
+        } catch (Exception e) {
+            return null;
+        }
+
     }
 }

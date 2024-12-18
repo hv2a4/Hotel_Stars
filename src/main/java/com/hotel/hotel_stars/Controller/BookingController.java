@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import com.hotel.hotel_stars.DTO.BookingStatisticsDTO;
 import com.hotel.hotel_stars.DTO.Select.RoomUsageDTO;
+import com.hotel.hotel_stars.Models.DeleteBookingModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -94,8 +95,8 @@ public class BookingController {
 
     @PutMapping("/update-checkIn/{id}")
     public ResponseEntity<?> updateCheckIn(@PathVariable("id") Integer id,
-                                           @RequestParam("roomId") List<Integer> roomId,
-                                           @RequestBody List<bookingRoomModel> model) {
+            @RequestParam("roomId") List<Integer> roomId,
+            @RequestBody List<bookingRoomModel> model) {
         Map<String, String> response = new HashMap<String, String>();
         boolean update = bookingService.updateStatusCheckInBooking(id, roomId, model);
 
@@ -133,7 +134,7 @@ public class BookingController {
 
     @GetMapping("/confirmBooking")
     public ResponseEntity<?> updateBooking(@RequestParam("token") String token) {
-
+        // nghia, hàm này được push sáng ngày 18 tháng 12 năm 2024
         try {
             Integer id = jwtService.extractBookingId(token);
             Optional<StatusBooking> statusBooking = statusBookingRepository.findById(2);
@@ -191,7 +192,7 @@ public class BookingController {
 
     @GetMapping("/downloadPdf")
     public ResponseEntity<?> downloadPdf(@RequestParam String id) {
-
+        // nghia, hàm này được push sáng ngày 18 tháng 12 năm 2024
         try {
             Booking booking = bookingRepository.findById(Integer.parseInt(id)).get();
             List<BookingRoom> bookingRoomList = booking.getBookingRooms();
@@ -239,8 +240,8 @@ public class BookingController {
 
     @PostMapping("/sendBooking")
     public ResponseEntity<?> postBooking(@Valid @RequestBody bookingModel bookingModels, HttpServletRequest request) {
+        // nghia, hàm này được push sáng ngày 18 tháng 12 năm 2024
         Map<String, String> response = new HashMap<String, String>();
-
         StatusResponseDto statusResponseDto = errorsServices.errorBooking(bookingModels);
         if (statusResponseDto != null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(statusResponseDto);
@@ -282,7 +283,7 @@ public class BookingController {
 
     @PutMapping("/update-status/{id}/{idStatus}")
     public ResponseEntity<?> updateStatus(@PathVariable("id") Integer idBooking,
-                                          @PathVariable("idStatus") Integer idStatus, @RequestBody bookingModelNew bookingModel) {
+            @PathVariable("idStatus") Integer idStatus, @RequestBody bookingModelNew bookingModel) {
         // Gọi phương thức updateStatusBooking từ service
         Map<String, String> response = new HashMap<String, String>();
         boolean update = bookingService.updateStatusBooking(idBooking, idStatus, bookingModel);
@@ -316,30 +317,50 @@ public class BookingController {
     }
 
     public List<BookingHistoryDTOs> getBookingsByAccountId(Integer accountId) {
+        // Lấy danh sách dữ liệu cơ bản
+        // nghia, hàm này được push sáng ngày 18 tháng 12 năm 2024
         List<Object[]> results = bookingRepository.findBookingsByAccountId(accountId);
-        if (results == null) {
-            return null;
-        }
-        return results.stream().map(objects -> new BookingHistoryDTOs(
-                (Integer) objects[0], // bk_id
-                (String) objects[1], // bkformat
-                (String) objects[2], // create_at
-                (String) objects[3], // start_at
-                (String) objects[4], // end_at
-                (String) objects[5], // fullname
-                (String) objects[6], // avatar
-                (Integer) objects[7], // statusBkID
-                (String) objects[8], // statusBkName
-                (Integer) objects[9], // iv_id
-                (Double) objects[10], // totalRoom
-                (Integer) objects[11], // fb_id
-                (String) objects[12], // content
-                (Integer) objects[13], // stars
-                (String) objects[14], // roomInfo
-                (String) objects[15], // image
-                (String) objects[16], // combinedServiceNames
-                (Double) objects[17], // combinedTotalServices
-                (Double) objects[18])).collect(Collectors.toList());
+
+        return results.stream()
+                .map(objects -> {
+                    // Lấy Booking từ repository bằng bk_id (objects[0])
+                    Booking booking = bookingRepository.findById((Integer) objects[0])
+                            .orElseThrow(() -> new RuntimeException("Booking not found with id: " + objects[0]));
+
+                    // Truy xuất thông tin bổ sung từ Booking
+                    Integer methodPaymentId = booking.getMethodPayment().getId();
+                    String methodPaymentName = booking.getMethodPayment().getMethodPaymentName();
+                    String discountName = booking.getDiscountName();
+                    Double discountPercent = booking.getDiscountPercent();
+                    Integer statusBookingID = booking.getStatus().getId();
+                    // Tạo BookingHistoryDTOs với thông tin đầy đủ
+                    return new BookingHistoryDTOs(
+                            (Integer) objects[0], // bk_id
+                            (String) objects[1], // bkformat
+                            (String) objects[2], // create_at
+                            (String) objects[3], // start_at
+                            (String) objects[4], // end_at
+                            (String) objects[5], // fullname
+                            (String) objects[6], // avatar
+                            (Integer) objects[7], // statusBkID
+                            (String) objects[8], // statusBkName
+                            (Integer) objects[9], // iv_id
+                            (Double) objects[10], // totalRoom
+                            (Integer) objects[11], // fb_id
+                            (String) objects[12], // content
+                            (Integer) objects[13], // stars
+                            (String) objects[14], // roomInfo
+                            (String) objects[15], // image
+                            (String) objects[16], // combinedServiceNames
+                            (Double) objects[17], // combinedTotalServices
+                            (Double) objects[18], // totalAmount
+                            methodPaymentId, // Lấy từ Booking
+                            methodPaymentName, // Lấy từ Booking
+                            discountName, // Lấy từ Booking
+                            discountPercent, // Lấy từ Booking
+                            statusBookingID);
+                })
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/booking-by-room/{id}")
@@ -349,7 +370,7 @@ public class BookingController {
 
     @PutMapping("/cancel-booking/{id}")
     public StatusResponseDto cancelBooking(@PathVariable("id") Integer id,
-                                           @RequestParam("descriptions") String descriptions) {
+            @RequestParam("descriptions") String descriptions) {
         boolean flag = bookingService.cancelBooking(id, descriptions);
         if (flag) {
             return new StatusResponseDto("200", "success", "Hủy đặt phòng thành công");
@@ -360,7 +381,7 @@ public class BookingController {
 
     @PostMapping("/booking-maintenance")
     public ResponseEntity<?> postMaintenanceSchedule(@Valid @RequestBody bookingModel bookingModels,
-                                                     @RequestParam("userName") String username) {
+            @RequestParam("userName") String username) {
         System.out.println(bookingModels.getUserName());
         Map<String, String> response = new HashMap<String, String>();
         System.out.println("2");
@@ -397,5 +418,23 @@ public class BookingController {
 
         // Trả về kết quả
         return ResponseEntity.ok(roomUsage);
+    }
+
+    @PostMapping("/delete-booking")
+    public ResponseEntity<?> deleteBooking(@Valid @RequestBody DeleteBookingModel bookingModels) {
+        // nghia, hàm này được push sáng ngày 18 tháng 12 năm 2024
+        Map<String, String> response = new HashMap<String, String>();
+        StatusResponseDto statusResponseDto = errorsServices.errorDeleteBooking(bookingModels);
+        if (statusResponseDto != null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(statusResponseDto);
+        }
+        Boolean flag = bookingService.deleteBookings(bookingModels);
+        if (!flag) {
+            response = paramServices.messageSuccessApi(400, "error", "Hủy phòng thất bại");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } else {
+            response = paramServices.messageSuccessApi(201, "success", "Hủy phòng thành công");
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        }
     }
 }
