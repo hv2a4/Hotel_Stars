@@ -198,7 +198,6 @@ public class BookingService {
 				throw new RuntimeException(e);
 			}
 		}
-
 		System.out.println("mảng: " + booking.getBookingRooms());
 		return true;
 	}
@@ -268,8 +267,6 @@ public class BookingService {
 				throw new RuntimeException(e);
 			}
 		}
-
-		System.out.println("mảng: " + booking.getBookingRooms());
 		return true;
 	}
 
@@ -318,14 +315,12 @@ public class BookingService {
 				LocalDate startDate = paramServices.convertInstallToLocalDate(booking.getStartAt());
 				LocalDate endDate = paramServices.convertInstallToLocalDate(booking.getEndAt());
 				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
 				String startDateStr = startDate.format(formatter);
 				String endDateStr = endDate.format(formatter);
 				String roomsString = bookingRoomList.stream().map(bookingRoom -> bookingRoom.getRoom().getRoomName()) // Extract
 						// roomName
 						// from// ea// BookingRoom
 						.collect(Collectors.joining(", "));
-
 				String idBk = "BK" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "TT"
 						+ booking.getId();
 				Boolean flag = (payment.getId() == 1)
@@ -334,7 +329,6 @@ public class BookingService {
 								jwtService.generateBoking(booking.getId()), startDateStr, endDateStr, formattedAmount,
 								roomsString))
 						: false;
-
 				return booking;
 			}
 		} catch (Exception e) {

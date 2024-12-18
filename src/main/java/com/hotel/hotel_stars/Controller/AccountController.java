@@ -228,4 +228,21 @@ public class AccountController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 	}
+	@PutMapping("/updateAccountCustomer")
+	public ResponseEntity<?> updateProfile(@RequestBody accountModel accountModels) {
+		StatusResponseDto statusResponseDto = errorsServices.errorUpdateProfile(accountModels);
+		if (statusResponseDto != null) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(statusResponseDto);
+		}
+		Map<String, String> response = new HashMap<String, String>();
+		boolean flag = accountService.updateProfileCustomer(accountModels);
+		if (flag) {
+			response = paramServices.messageSuccessApi(201, "success", "cập nhật thành công");
+			response.put("token", jwtService.generateToken(accountModels.getUsername()));
+			return ResponseEntity.status(HttpStatus.CREATED).body(response);
+		} else {
+			response = paramServices.messageSuccessApi(400, "error", "cập nhật thất bại");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
+	}
 }

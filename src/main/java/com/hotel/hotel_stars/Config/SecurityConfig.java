@@ -142,6 +142,7 @@ public class SecurityConfig {
                                                                 "api/room/getById/**",
                                                                 "/api/image/getAll",
                                                                 "/api/service-hotel/getAll",
+                                                                "/api/account/updateAccountCustomer",
                                                                 "/api/discount-accounts/getAll")
                                                 .permitAll()
 
