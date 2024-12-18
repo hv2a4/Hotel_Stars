@@ -187,7 +187,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
                 )
                 SELECT  
                     bk.id AS bk_id,
-                    CONCAT('BK', DATE_FORMAT(bk.create_at, '%d%m%Y'), bk.id) AS bkformat,
+                    CONCAT('BK', DATE_FORMAT(bk.create_at, '%d%m%Y'),'TT', bk.id) AS bkformat,
                     DATE_FORMAT(bk.create_at, '%d/%m/%Y') AS create_at,
                     DATE_FORMAT(bk.start_at, '%d/%m/%Y') AS start_at,
                     DATE_FORMAT(bk.end_at, '%d/%m/%Y') AS end_at,

@@ -240,7 +240,8 @@ public class ErrorsService {
             return responseDto;
         }
         boolean isPhoneNumberDuplicate = accountRepository.findAll().stream()
-                .anyMatch(acc -> acc.getPhone().equals(accountModels.getPhone()));
+                .anyMatch(acc -> acc.getPhone() == accountModels.getPhone());
+        System.out.println(isPhoneNumberDuplicate);
         if (isPhoneNumberDuplicate) {
             responseDto.setCode("400");
             responseDto.setStatus("error");
@@ -248,7 +249,8 @@ public class ErrorsService {
             return responseDto;
         }
         boolean isEmailDuplicate = accountRepository.findAll().stream()
-                .anyMatch(acc -> acc.getEmail().equals(accountModels.getEmail()));
+                .anyMatch(acc -> acc.getEmail() == accountModels.getEmail());
+
         if (isEmailDuplicate) {
             responseDto.setCode("400");
             responseDto.setStatus("error");
