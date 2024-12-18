@@ -682,77 +682,80 @@ public class AccountService {
         }
     }
 
-    public AccountDto UpdateAccountStaff(Integer accountId, accountModel accountModel) {
-        List<ValidationError> validationErrors = new ArrayList<>(); // Danh sách lưu trữ các lỗi xác thực
+	public AccountDto UpdateAccountStaff(Integer accountId, accountModel accountModel) {
+		List<ValidationError> validationErrors = new ArrayList<>(); // Danh sách lưu trữ các lỗi xác thực
 
-        // Kiểm tra xem tài khoản có tồn tại hay không
-        Optional<Account> existingAccountOpt = accountRepository.findById(accountId);
-        if (!existingAccountOpt.isPresent()) {
-            throw new CustomValidationException(List.of(new ValidationError("username", "Tài khoản không tồn tại")));
-        }
+		// Kiểm tra xem tài khoản có tồn tại hay không
+		Optional<Account> existingAccountOpt = accountRepository.findById(accountId);
+		if (!existingAccountOpt.isPresent()) {
+			throw new CustomValidationException(List.of(new ValidationError("username", "Tài khoản không tồn tại")));
+		}
 
-        Account existingAccount = existingAccountOpt.get();
+		Account existingAccount = existingAccountOpt.get();
 
-        // Kiểm tra các trường có giá trị hợp lệ
-        if (accountModel.getUsername() == null || accountModel.getUsername().isEmpty()) {
-            validationErrors.add(new ValidationError("username", "Tên người dùng không được để trống"));
-        } else if (!isValidUsername(accountModel.getUsername())) {
-            validationErrors.add(new ValidationError("username",
-                    "Tên người dùng không hợp lệ. Tên người dùng phải có ít nhất 6 ký tự và chỉ chứa chữ cái, số, dấu gạch dưới và dấu chấm, không được bắt đầu bằng số."));
-        } else if (!existingAccount.getUsername().equals(accountModel.getUsername())
-                && accountRepository.existsByUsername(accountModel.getUsername())) {
-            validationErrors.add(new ValidationError("username", "Tên người dùng đã tồn tại"));
-        }
+		// Kiểm tra các trường có giá trị hợp lệ
+		if (accountModel.getUsername() == null || accountModel.getUsername().isEmpty()) {
+			validationErrors.add(new ValidationError("username", "Tên người dùng không được để trống"));
+		} else if (!isValidUsername(accountModel.getUsername())) {
+			validationErrors.add(new ValidationError("username",
+					"Tên người dùng không hợp lệ. Tên người dùng phải có ít nhất 6 ký tự và chỉ chứa chữ cái, số, dấu gạch dưới và dấu chấm, không được bắt đầu bằng số."));
+		} else if (!existingAccount.getUsername().equals(accountModel.getUsername())
+				&& accountRepository.existsByUsername(accountModel.getUsername())) {
+			validationErrors.add(new ValidationError("username", "Tên người dùng đã tồn tại"));
+		}
 
-        if (accountModel.getEmail() == null || accountModel.getEmail().isEmpty()) {
-            validationErrors.add(new ValidationError("email", "Email không được để trống"));
-        } else if (!existingAccount.getEmail().equals(accountModel.getEmail())
-                && accountRepository.existsByEmail(accountModel.getEmail())) {
-            validationErrors.add(new ValidationError("email", "Email đã tồn tại"));
-        }
+		if (accountModel.getEmail() == null || accountModel.getEmail().isEmpty()) {
+			validationErrors.add(new ValidationError("email", "Email không được để trống"));
+		} else if (!existingAccount.getEmail().equals(accountModel.getEmail())
+				&& accountRepository.existsByEmail(accountModel.getEmail())) {
+			validationErrors.add(new ValidationError("email", "Email đã tồn tại"));
+		}
 
-        if (accountModel.getPhone() == null || accountModel.getPhone().isEmpty()) {
-            validationErrors.add(new ValidationError("phone", "Số điện thoại không được để trống"));
-        } else if (!isValidPhoneNumber(accountModel.getPhone())) {
-            validationErrors.add(new ValidationError("phone", "Số điện thoại không hợp lệ"));
-        } else if (!existingAccount.getPhone().equals(accountModel.getPhone())
-                && accountRepository.existsByPhone(accountModel.getPhone())) {
-            validationErrors.add(new ValidationError("phone", "Số điện thoại đã tồn tại"));
-        }
+		if (accountModel.getPhone() == null || accountModel.getPhone().isEmpty()) {
+			validationErrors.add(new ValidationError("phone", "Số điện thoại không được để trống"));
+		} else if (!isValidPhoneNumber(accountModel.getPhone())) {
+			validationErrors.add(new ValidationError("phone", "Số điện thoại không hợp lệ"));
+		} else if (!existingAccount.getPhone().equals(accountModel.getPhone())
+				&& accountRepository.existsByPhone(accountModel.getPhone())) {
+			validationErrors.add(new ValidationError("phone", "Số điện thoại đã tồn tại"));
+		}
 
-        // Kiểm tra mật khẩu nếu có thay đổi
-        if (accountModel.getPasswords() != null && accountModel.getPasswords().length() < 6) {
-            validationErrors.add(new ValidationError("passwords", "Mật khẩu phải có ít nhất 6 ký tự"));
-        }
+		// Kiểm tra mật khẩu nếu có thay đổi
+		if (accountModel.getPasswords() != null && accountModel.getPasswords().length() < 6) {
+			validationErrors.add(new ValidationError("passwords", "Mật khẩu phải có ít nhất 6 ký tự"));
+		}
 
-        // Nếu có lỗi, ném ngoại lệ với thông báo lỗi
-        if (!validationErrors.isEmpty()) {
-            throw new CustomValidationException(validationErrors); // Ném ngoại lệ tùy chỉnh
-        }
+		// Nếu có lỗi, ném ngoại lệ với thông báo lỗi
+		if (!validationErrors.isEmpty()) {
+			throw new CustomValidationException(validationErrors); // Ném ngoại lệ tùy chỉnh
+		}
 
-        try {
-            // Cập nhật các thuộc tính cho tài khoản
-            existingAccount.setUsername(accountModel.getUsername());
-            existingAccount.setFullname(accountModel.getFullname());
-            existingAccount.setPhone(accountModel.getPhone());
-            existingAccount.setEmail(accountModel.getEmail());
+		try {
+			// Cập nhật các thuộc tính cho tài khoản
+			existingAccount.setUsername(accountModel.getUsername());
+			existingAccount.setFullname(accountModel.getFullname());
+			existingAccount.setPhone(accountModel.getPhone());
+			existingAccount.setEmail(accountModel.getEmail());
 
-            // Kiểm tra và mã hóa mật khẩu nếu có thay đổi
-            if (accountModel.getPasswords() != null && !accountModel.getPasswords().isEmpty()) {
-                String encodedPassword = encoder.encode(accountModel.getPasswords());
-                existingAccount.setPasswords(encodedPassword); // Mã hóa mật khẩu
-            }
-            existingAccount.setAvatar(accountModel.getAvatar());
-            existingAccount.setGender(accountModel.getGender());
-            existingAccount.setIsDelete(false); // Đảm bảo tài khoản không bị xóa
+			// Kiểm tra và mã hóa mật khẩu nếu có thay đổi
+			if (accountModel.getPasswords() != null && !accountModel.getPasswords().isEmpty()) {
+				String encodedPassword = encoder.encode(accountModel.getPasswords());
+				existingAccount.setPasswords(encodedPassword); // Mã hóa mật khẩu
+			}
+			existingAccount.setAvatar(accountModel.getAvatar());
+			existingAccount.setGender(accountModel.getGender());
+			existingAccount.setIsDelete(false); // Đảm bảo tài khoản không bị xóa
 
-            // Lưu tài khoản đã cập nhật vào cơ sở dữ liệu và chuyển đổi sang DTO
-            Account updatedAccount = accountRepository.save(existingAccount);
-            return convertToDto(updatedAccount); // Chuyển đổi tài khoản đã lưu sang DTO
+			// Lưu tài khoản đã cập nhật vào cơ sở dữ liệu và chuyển đổi sang DTO
+			Account updatedAccount = accountRepository.save(existingAccount);
+			return convertToDto(updatedAccount); // Chuyển đổi tài khoản đã lưu sang DTO
 
-        } catch (DataIntegrityViolationException e) {
-            System.out.println("Nhân viên này đã xác nhận hóa đơn không thể xóa");
-            return false;
-        }
+		} catch (DataIntegrityViolationException e) {
+			// Xử lý lỗi vi phạm tính toàn vẹn dữ liệu (VD: trùng lặp tài khoản)
+			throw new RuntimeException("Có lỗi xảy ra do vi phạm tính toàn vẹn dữ liệu", e);
+		} catch (Exception e) {
+			// Xử lý lỗi chung
+			throw new RuntimeException("Có lỗi xảy ra khi cập nhật tài khoản", e);
+		}
 	}
 }

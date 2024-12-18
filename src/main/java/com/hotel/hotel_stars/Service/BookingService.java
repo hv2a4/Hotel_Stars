@@ -13,12 +13,14 @@ import com.hotel.hotel_stars.DTO.selectDTO.BookingHistoryDTOs;
 import com.hotel.hotel_stars.Entity.*;
 import com.hotel.hotel_stars.Exception.CustomValidationException;
 import com.hotel.hotel_stars.Exception.ErrorsService;
+import com.hotel.hotel_stars.Models.DeleteBookingModel;
 import com.hotel.hotel_stars.Models.bookingModel;
 import com.hotel.hotel_stars.Models.bookingModelNew;
 import com.hotel.hotel_stars.Models.bookingRoomModel;
 import com.hotel.hotel_stars.Repository.*;
 import com.hotel.hotel_stars.utils.paramService;
 
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -338,7 +340,7 @@ public class BookingService {
 		return null;
 	}
 
-	public Boolean addBookingOffline(bookingModel bookingModels) {
+	public accountHistoryDto addBookingOffline(bookingModel bookingModels) {
 		Booking booking = new Booking();
 		Optional<Account> accounts = accountRepository.findByUsername(bookingModels.getUserName());
 		Optional<StatusBooking> statusBooking = statusBookingRepository.findById(4);
@@ -359,15 +361,14 @@ public class BookingService {
 		try {
 			bookingRepository.save(booking);
 			if (checkCreatbkOffRoom(booking.getId(), bookingModels.getRoomId(), bookingModels.getDiscountName())) {
-				return true;
+				return convertToDto(booking);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
-		return false;
+		return null;
 	}
-
 	public List<ReservationInfoDTO> getAllReservationInfoDTO() {
 		List<Object[]> results = bookingRepository.findAllBookingDetailsUsingSQL();
 		List<ReservationInfoDTO> dtos = new ArrayList<>();
@@ -449,87 +450,87 @@ public class BookingService {
 		}
 	}
 
-	public List<AvailableRoomDTO> getAvailableRoomDTO() {
-		List<Object[]> result = bookingRepository.findAvailableRooms();
-		List<AvailableRoomDTO> dtos = new ArrayList<>();
-		result.forEach(row -> {
-			Integer roomId = (Integer) row[0];
-			String roomName = (String) row[1];
-			String typeRoomName = (String) row[2];
-			Integer guestLimit = (Integer) row[3];
-			Integer bedCount = (Integer) row[4];
-			Double acreage = (Double) row[5];
-			String describes = (String) row[6];
-			Integer imageId = (Integer) row[7];
-			String statusRoomName = (String) row[8];
-			Integer typeRoomId = (Integer) row[9];
-			Double price = (Double) row[10];
-			Integer amenitiesId = (Integer) row[11];
-
-			List<TypeRoomImage> typeRoomImage = typeRoomImageRepository.findByTypeRoomId(typeRoomId);
-			List<TypeRoomImageDto> typeRoomImageDtos = new ArrayList<>();
-			typeRoomImage.forEach(typeImage -> {
-				TypeRoomImageDto typeRoomDto = new TypeRoomImageDto();
-				typeRoomDto.setImageName(typeImage.getImageName());
-				typeRoomImageDtos.add(typeRoomDto);
-			});
-
-			List<TypeRoomAmenitiesTypeRoom> amenitiesTypeRoom = typeRoomAmenitiesTypeRoomRepository
-					.findByTypeRoom_Id(typeRoomId);
-			// Create a list to hold the amenities DTOs
-			List<TypeRoomAmenitiesTypeRoomDto> amenitiesDtos = new ArrayList<>();
-
-			amenitiesTypeRoom.forEach(amenities -> {
-				AmenitiesTypeRoom amenitiesTypeRoomDto = amenitiesTypeRoomRepository
-						.findById(amenities.getAmenitiesTypeRoom().getId()).get();
-				AmenitiesTypeRoomDto roomDto = new AmenitiesTypeRoomDto();
-				roomDto.setId(amenitiesTypeRoomDto.getId());
-				roomDto.setAmenitiesTypeRoomName(amenitiesTypeRoomDto.getAmenitiesTypeRoomName());
-
-				BookingDto bookingDto = new BookingDto();
-				bookingDto.setId(bookingRoom.getBooking().getId());
-				bookingDto.setCreateAt(bookingRoom.getBooking().getCreateAt());
-				bookingDto.setStartAt(bookingRoom.getBooking().getStartAt());
-				bookingDto.setEndAt(bookingRoom.getBooking().getEndAt());
-				bookingDto.setDescriptions(bookingRoom.getBooking().getDescriptions());
-				bookingDto.setStatusPayment(bookingRoom.getBooking().getStatusPayment());
-				bookingDto.setDiscountPercent(bookingRoom.getBooking().getDiscountPercent());
-				StatusBookingDto statusBookingDto = new StatusBookingDto();
-				statusBookingDto.setStatusBookingName(bookingRoom.getBooking().getStatus().getStatusBookingName());
-				statusBookingDto.setId(bookingRoom.getBooking().getStatus().getId());
-				bookingDto.setStatusDto(statusBookingDto);
-				AccountDto accountBookingDto = new AccountDto();
-				accountBookingDto.setId(bookingRoom.getBooking().getAccount().getId());
-				accountBookingDto.setUsername(bookingRoom.getBooking().getAccount().getUsername());
-				accountBookingDto.setFullname(bookingRoom.getBooking().getAccount().getFullname());
-				accountBookingDto.setPhone(bookingRoom.getBooking().getAccount().getPhone());
-				accountBookingDto.setEmail(bookingRoom.getBooking().getAccount().getEmail());
-				accountBookingDto.setAvatar(bookingRoom.getBooking().getAccount().getAvatar());
-				accountBookingDto.setGender(bookingRoom.getBooking().getAccount().getGender());
-				accountBookingDto.setIsDelete(bookingRoom.getBooking().getAccount().getIsDelete());
-				bookingDto.setAccountDto(accountBookingDto);
-
-				// Add the created DTO to the list
-				amenitiesDtos.add(typeRoomAmenitiesTypeRoomDto);
-			});
-
-			AvailableRoomDTO availableRoomDTO = new AvailableRoomDTO();
-			availableRoomDTO.setRoomId(roomId);
-			availableRoomDTO.setRoomName(roomName);
-			availableRoomDTO.setTypeRoomName(typeRoomName);
-			availableRoomDTO.setRoomTypeId(typeRoomId);
-			availableRoomDTO.setGuestLimit(guestLimit);
-			availableRoomDTO.setBedCount(bedCount);
-			availableRoomDTO.setArea(acreage);
-			availableRoomDTO.setDescription(describes);
-			availableRoomDTO.setImages(typeRoomImageDtos);
-			availableRoomDTO.setRoomStatus(statusRoomName);
-			availableRoomDTO.setPrice(price);
-			availableRoomDTO.setAmenities(amenitiesDtos);
-			dtos.add(availableRoomDTO);
-		});
-		return dtos;
-	}
+//	public List<AvailableRoomDTO> getAvailableRoomDTO() {
+//		List<Object[]> result = bookingRepository.findAvailableRooms();
+//		List<AvailableRoomDTO> dtos = new ArrayList<>();
+//		result.forEach(row -> {
+//			Integer roomId = (Integer) row[0];
+//			String roomName = (String) row[1];
+//			String typeRoomName = (String) row[2];
+//			Integer guestLimit = (Integer) row[3];
+//			Integer bedCount = (Integer) row[4];
+//			Double acreage = (Double) row[5];
+//			String describes = (String) row[6];
+//			Integer imageId = (Integer) row[7];
+//			String statusRoomName = (String) row[8];
+//			Integer typeRoomId = (Integer) row[9];
+//			Double price = (Double) row[10];
+//			Integer amenitiesId = (Integer) row[11];
+//
+//			List<TypeRoomImage> typeRoomImage = typeRoomImageRepository.findByTypeRoomId(typeRoomId);
+//			List<TypeRoomImageDto> typeRoomImageDtos = new ArrayList<>();
+//			typeRoomImage.forEach(typeImage -> {
+//				TypeRoomImageDto typeRoomDto = new TypeRoomImageDto();
+//				typeRoomDto.setImageName(typeImage.getImageName());
+//				typeRoomImageDtos.add(typeRoomDto);
+//			});
+//
+//			List<TypeRoomAmenitiesTypeRoom> amenitiesTypeRoom = typeRoomAmenitiesTypeRoomRepository
+//					.findByTypeRoom_Id(typeRoomId);
+//			// Create a list to hold the amenities DTOs
+//			List<TypeRoomAmenitiesTypeRoomDto> amenitiesDtos = new ArrayList<>();
+//
+//			amenitiesTypeRoom.forEach(amenities -> {
+//				AmenitiesTypeRoom amenitiesTypeRoomDto = amenitiesTypeRoomRepository
+//						.findById(amenities.getAmenitiesTypeRoom().getId()).get();
+//				AmenitiesTypeRoomDto roomDto = new AmenitiesTypeRoomDto();
+//				roomDto.setId(amenitiesTypeRoomDto.getId());
+//				roomDto.setAmenitiesTypeRoomName(amenitiesTypeRoomDto.getAmenitiesTypeRoomName());
+//
+//				BookingDto bookingDto = new BookingDto();
+//				bookingDto.setId(bookingRoom.getBooking().getId());
+//				bookingDto.setCreateAt(bookingRoom.getBooking().getCreateAt());
+//				bookingDto.setStartAt(bookingRoom.getBooking().getStartAt());
+//				bookingDto.setEndAt(bookingRoom.getBooking().getEndAt());
+//				bookingDto.setDescriptions(bookingRoom.getBooking().getDescriptions());
+//				bookingDto.setStatusPayment(bookingRoom.getBooking().getStatusPayment());
+//				bookingDto.setDiscountPercent(bookingRoom.getBooking().getDiscountPercent());
+//				StatusBookingDto statusBookingDto = new StatusBookingDto();
+//				statusBookingDto.setStatusBookingName(bookingRoom.getBooking().getStatus().getStatusBookingName());
+//				statusBookingDto.setId(bookingRoom.getBooking().getStatus().getId());
+//				bookingDto.setStatusDto(statusBookingDto);
+//				AccountDto accountBookingDto = new AccountDto();
+//				accountBookingDto.setId(bookingRoom.getBooking().getAccount().getId());
+//				accountBookingDto.setUsername(bookingRoom.getBooking().getAccount().getUsername());
+//				accountBookingDto.setFullname(bookingRoom.getBooking().getAccount().getFullname());
+//				accountBookingDto.setPhone(bookingRoom.getBooking().getAccount().getPhone());
+//				accountBookingDto.setEmail(bookingRoom.getBooking().getAccount().getEmail());
+//				accountBookingDto.setAvatar(bookingRoom.getBooking().getAccount().getAvatar());
+//				accountBookingDto.setGender(bookingRoom.getBooking().getAccount().getGender());
+//				accountBookingDto.setIsDelete(bookingRoom.getBooking().getAccount().getIsDelete());
+//				bookingDto.setAccountDto(accountBookingDto);
+//
+//				// Add the created DTO to the list
+//				amenitiesDtos.add(typeRoomAmenitiesTypeRoomDto);
+//			});
+//
+//			AvailableRoomDTO availableRoomDTO = new AvailableRoomDTO();
+//			availableRoomDTO.setRoomId(roomId);
+//			availableRoomDTO.setRoomName(roomName);
+//			availableRoomDTO.setTypeRoomName(typeRoomName);
+//			availableRoomDTO.setRoomTypeId(typeRoomId);
+//			availableRoomDTO.setGuestLimit(guestLimit);
+//			availableRoomDTO.setBedCount(bedCount);
+//			availableRoomDTO.setArea(acreage);
+//			availableRoomDTO.setDescription(describes);
+//			availableRoomDTO.setImages(typeRoomImageDtos);
+//			availableRoomDTO.setRoomStatus(statusRoomName);
+//			availableRoomDTO.setPrice(price);
+//			availableRoomDTO.setAmenities(amenitiesDtos);
+//			dtos.add(availableRoomDTO);
+//		});
+//		return dtos;
+//	}
 
 	public AccountInfo convertDT(Account account) {
 		if (account == null) {
