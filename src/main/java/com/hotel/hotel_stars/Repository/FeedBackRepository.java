@@ -17,7 +17,7 @@ public interface FeedBackRepository extends JpaRepository <Feedback, Integer> {
             nativeQuery = true)
     List<Object[]> findFeedbacksByRoleIdNative();
 
-    @Query(value = "SELECT fb.id, fb.stars, fb.create_at, fb.content, ac.fullname " +
+    @Query(value = "SELECT fb.id, fb.stars, fb.create_at, fb.content, ac.fullname, ac.email " +
             "FROM feedback fb " +
             "JOIN invoice iv ON fb.invoice_id = iv.id " +
             "JOIN booking bk ON iv.booking_id = bk.id " +

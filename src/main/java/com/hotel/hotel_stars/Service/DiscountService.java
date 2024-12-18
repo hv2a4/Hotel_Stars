@@ -10,6 +10,7 @@ import com.hotel.hotel_stars.Repository.DiscountRepository;
 import com.hotel.hotel_stars.Repository.TypeRoomRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
@@ -147,6 +148,7 @@ public class DiscountService {
             discount.setPercent(discountModel.getPercent());
             discount.setStartDate(discountModel.getStartDate());
             discount.setEndDate(discountModel.getEndDate());
+            discount.setStatus(true);
             discountRepository.save(discount);
             return new StatusResponseDto("200", "SUCCESS", "Thêm giảm giá thành công.");
         } catch (Exception e) {
@@ -237,6 +239,36 @@ public class DiscountService {
         return convertToDto(discount);
     }
 
+    public StatusResponseDto hidenDiscount(Integer discountId) {
+        Optional<Discount> optionalDiscount = discountRepository.findById(discountId);
+
+        if (optionalDiscount.isPresent()) {
+            Discount discount = optionalDiscount.get();
+            discount.setStatus(false); // Cập nhật trạng thái giảm giá
+            discountRepository.save(discount);
+
+            return new StatusResponseDto("200", "SUCCESS", "Ẩn giảm giá thành công.");
+        }
+
+        return new StatusResponseDto("404", "FAILURE", "Không tìm thấy giảm giá với ID: " + discountId);
+    }
+
+    public StatusResponseDto showDiscount(Integer discountId) {
+        Optional<Discount> optionalDiscount = discountRepository.findById(discountId);
+
+        if (optionalDiscount.isPresent()) {
+            Discount discount = optionalDiscount.get();
+            discount.setStatus(true); // Cập nhật trạng thái giảm giá
+            discountRepository.save(discount);
+
+            return new StatusResponseDto("200", "SUCCESS", "Hiện giảm giá thành công.");
+        }
+
+        return new StatusResponseDto("404", "FAILURE", "Không tìm thấy giảm giá với ID: " + discountId);
+    }
+
+
+
 
     public StatusResponseDto deletById(Integer id) {
         // Kiểm tra xem giảm giá có tồn tại trước khi xóa
@@ -247,11 +279,15 @@ public class DiscountService {
         try {
             discountRepository.deleteById(id);
             return new StatusResponseDto("200", "SUCCESS", "Xóa giảm giá thành công!");
+        } catch (DataIntegrityViolationException e) {
+            // Bắt lỗi ràng buộc khóa ngoại
+            return new StatusResponseDto("409", "FAILURE", "Không thể xóa giảm giá vì đang được khách hàng sử dụng.");
         } catch (Exception e) {
-            // Xử lý lỗi nếu có vấn đề khi xóa
+            // Xử lý lỗi chung
             return new StatusResponseDto("500", "FAILURE", "Lỗi trong quá trình xóa giảm giá.");
         }
     }
+
 
     public List<DiscountDto> getDiscountsByName(String discountName) {
         List<Discount> discount = discountRepository.findByDiscountNames(discountName);

@@ -13,8 +13,11 @@ import java.util.stream.Collectors;
 
 import com.hotel.hotel_stars.DTO.Select.*;
 import com.hotel.hotel_stars.Repository.TypeRoomRepository;
+import com.hotel.hotel_stars.Entity.*;
+import com.hotel.hotel_stars.Repository.BookingRoomRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,11 +31,6 @@ import com.hotel.hotel_stars.DTO.StatusRoomDto;
 import com.hotel.hotel_stars.DTO.TypeBedDto;
 import com.hotel.hotel_stars.DTO.TypeRoomDto;
 import com.hotel.hotel_stars.DTO.selectDTO.countDto;
-import com.hotel.hotel_stars.Entity.Floor;
-import com.hotel.hotel_stars.Entity.Room;
-import com.hotel.hotel_stars.Entity.StatusRoom;
-import com.hotel.hotel_stars.Entity.TypeRoom;
-import com.hotel.hotel_stars.Entity.TypeRoomImage;
 import com.hotel.hotel_stars.Models.RoomModel;
 import com.hotel.hotel_stars.Repository.RoomRepository;
 import com.hotel.hotel_stars.Repository.StatusRoomRepository;
@@ -53,6 +51,9 @@ public class RoomService {
     TypeRoomRepository typeRoomRepository;
     @Autowired
     TypeRoomImageRepository typeRoomImageRepository;
+
+    @Autowired
+    BookingRoomRepository bookingRoomRepository;
 
     public RoomDto convertToDto(Room room) {
 
@@ -152,7 +153,21 @@ public class RoomService {
                 return new StatusResponseDto("409", "Conflict", "Tên phòng đã tồn tại ở một phòng khác");
             }
             // Add more validations as needed
+            if (roomModel.getStatusRoomId() != null &&
+                    roomModel.getStatusRoomId() != 6 &&
+                    roomModel.getStatusRoomId() != 8) {
 
+                List<BookingRoom> bookingRooms = bookingRoomRepository.findAll();
+                for (BookingRoom bookingRoom : bookingRooms) {
+                    Instant now = Instant.now();
+                    if (bookingRoom.getRoom().getId() == roomModel.getId() &&
+                            now.isAfter(bookingRoom.getBooking().getStartAt()) &&
+                            now.isBefore(bookingRoom.getBooking().getEndAt())) {
+                        throw new RuntimeException("Không thể cập nhật trạng thái do phòng đang sử dụng hoặc đang đặt trước!");
+                    }
+                }
+
+        }
             TypeRoom roomType = new TypeRoom();
             roomType.setId(roomModel.getTypeRoomId());
             StatusRoom statusRoom = new StatusRoom();
@@ -168,7 +183,7 @@ public class RoomService {
 
             return new StatusResponseDto("200", "Success", "Phòng đã được cập nhật thành công");
         } catch (RuntimeException e) {
-            return new StatusResponseDto("400", "Bad Request", e.getMessage());
+            return new StatusResponseDto("400", "", e.getMessage());
         } catch (Exception e) {
             // Log the exception if necessary
             return new StatusResponseDto("500", "Error", "Có lỗi xảy ra khi cập nhật phòng: " + e.getMessage());
@@ -190,7 +205,13 @@ public class RoomService {
             statusResponseDto.setCode("200");
             statusResponseDto.setStatus("Success");
             statusResponseDto.setMessage("Xóa thành công phòng với ID: " + id);
+        } catch (DataIntegrityViolationException e) {
+            // Bắt lỗi khóa ngoại
+            statusResponseDto.setCode("409");
+            statusResponseDto.setStatus("Conflict");
+            statusResponseDto.setMessage("Không thể xóa phòng vì phòng đã được sử dụng!");
         } catch (Exception e) {
+            // Bắt lỗi khác
             statusResponseDto.setCode("500");
             statusResponseDto.setStatus("Error");
             statusResponseDto.setMessage("Xóa thất bại: " + e.getMessage());
