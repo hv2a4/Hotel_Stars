@@ -486,9 +486,28 @@ public class BookingService {
 				roomDto.setId(amenitiesTypeRoomDto.getId());
 				roomDto.setAmenitiesTypeRoomName(amenitiesTypeRoomDto.getAmenitiesTypeRoomName());
 
-				TypeRoomAmenitiesTypeRoomDto typeRoomAmenitiesTypeRoomDto = new TypeRoomAmenitiesTypeRoomDto();
-				typeRoomAmenitiesTypeRoomDto.setId(amenities.getId());
-				typeRoomAmenitiesTypeRoomDto.setAmenitiesTypeRoomDto(roomDto);
+				BookingDto bookingDto = new BookingDto();
+				bookingDto.setId(bookingRoom.getBooking().getId());
+				bookingDto.setCreateAt(bookingRoom.getBooking().getCreateAt());
+				bookingDto.setStartAt(bookingRoom.getBooking().getStartAt());
+				bookingDto.setEndAt(bookingRoom.getBooking().getEndAt());
+				bookingDto.setDescriptions(bookingRoom.getBooking().getDescriptions());
+				bookingDto.setStatusPayment(bookingRoom.getBooking().getStatusPayment());
+				bookingDto.setDiscountPercent(bookingRoom.getBooking().getDiscountPercent());
+				StatusBookingDto statusBookingDto = new StatusBookingDto();
+				statusBookingDto.setStatusBookingName(bookingRoom.getBooking().getStatus().getStatusBookingName());
+				statusBookingDto.setId(bookingRoom.getBooking().getStatus().getId());
+				bookingDto.setStatusDto(statusBookingDto);
+				AccountDto accountBookingDto = new AccountDto();
+				accountBookingDto.setId(bookingRoom.getBooking().getAccount().getId());
+				accountBookingDto.setUsername(bookingRoom.getBooking().getAccount().getUsername());
+				accountBookingDto.setFullname(bookingRoom.getBooking().getAccount().getFullname());
+				accountBookingDto.setPhone(bookingRoom.getBooking().getAccount().getPhone());
+				accountBookingDto.setEmail(bookingRoom.getBooking().getAccount().getEmail());
+				accountBookingDto.setAvatar(bookingRoom.getBooking().getAccount().getAvatar());
+				accountBookingDto.setGender(bookingRoom.getBooking().getAccount().getGender());
+				accountBookingDto.setIsDelete(bookingRoom.getBooking().getAccount().getIsDelete());
+				bookingDto.setAccountDto(accountBookingDto);
 
 				// Add the created DTO to the list
 				amenitiesDtos.add(typeRoomAmenitiesTypeRoomDto);
@@ -981,15 +1000,15 @@ public class BookingService {
 	}
 
 	public Boolean deleteBookings(DeleteBookingModel bookingModels) {
-		// nghia,   hàm này được push sáng   ngày 18 tháng 12  năm 2024
-		Booking booking=bookingRepository.findById(bookingModels.getBookingId()).get();
-		StatusBooking statusBooking=statusBookingRepository.findById(6).orElse(null);
+		// nghia, hàm này được push sáng ngày 18 tháng 12 năm 2024
+		Booking booking = bookingRepository.findById(bookingModels.getBookingId()).get();
+		StatusBooking statusBooking = statusBookingRepository.findById(6).orElse(null);
 		booking.setStatus(statusBooking);
 		booking.setDescriptions(bookingModels.getDescriptions());
-		try{
+		try {
 			bookingRepository.save(booking);
 			return true;
-		}catch (Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
 		}
@@ -999,7 +1018,7 @@ public class BookingService {
 	@Transactional
 	public Boolean deleteBookingAndRelatedRooms(Booking booking) {
 		// deleteBookingAndRelatedRooms nghia
-		// nghia,   hàm này được push sáng   ngày 18 tháng 12  năm 2024
+		// nghia, hàm này được push sáng ngày 18 tháng 12 năm 2024
 		try { // deleteBookingAndRelatedRooms nghia
 			if (!bookingRepository.existsById(booking.getId())) {
 				return false; // Nếu không tồn tại, trả về false

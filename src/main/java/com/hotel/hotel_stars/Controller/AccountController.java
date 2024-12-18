@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.hotel.hotel_stars.Config.JwtService;
 import com.hotel.hotel_stars.Config.UserInfoService;
 import com.hotel.hotel_stars.DTO.AccountDto;
+import com.hotel.hotel_stars.DTO.StatusResponseDto;
 import com.hotel.hotel_stars.Exception.CustomValidationException;
 import com.hotel.hotel_stars.Models.accountModel;
 import com.hotel.hotel_stars.Models.changePasswordModel;
@@ -60,14 +61,17 @@ public class AccountController {
 	@Autowired
 	private ErrorsService errorsServices;
 
-//    @GetMapping("/getAll")
-//    public ResponseEntity<?> getAllAccounts( @RequestParam (defaultValue = "0", required = false) Integer id) {
-//
-//        return ResponseEntity.ok("ạksfasj");
-//    }
+	// @GetMapping("/getAll")
+	// public ResponseEntity<?> getAllAccounts( @RequestParam (defaultValue = "0",
+	// required = false) Integer id) {
+	//
+	// return ResponseEntity.ok("ạksfasj");
+	// }
 
 	@GetMapping("/getAll")
-	public ResponseEntity<?> getAllAccounts() {return ResponseEntity.ok(accountService.getAllAccounts());}
+	public ResponseEntity<?> getAllAccounts() {
+		return ResponseEntity.ok(accountService.getAllAccounts());
+	}
 
 	@GetMapping("/{id}")
 	public ResponseEntity<?> getById(@PathVariable("id") Integer id) {
@@ -213,10 +217,6 @@ public class AccountController {
 
 	@PutMapping("/updateAccount")
 	public ResponseEntity<?> update(@RequestBody accountModel accountModels) {
-		StatusResponseDto statusResponseDto = errorsServices.errorUpdateProfile(accountModels);
-		if (statusResponseDto != null) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(statusResponseDto);
-		}
 		Map<String, String> response = new HashMap<String, String>();
 		boolean flag = accountService.updateProfiles(accountModels);
 		if (flag) {
@@ -228,4 +228,55 @@ public class AccountController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 	}
+
+	@DeleteMapping("/deleteAccount/{id}")
+	public StatusResponseDto delete(@PathVariable Integer id) {
+		boolean result = accountService.deleteAccountEmployee(id);
+		if (result) {
+			return new StatusResponseDto("200", "success", "Xóa nhân viên thành công");
+		} else {
+			return new StatusResponseDto("400", "error", "Nhân viên này đã xác nhận hóa đơn không thể xóa");
+		}
+	}
+
+	public boolean updateProfiles(accountModel accountModels) {
+		if (accountModels == null) {
+			return false;
+		}
+		Optional<Account> getAccount = accountRepository.findByUsername(accountModels.getUsername());
+		if (getAccount.isEmpty()) {
+			System.out.println("Tài khoản không tồn tại!");
+			return false;
+		}
+		Account account = getAccount.get();
+		System.out.println("Tài khoản được tìm thấy: " + account.getUsername());
+		System.out.println("ID được tìm thấy: " + account.getId());
+
+		account.setEmail(accountModels.getEmail());
+		account.setFullname(accountModels.getFullname());
+		account.setGender(accountModels.getGender());
+		account.setPhone(accountModels.getPhone());
+		account.setAvatar(accountModels.getAvatar());
+
+		accountRepository.save(account);
+		return true;
+	}
+
+	public boolean deleteAccountEmployee(Integer id) {
+        try {
+            Optional<Account> account = accountRepository.findById(id);
+            
+            if (account.isEmpty()) {
+                return false;
+            }
+
+            accountRepository.deleteById(id);
+            return true;
+
+        } catch (DataIntegrityViolationException e) {
+            System.out.println("Nhân viên này đã xác nhận hóa đơn không thể xóa");
+            return false;
+        }
+	}
+
 }

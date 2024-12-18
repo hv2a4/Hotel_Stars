@@ -79,6 +79,7 @@ public class BookingRoomService {
 		bookingDto.setEndAt(bookingRoom.getBooking().getEndAt());
 		bookingDto.setDescriptions(bookingRoom.getBooking().getDescriptions());
 		bookingDto.setStatusPayment(bookingRoom.getBooking().getStatusPayment());
+		bookingDto.setDiscountPercent(bookingRoom.getBooking().getDiscountPercent());
 		StatusBookingDto statusBookingDto = new StatusBookingDto();
 		statusBookingDto.setStatusBookingName(bookingRoom.getBooking().getStatus().getStatusBookingName());
 		statusBookingDto.setId(bookingRoom.getBooking().getStatus().getId());
