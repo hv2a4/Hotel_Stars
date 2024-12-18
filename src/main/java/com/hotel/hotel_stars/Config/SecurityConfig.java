@@ -52,7 +52,7 @@ public class SecurityConfig {
                     configuration.setAllowedOriginPatterns(List.of("http://localhost:*")); // Mẫu
 
                     configuration.setAllowedMethods(
-                            Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                            Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                     configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
                     configuration.setAllowCredentials(true);
                     return configuration;
@@ -82,7 +82,8 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/discount/get-discount-by-date", "/api/discount/get-discount-by-account").permitAll()
                                                 .requestMatchers("/api/discount-accounts/add").hasAnyAuthority("Customer", "HotelOwner")
                                                  .requestMatchers("/api/messages/getAll", "/api/messages/add", "/api/messages/find-by-id/**",
-                                                 "/api/feedback/getAllDC", "/api/feedback/getAllDPH")
+                                                 "/api/feedback/getAllDC", "/api/feedback/getAllDPH", "/api/messages/send-email-feedback", "/api/discount/delete-discount/**",
+                                                 "/api/discount/get-by-id/**", "/api/discount/update-discount", "/api/discount/hide-discount/**", "/api/discount/show-discount/**")
                                                  .hasAnyAuthority("HotelOwner")
                                                 //tuong
                                                 .requestMatchers(

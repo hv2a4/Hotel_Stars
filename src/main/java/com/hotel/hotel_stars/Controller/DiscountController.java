@@ -108,13 +108,41 @@ public class DiscountController {
     @DeleteMapping("/delete-discount/{id}")
     public ResponseEntity<StatusResponseDto> deleteDiscount(@PathVariable Integer id) {
         StatusResponseDto response = discountService.deletById(id);
-        return new ResponseEntity<>(response, HttpStatus.valueOf(Integer.parseInt(response.getCode())));
+        HttpStatus status;
+
+        try {
+            status = HttpStatus.valueOf(Integer.parseInt(response.getCode()));
+        } catch (IllegalArgumentException e) {
+            // Phòng trường hợp mã HTTP không hợp lệ
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+
+        return new ResponseEntity<>(response, status);
     }
+
 
 
     @GetMapping("/discount-name-booking")
     public ResponseEntity<?> getDiscountBooking(@RequestParam("discount") String discountName) {
         return ResponseEntity.ok(discountService.getDiscountsByName(discountName));
+    }
+
+    @PatchMapping("/hide-discount/{id}")
+    public ResponseEntity<StatusResponseDto> hideDiscount(@PathVariable Integer id) {
+        StatusResponseDto response = discountService.hidenDiscount(id);
+
+        // Xử lý trả về mã HTTP tương ứng với code trong StatusResponseDto
+        HttpStatus status = "200".equals(response.getCode()) ? HttpStatus.OK : HttpStatus.NOT_FOUND;
+        return new ResponseEntity<>(response, status);
+    }
+
+    @PatchMapping("/show-discount/{id}")
+    public ResponseEntity<StatusResponseDto> showDiscount(@PathVariable Integer id) {
+        StatusResponseDto response = discountService.showDiscount(id);
+
+        // Xử lý trả về mã HTTP tương ứng với code trong StatusResponseDto
+        HttpStatus status = "200".equals(response.getCode()) ? HttpStatus.OK : HttpStatus.NOT_FOUND;
+        return new ResponseEntity<>(response, status);
     }
 
 }

@@ -29,6 +29,9 @@ public class Discount {
     @Column(name = "end_date")
     private Instant endDate;
 
+    @Column(name = "status")
+    private Boolean status;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "type_room_id")
     private TypeRoom typeRoom;
