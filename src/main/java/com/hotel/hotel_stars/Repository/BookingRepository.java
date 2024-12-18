@@ -100,9 +100,9 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
     );
 
 
-    // khoi
-    @Query("SELECT b FROM Booking b JOIN b.bookingRooms br WHERE br.room.id = :roomId AND b.status.id IN (2, 4,6, 7,8,10)")
-    List<Booking> findBookingsByRoomId(@Param("roomId") Integer roomId);
+	// khoi
+	@Query("SELECT b FROM Booking b JOIN b.bookingRooms br WHERE br.room.id = :roomId AND b.status.id IN (2, 4, 7, 10)")
+	List<Booking> findBookingsByRoomId(@Param("roomId") Integer roomId);
 
     @Query(value = """
             SELECT

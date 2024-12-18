@@ -338,7 +338,7 @@ public class BookingService {
         return null;
     }
 
-    public Boolean addBookingOffline(bookingModel bookingModels) {
+    public accountHistoryDto addBookingOffline(bookingModel bookingModels) {
         Booking booking = new Booking();
         Optional<Account> accounts = accountRepository.findByUsername(bookingModels.getUserName());
         Optional<StatusBooking> statusBooking = statusBookingRepository.findById(4);
@@ -359,13 +359,13 @@ public class BookingService {
         try {
             bookingRepository.save(booking);
             if (checkCreatbkOffRoom(booking.getId(), bookingModels.getRoomId(), bookingModels.getDiscountName())) {
-                return true;
+                return convertToDto(booking);
             }
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
-        return false;
+        return null;
     }
 
     public List<ReservationInfoDTO> getAllReservationInfoDTO() {
@@ -535,11 +535,17 @@ public class BookingService {
         dto.setEndAt(booking.getEndAt());
         dto.setId(booking.getId());
         dto.setStartAt(booking.getStartAt());
+        dto.setDescriptions(booking.getDescriptions());
         dto.setStatusBookingDto(
                 new StatusBookingDto(booking.getStatus().getId(), booking.getStatus().getStatusBookingName()));
         dto.setStatusPayment(booking.getStatusPayment());
         dto.setBookingRooms(bookingRoomService.convertListDto(booking.getBookingRooms()));
-        dto.setInvoiceDtos(invoiceService.convertListDtos(booking.getInvoice()));
+        if (booking.getInvoices() != null && !booking.getInvoices().isEmpty()) {
+        	dto.setInvoiceDtos(invoiceService.convertListDtos(booking.getInvoice()));
+		} else {
+			dto.setInvoiceDtos(null);
+		}
+        
         dto.setDisCountName(booking.getDiscountName());
 
         // Kiểm tra null trước khi tạo MethodPaymentDto
