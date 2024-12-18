@@ -24,6 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.text.NumberFormat;
 import java.time.*;
@@ -915,4 +917,46 @@ public class BookingService {
             return false; // Lỗi phát sinh
         }
     }
+
+    public RoomUsageDTO getRoomUsage(String startDate, String endDate) {
+
+        // Lấy kết quả từ repository
+        Object[] result = bookingRepository.findRoomUsage(startDate, endDate);
+
+        // Kiểm tra xem phần tử đầu tiên có phải là mảng không
+        if (result != null && result.length > 0) {
+            Object firstElement = result[0];
+            System.out.println("First element class: " + firstElement.getClass().getName());
+
+            // Nếu phần tử đầu tiên là một mảng con, lấy các giá trị bên trong nó
+            if (firstElement instanceof Object[]) {
+                Object[] values = (Object[]) firstElement;  // Ép kiểu phần tử thành mảng con
+
+                // Kiểm tra và ép kiểu từng giá trị trong mảng con
+                if (values.length == 3) {
+                    Long occupiedRooms = (values[0] instanceof Long) ? (Long) values[0] : 0L;
+                    Long totalRooms = (values[1] instanceof Long) ? (Long) values[1] : 0L;
+                    // Sử dụng BigDecimal để xử lý tỷ lệ phần trăm
+                    BigDecimal usagePercentage = BigDecimal.ZERO;
+                    if (values[2] instanceof BigDecimal) {
+                        usagePercentage = (BigDecimal) values[2];
+                    } else if (values[2] instanceof Double) {
+                        usagePercentage = BigDecimal.valueOf((Double) values[2]);
+                    }
+
+                    // Làm tròn tỷ lệ phần trăm nếu cần
+                    usagePercentage = usagePercentage.setScale(2, RoundingMode.HALF_UP);
+                    RoomUsageDTO roomUsageDTO = new RoomUsageDTO();
+                    roomUsageDTO.setOccupiedRooms(occupiedRooms);
+                    roomUsageDTO.setTotalRooms(totalRooms);
+                    roomUsageDTO.setUsagePercentage(usagePercentage.doubleValue());
+
+                    return roomUsageDTO;
+                }
+            }
+        }
+
+        return null; // Trả về null nếu không có kết quả
+    }
+
 }

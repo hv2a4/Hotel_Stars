@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.hotel.hotel_stars.DTO.Select.RoomOccupancyDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -178,5 +179,21 @@ public class RoomController {
     @GetMapping("list-room-id")
     public ResponseEntity<?> getListRoomId(@RequestParam Integer roomId) {
         return ResponseEntity.ok(roomService.getListById(roomId));
+    }
+
+    @GetMapping("/room-usage")
+    public ResponseEntity<?> getRoomOccupancy(@RequestParam(required = false) String startDate,
+                                              @RequestParam(required = false) String endDate) {
+        if ("null".equals(startDate)) {
+            startDate = null;
+        }
+        if ("null".equals(endDate)) {
+            endDate = null;
+        }
+        // Gọi service để lấy thông tin công suất phòng
+        RoomOccupancyDTO result = roomService.getRoomOccupancyDTO(startDate, endDate);
+
+        // Trả về kết quả
+        return ResponseEntity.ok(result);
     }
 }

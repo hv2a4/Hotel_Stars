@@ -1,5 +1,6 @@
 package com.hotel.hotel_stars.Service;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -9,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.hotel.hotel_stars.DTO.Select.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,11 +25,6 @@ import com.hotel.hotel_stars.DTO.StatusResponseDto;
 import com.hotel.hotel_stars.DTO.StatusRoomDto;
 import com.hotel.hotel_stars.DTO.TypeBedDto;
 import com.hotel.hotel_stars.DTO.TypeRoomDto;
-import com.hotel.hotel_stars.DTO.Select.PaginatedResponseDto;
-import com.hotel.hotel_stars.DTO.Select.RoomAvailabilityInfo;
-import com.hotel.hotel_stars.DTO.Select.RoomDetailResponseDTO;
-import com.hotel.hotel_stars.DTO.Select.RoomListBooking;
-import com.hotel.hotel_stars.DTO.Select.RoomListDTO;
 import com.hotel.hotel_stars.DTO.selectDTO.countDto;
 import com.hotel.hotel_stars.Entity.Floor;
 import com.hotel.hotel_stars.Entity.Room;
@@ -406,4 +403,40 @@ public class RoomService {
         List<RoomListDTO> roomListDTOS = roomRepository.findRoomsByTypeId(id);
         return roomListDTOS;
     }
+
+    public RoomOccupancyDTO getRoomOccupancyDTO(String startDate, String endDate) {
+        // Lấy kết quả từ repository
+        Object[] result = roomRepository.findRoomOccupancy(startDate, endDate);
+
+        // Kiểm tra nếu kết quả trả về không phải null và có ít nhất một phần tử
+        if (result != null && result.length > 0) {
+            // Lấy đối tượng tại vị trí 0 (vì chỉ có một đối tượng)
+            Object firstElement = result[0];
+
+            if (firstElement instanceof Object[]) {
+                // Ép kiểu và lấy các giá trị từ mảng
+                Object[] values = (Object[]) firstElement;  // Ép kiểu để lấy các giá trị
+
+                // Đảm bảo mảng có đủ ba phần tử
+                if (values.length == 3) {
+                    System.out.println("Total Rooms: " + values[0].getClass().getName());
+                    System.out.println("Occupied Rooms: " + values[1].getClass().getName());
+                    System.out.println("Occupancy Rate: " + values[2].getClass().getName());
+
+                    // Ánh xạ các giá trị vào DTO
+
+                    Long occupiedRooms = (values[1] instanceof Number) ? ((Number) values[1]).longValue() : 0L;
+                    Long totalRooms = (values[0] instanceof Number) ? ((Number) values[0]).longValue() : 0L;
+                    Double occupancyRate = (values[2] instanceof BigDecimal) ? ((BigDecimal) values[2]).doubleValue() : 0.0;
+
+                    // Trả về DTO với các giá trị đã ánh xạ
+                    return new RoomOccupancyDTO(totalRooms, occupiedRooms, occupancyRate);
+                }
+            }
+        }
+
+        // Trả về đối tượng DTO với giá trị mặc định nếu không có kết quả
+        return new RoomOccupancyDTO(0L, 0L, 0.0);  // Giá trị mặc định nếu không có kết quả
+    }
+
 }

@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.hotel.hotel_stars.DTO.BookingStatisticsDTO;
+import com.hotel.hotel_stars.DTO.Select.RoomUsageDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -52,6 +53,7 @@ import com.hotel.hotel_stars.Repository.StatusBookingRepository;
 import com.hotel.hotel_stars.Service.BookingService;
 import com.hotel.hotel_stars.utils.SessionService;
 import com.hotel.hotel_stars.utils.paramService;
+import com.itextpdf.text.pdf.PdfStructTreeController.returnType;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -89,7 +91,6 @@ public class BookingController {
         List<accountHistoryDto> bookings = bookingService.getAllBooking(startDate, endDate);
         return ResponseEntity.ok(bookings);
     }
-
 
     @PutMapping("/update-checkIn/{id}")
     public ResponseEntity<?> updateCheckIn(@PathVariable("id") Integer id,
@@ -156,7 +157,8 @@ public class BookingController {
             String roomsString = bookingRoomList.stream()
                     .map(bookingRoom -> bookingRoom.getRoom().getRoomName()) // Extract roomName from each BookingRoom
                     .collect(Collectors.joining(", "));
-            String idBk = "BK" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + "TT" + booking.getId();
+            String idBk = "BK" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + "TT"
+                    + booking.getId();
             System.out.println("chuỗi: " + roomsString);
             try {
                 bookingRepository.save(booking);
@@ -167,7 +169,8 @@ public class BookingController {
                     paramServices.pdfDownload(idBk, booking, startDateStr, endDateStr, formattedAmount, roomsString,
                             paramServices.getImage()));
             return ResponseEntity
-                    .ok(paramServices.confirmBookings(idBk, booking, startDateStr, endDateStr, formattedAmount, roomsString,
+                    .ok(paramServices.confirmBookings(idBk, booking, startDateStr, endDateStr, formattedAmount,
+                            roomsString,
                             paramServices.getImage()));
         } catch (ExpiredJwtException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -209,7 +212,8 @@ public class BookingController {
             String roomsString = bookingRoomList.stream()
                     .map(bookingRoom -> bookingRoom.getRoom().getRoomName()) // Extract roomName from each BookingRoom
                     .collect(Collectors.joining(", "));
-            String idBk = "BK" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + "TT" + booking.getId();
+            String idBk = "BK" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + "TT"
+                    + booking.getId();
 
             paramServices.sendEmails(booking.getAccount().getEmail(), "thông tin đơn hàng",
                     paramServices.confirmBookings(idBk, booking, startDateStr, endDateStr, formattedAmount, roomsString,
@@ -319,26 +323,25 @@ public class BookingController {
             return null;
         }
         return results.stream().map(objects -> new BookingHistoryDTOs(
-                (Integer) objects[0],  // bk_id
-                (String) objects[1],   // bkformat
-                (String) objects[2],   // create_at
-                (String) objects[3],   // start_at
-                (String) objects[4],   // end_at
-                (String) objects[5],   // fullname
-                (String) objects[6],   // avatar
-                (Integer) objects[7],  // statusBkID
-                (String) objects[8],   // statusBkName
-                (Integer) objects[9],  // iv_id
-                (Double) objects[10],  // totalRoom
+                (Integer) objects[0], // bk_id
+                (String) objects[1], // bkformat
+                (String) objects[2], // create_at
+                (String) objects[3], // start_at
+                (String) objects[4], // end_at
+                (String) objects[5], // fullname
+                (String) objects[6], // avatar
+                (Integer) objects[7], // statusBkID
+                (String) objects[8], // statusBkName
+                (Integer) objects[9], // iv_id
+                (Double) objects[10], // totalRoom
                 (Integer) objects[11], // fb_id
-                (String) objects[12],  // content
+                (String) objects[12], // content
                 (Integer) objects[13], // stars
-                (String) objects[14],  // roomInfo
-                (String) objects[15],  // image
-                (String) objects[16],  // combinedServiceNames
-                (Double) objects[17],  // combinedTotalServices
-                (Double) objects[18]
-        )).collect(Collectors.toList());
+                (String) objects[14], // roomInfo
+                (String) objects[15], // image
+                (String) objects[16], // combinedServiceNames
+                (Double) objects[17], // combinedTotalServices
+                (Double) objects[18])).collect(Collectors.toList());
     }
 
     @GetMapping("/booking-by-room/{id}")
@@ -358,7 +361,8 @@ public class BookingController {
     }
 
     @PostMapping("/booking-maintenance")
-    public ResponseEntity<?> postMaintenanceSchedule(@Valid @RequestBody bookingModel bookingModels, @RequestParam("userName") String username) {
+    public ResponseEntity<?> postMaintenanceSchedule(@Valid @RequestBody bookingModel bookingModels,
+                                                     @RequestParam("userName") String username) {
         System.out.println(bookingModels.getUserName());
         Map<String, String> response = new HashMap<String, String>();
         System.out.println("2");
@@ -376,5 +380,24 @@ public class BookingController {
             response = paramServices.messageSuccessApi(400, "error", "Tạo lịch thất bại");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
+    }
+
+    @GetMapping("/room-occupancy")
+    public ResponseEntity<?> getRoomUsage(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+
+        if ("null".equals(startDate)) {
+            startDate = null;
+        }
+        if ("null".equals(endDate)) {
+            endDate = null;
+        }
+
+        // Gọi service để lấy thông tin về công suất phòng
+        RoomUsageDTO roomUsage = bookingService.getRoomUsage(startDate, endDate);
+
+        // Trả về kết quả
+        return ResponseEntity.ok(roomUsage);
     }
 }

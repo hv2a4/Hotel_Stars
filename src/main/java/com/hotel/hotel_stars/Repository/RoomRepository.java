@@ -306,4 +306,19 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
     @Query("SELECT new com.hotel.hotel_stars.DTO.Select.RoomListDTO(r.id, r.roomName) " +
             "FROM Room r JOIN r.typeRoom t WHERE t.id = ?1")
     List<RoomListDTO> findRoomsByTypeId(Integer typeRoomId);
+
+    @Query(value = "SELECT COUNT(DISTINCT br.room_id) AS occupiedRooms, " +
+            "(SELECT COUNT(DISTINCT r.id) FROM room r) AS totalRooms, " +
+            "ROUND((COUNT(DISTINCT br.room_id) / (SELECT COUNT(DISTINCT r.id) FROM room r)) * 100, 2) AS usagePercentage " +
+            "FROM booking_room br " +
+            "JOIN booking ON br.booking_id = booking.id " +
+            "WHERE booking.status_id = 4 " +
+            "AND (" +
+            "    (DATE(br.check_in) < COALESCE(:endDate, CURRENT_DATE) " +
+            "     AND DATE(br.check_out) > COALESCE(:startDate, CURRENT_DATE)) " +
+            "    OR " +
+            "    (br.check_in IS NULL AND br.check_out IS NULL)" +
+            ")", nativeQuery = true)
+    Object[] findRoomOccupancy(@Param("startDate") String startDate, @Param("endDate") String endDate);
+
 }

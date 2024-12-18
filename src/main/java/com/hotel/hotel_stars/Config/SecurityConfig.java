@@ -142,7 +142,9 @@ public class SecurityConfig {
                                                                 "api/room/getById/**",
                                                                 "/api/image/getAll",
                                                                 "/api/service-hotel/getAll",
-                                                                "/api/discount-accounts/getAll")
+                                                                "/api/discount-accounts/getAll",
+                                                                "/api/booking/room-occupancy"
+                                                                )
                                                 .permitAll()
 
                                                 // nghia
@@ -338,7 +340,7 @@ public class SecurityConfig {
                                         "/api/image/getAll",
                                         "/api/service-hotel/getAll",
                                         "/api/discount-accounts/getAll",
-                                        "/api/room/list-room-id"
+                                        "/api/room/list-room-id","/api/room/room-usage"
                                 )
                                 .permitAll()
 
@@ -379,7 +381,7 @@ public class SecurityConfig {
                                         "/api/amenitiesHotel/update",
                                         "/api/amenitiesHotel/delete/**",
                                         "/api/amenitiesHotel/add",
-                                        "/api/discount/post-discount")
+                                        "/api/discount/post-discount","/api/discount/get-by-id/**","/api/discount/update-discount")
                                 .hasAnyAuthority("Staff", "HotelOwner")
                                 // --------------------------- api cần token có phân quyền HotelOwner
                                 // (chủ khách sạn )
