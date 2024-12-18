@@ -2,8 +2,10 @@ package com.hotel.hotel_stars.Controller;
 
 import java.util.*;
 
+import com.hotel.hotel_stars.DTO.StatusResponseDto;
 import com.hotel.hotel_stars.Entity.Account;
 import com.hotel.hotel_stars.Entity.Booking;
+import com.hotel.hotel_stars.Exception.ErrorsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +37,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @CrossOrigin("*")
-@RequestMapping("api/account")
+@RequestMapping("/api/account")
 public class AccountController {
 	@Autowired
 	AccountService accountService;
@@ -55,6 +57,8 @@ public class AccountController {
 
 	@Autowired
 	private TypeRoomService typeRoomService;
+	@Autowired
+	private ErrorsService errorsServices;
 
 //    @GetMapping("/getAll")
 //    public ResponseEntity<?> getAllAccounts( @RequestParam (defaultValue = "0", required = false) Integer id) {
@@ -89,8 +93,11 @@ public class AccountController {
 
 	@PostMapping("/register")
 	public ResponseEntity<?> registerAccount(@Valid @RequestBody accountModel accountModels) {
+		StatusResponseDto statusResponseDto = errorsServices.errorRegister(accountModels);
+		if (statusResponseDto != null) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(statusResponseDto);
+		}
 		Map<String, String> response = new HashMap<String, String>();
-		System.out.println("password: " + accountModels.getPasswords());
 		boolean flag = accountService.addUser(accountModels);
 		if (flag) {
 			response = paramServices.messageSuccessApi(201, "success", "Đăng ký thành công");
@@ -206,13 +213,16 @@ public class AccountController {
 
 	@PutMapping("/updateAccount")
 	public ResponseEntity<?> update(@RequestBody accountModel accountModels) {
+		StatusResponseDto statusResponseDto = errorsServices.errorUpdateProfile(accountModels);
+		if (statusResponseDto != null) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(statusResponseDto);
+		}
 		Map<String, String> response = new HashMap<String, String>();
-		System.out.println(accountModels.getUsername());
 		boolean flag = accountService.updateProfiles(accountModels);
-		if (flag == true) {
-			response = paramServices.messageSuccessApi(200, "success", "cập nhật thành công");
+		if (flag) {
+			response = paramServices.messageSuccessApi(201, "success", "cập nhật thành công");
 			response.put("token", jwtService.generateToken(accountModels.getUsername()));
-			return ResponseEntity.ok(response);
+			return ResponseEntity.status(HttpStatus.CREATED).body(response);
 		} else {
 			response = paramServices.messageSuccessApi(400, "error", "cập nhật thất bại");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);

@@ -208,6 +208,7 @@ public class AccountService {
     }
 
     public boolean updateProfiles(accountModel accountModels) {
+        System.out.println(accountModels);
         if (accountModels == null) {
             return false;
         }
@@ -219,8 +220,15 @@ public class AccountService {
         getAccount.get().setGender(accountModels.getGender());
         getAccount.get().setPhone(accountModels.getPhone());
         getAccount.get().setAvatar(accountModels.getAvatar());
-        accountRepository.save(getAccount.get());
-        return true;
+
+        try{
+            System.out.println(getAccount.get());
+            accountRepository.save(getAccount.get());
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public boolean sendPassword(String token) {

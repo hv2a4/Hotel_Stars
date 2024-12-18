@@ -11,6 +11,7 @@ import com.hotel.hotel_stars.Entity.Booking;
 import com.hotel.hotel_stars.Entity.Invoice;
 import com.hotel.hotel_stars.Models.DeleteBookingModel;
 import com.hotel.hotel_stars.Models.FeedbackModel;
+import com.hotel.hotel_stars.Models.accountModel;
 import com.hotel.hotel_stars.Repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -157,7 +158,6 @@ public class ErrorsService {
         return null;
     }
     public StatusResponseDto errorDeleteBooking(DeleteBookingModel bookingModels) throws CustomValidationException {
-
         StatusResponseDto responseDto = new StatusResponseDto();
         Optional<Booking> booking =bookingRepository.findById(bookingModels.getBookingId());
         if(!booking.isPresent()){
@@ -180,8 +180,80 @@ public class ErrorsService {
             return responseDto;
 
         }
-
         return null;
     }
 
+    public StatusResponseDto errorUpdateProfile(accountModel accountModels) throws CustomValidationException {
+        StatusResponseDto responseDto = new StatusResponseDto();
+        Optional<Account> account=accountRepository.findByUsername(accountModels.getUsername());
+        if(!account.isPresent()){
+            responseDto.setCode("400");
+            responseDto.setStatus("error");
+            responseDto.setMessage("Người dùng này không tồn tại");
+            return responseDto;
+        }
+        if(accountModels.getEmail().isEmpty() ||accountModels.getEmail()==null){
+            responseDto.setCode("400");
+            responseDto.setStatus("error");
+            responseDto.setMessage("Email không được trống");
+            return responseDto;
+        }
+        if(accountModels.getPhone().isEmpty() ||accountModels.getEmail()==null){
+            responseDto.setCode("400");
+            responseDto.setStatus("error");
+            responseDto.setMessage("Số điện thoại không được để trống");
+            return responseDto;
+        }
+        boolean isPhoneNumberDuplicate = accountRepository.findAll().stream()
+                .anyMatch(acc ->
+                        !acc.getUsername().equals(accountModels.getUsername()) && // Loại trừ tài khoản hiện tại
+                                acc.getPhone().equals(accountModels.getPhone())    // Trùng số điện thoại
+                );
+        if (isPhoneNumberDuplicate) {
+            responseDto.setCode("400");
+            responseDto.setStatus("error");
+            responseDto.setMessage("Số điện thoại đã tồn tại trong hệ thống");
+            return responseDto;
+        }
+
+        boolean isEmailDuplicate =accountRepository.findAll().stream()
+                .anyMatch(acc ->
+                        !acc.getUsername().equals(accountModels.getUsername()) && // Loại trừ tài khoản hiện tại
+                                acc.getEmail().equals(accountModels.getEmail())    // Trùng số điện thoại
+                );
+        if (isEmailDuplicate) {
+            responseDto.setCode("400");
+            responseDto.setStatus("error");
+            responseDto.setMessage("Email đã tồn tại trong hệ thống");
+            return responseDto;
+        }
+        return null;
+    }
+    public StatusResponseDto errorRegister(accountModel accountModels) throws CustomValidationException {
+        StatusResponseDto responseDto = new StatusResponseDto();
+        Optional<Account> account=accountRepository.findByUsername(accountModels.getUsername());
+        if(account.isPresent()){
+            responseDto.setCode("400");
+            responseDto.setStatus("error");
+            responseDto.setMessage("Tên tài khoản đã tồn tại");
+            return responseDto;
+        }
+        boolean isPhoneNumberDuplicate = accountRepository.findAll().stream()
+                .anyMatch(acc -> acc.getPhone().equals(accountModels.getPhone()));
+        if (isPhoneNumberDuplicate) {
+            responseDto.setCode("400");
+            responseDto.setStatus("error");
+            responseDto.setMessage("Số điện thoại đã tồn tại trong hệ thống");
+            return responseDto;
+        }
+        boolean isEmailDuplicate = accountRepository.findAll().stream()
+                .anyMatch(acc -> acc.getEmail().equals(accountModels.getEmail()));
+        if (isEmailDuplicate) {
+            responseDto.setCode("400");
+            responseDto.setStatus("error");
+            responseDto.setMessage("Email đã tồn tại trong hệ thống");
+            return responseDto;
+        }
+        return null;
+    }
 }
