@@ -140,6 +140,11 @@ public class AccountController {
 
     @PostMapping("add-account-staff")
     public ResponseEntity<?> addAccountStaff(@Valid @RequestBody accountModel accountModel) {
+        // Kiểm tra lỗi cho thêm mới
+        StatusResponseDto statusResponseDto = errorsServices.errorAccountStaff(accountModel, false);
+        if (statusResponseDto != null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(statusResponseDto);
+        }
         AccountDto createdAccount = accountService.AddAccountStaff(accountModel);
         return ResponseEntity.ok(createdAccount);
     }
@@ -147,6 +152,11 @@ public class AccountController {
     @PutMapping("update-account-staff/{id}")
     public ResponseEntity<?> updateAccountStaff(@PathVariable Integer id,
                                                 @Valid @RequestBody accountModel accountModel) {
+        // Kiểm tra lỗi cho cập nhật
+        StatusResponseDto statusResponseDto = errorsServices.errorAccountStaff(accountModel, true);
+        if (statusResponseDto != null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(statusResponseDto);
+        }
         try {
             // Gọi phương thức trong service để cập nhật tài khoản
             AccountDto updatedAccount = accountService.UpdateAccountStaff(id, accountModel);
@@ -159,6 +169,7 @@ public class AccountController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Có lỗi xảy ra: " + ex.getMessage());
         }
     }
+
 
     @DeleteMapping("delete-account-staff/{id}")
     public ResponseEntity<?> deleteAccountStaff(@PathVariable Integer id) {

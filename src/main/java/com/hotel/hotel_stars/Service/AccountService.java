@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.hotel.hotel_stars.DTO.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -25,11 +26,6 @@ import org.springframework.stereotype.Service;
 
 import com.hotel.hotel_stars.Config.JwtService;
 import com.hotel.hotel_stars.Config.UserInfoService;
-import com.hotel.hotel_stars.DTO.AccountDto;
-import com.hotel.hotel_stars.DTO.BookingDto;
-import com.hotel.hotel_stars.DTO.MethodPaymentDto;
-import com.hotel.hotel_stars.DTO.RoleDto;
-import com.hotel.hotel_stars.DTO.StatusBookingDto;
 import com.hotel.hotel_stars.DTO.Select.AccountBookingDTO;
 import com.hotel.hotel_stars.DTO.Select.AccountInfo;
 import com.hotel.hotel_stars.DTO.Select.AccountRoleDTOs;
@@ -683,53 +679,18 @@ public class AccountService {
     }
 
 	public AccountDto UpdateAccountStaff(Integer accountId, accountModel accountModel) {
-		List<ValidationError> validationErrors = new ArrayList<>(); // Danh sách lưu trữ các lỗi xác thực
-
+		StatusResponseDto responseDto = new StatusResponseDto();
 		// Kiểm tra xem tài khoản có tồn tại hay không
 		Optional<Account> existingAccountOpt = accountRepository.findById(accountId);
-		if (!existingAccountOpt.isPresent()) {
-			throw new CustomValidationException(List.of(new ValidationError("username", "Tài khoản không tồn tại")));
-		}
 
 		Account existingAccount = existingAccountOpt.get();
 
-		// Kiểm tra các trường có giá trị hợp lệ
-		if (accountModel.getUsername() == null || accountModel.getUsername().isEmpty()) {
-			validationErrors.add(new ValidationError("username", "Tên người dùng không được để trống"));
-		} else if (!isValidUsername(accountModel.getUsername())) {
-			validationErrors.add(new ValidationError("username",
-					"Tên người dùng không hợp lệ. Tên người dùng phải có ít nhất 6 ký tự và chỉ chứa chữ cái, số, dấu gạch dưới và dấu chấm, không được bắt đầu bằng số."));
-		} else if (!existingAccount.getUsername().equals(accountModel.getUsername())
-				&& accountRepository.existsByUsername(accountModel.getUsername())) {
-			validationErrors.add(new ValidationError("username", "Tên người dùng đã tồn tại"));
-		}
+		boolean isPhoneNumberDuplicate = accountRepository.findAll().stream()
+				.anyMatch(acc -> acc.getPhone()==(accountModel.getPhone()));
+		System.out.println(isPhoneNumberDuplicate);
 
-		if (accountModel.getEmail() == null || accountModel.getEmail().isEmpty()) {
-			validationErrors.add(new ValidationError("email", "Email không được để trống"));
-		} else if (!existingAccount.getEmail().equals(accountModel.getEmail())
-				&& accountRepository.existsByEmail(accountModel.getEmail())) {
-			validationErrors.add(new ValidationError("email", "Email đã tồn tại"));
-		}
-
-		if (accountModel.getPhone() == null || accountModel.getPhone().isEmpty()) {
-			validationErrors.add(new ValidationError("phone", "Số điện thoại không được để trống"));
-		} else if (!isValidPhoneNumber(accountModel.getPhone())) {
-			validationErrors.add(new ValidationError("phone", "Số điện thoại không hợp lệ"));
-		} else if (!existingAccount.getPhone().equals(accountModel.getPhone())
-				&& accountRepository.existsByPhone(accountModel.getPhone())) {
-			validationErrors.add(new ValidationError("phone", "Số điện thoại đã tồn tại"));
-		}
-
-		// Kiểm tra mật khẩu nếu có thay đổi
-		if (accountModel.getPasswords() != null && accountModel.getPasswords().length() < 6) {
-			validationErrors.add(new ValidationError("passwords", "Mật khẩu phải có ít nhất 6 ký tự"));
-		}
-
-		// Nếu có lỗi, ném ngoại lệ với thông báo lỗi
-		if (!validationErrors.isEmpty()) {
-			throw new CustomValidationException(validationErrors); // Ném ngoại lệ tùy chỉnh
-		}
-
+		boolean isEmailDuplicate = accountRepository.findAll().stream()
+				.anyMatch(acc -> acc.getEmail()==(accountModel.getEmail()));
 		try {
 			// Cập nhật các thuộc tính cho tài khoản
 			existingAccount.setUsername(accountModel.getUsername());

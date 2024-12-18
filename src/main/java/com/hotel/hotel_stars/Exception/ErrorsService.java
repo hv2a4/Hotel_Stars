@@ -259,4 +259,83 @@ public class ErrorsService {
         }
         return null;
     }
+
+    public StatusResponseDto errorAccountStaff(accountModel accountModel, boolean isUpdate) throws CustomValidationException {
+        StatusResponseDto responseDto = new StatusResponseDto();
+
+        // Kiểm tra các trường bắt buộc
+        if (accountModel.getUsername() == null || accountModel.getUsername().isEmpty()) {
+            responseDto.setCode("400");
+            responseDto.setStatus("error");
+            responseDto.setMessage("Username không được để trống");
+            return responseDto;
+        }
+        if (accountModel.getEmail() == null || accountModel.getEmail().isEmpty()) {
+            responseDto.setCode("400");
+            responseDto.setStatus("error");
+            responseDto.setMessage("Email không được để trống");
+            return responseDto;
+        }
+        if (accountModel.getPhone() == null || accountModel.getPhone().isEmpty()) {
+            responseDto.setCode("400");
+            responseDto.setStatus("error");
+            responseDto.setMessage("Số điện thoại không được để trống");
+            return responseDto;
+        }
+        if (accountModel.getPasswords() == null || accountModel.getPasswords().length() < 6) {
+            responseDto.setCode("400");
+            responseDto.setStatus("error");
+            responseDto.setMessage("Mật khẩu phải có ít nhất 6 ký tự");
+            return responseDto;
+        }
+
+        // Kiểm tra trùng lặp
+        if (!isUpdate || !isSameUsername(accountModel)) {
+            if (accountRepository.existsByUsername(accountModel.getUsername())) {
+                responseDto.setCode("400");
+                responseDto.setStatus("error");
+                responseDto.setMessage("Username đã tồn tại trong hệ thống");
+                return responseDto;
+            }
+        }
+
+        if (!isUpdate || !isSameEmail(accountModel)) {
+            if (accountRepository.existsByEmail(accountModel.getEmail())) {
+                responseDto.setCode("400");
+                responseDto.setStatus("error");
+                responseDto.setMessage("Email đã tồn tại trong hệ thống");
+                return responseDto;
+            }
+        }
+
+        if (!isUpdate || !isSamePhone(accountModel)) {
+            if (accountRepository.existsByPhone(accountModel.getPhone())) {
+                responseDto.setCode("400");
+                responseDto.setStatus("error");
+                responseDto.setMessage("Số điện thoại đã tồn tại trong hệ thống");
+                return responseDto;
+            }
+        }
+
+        return null;
+    }
+
+    private boolean isSameUsername(accountModel accountModel) {
+        return accountRepository.findById(accountModel.getId())
+                .map(existing -> existing.getUsername().equals(accountModel.getUsername()))
+                .orElse(false);
+    }
+
+    private boolean isSameEmail(accountModel accountModel) {
+        return accountRepository.findById(accountModel.getId())
+                .map(existing -> existing.getEmail().equals(accountModel.getEmail()))
+                .orElse(false);
+    }
+
+    private boolean isSamePhone(accountModel accountModel) {
+        return accountRepository.findById(accountModel.getId())
+                .map(existing -> existing.getPhone().equals(accountModel.getPhone()))
+                .orElse(false);
+    }
+
 }
