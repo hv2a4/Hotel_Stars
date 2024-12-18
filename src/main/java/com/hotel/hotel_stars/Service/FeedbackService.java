@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -82,5 +83,24 @@ public class FeedbackService {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public Feedback postFeedback(FeedbackModel feedbackModel) {
+        System.out.println(feedbackModel.getIdInvoice());
+        Feedback feedback = new Feedback();
+        Invoice invoice = invoiceRepository.findById(feedbackModel.getIdInvoice()).get();
+        System.out.println(invoice.getId());
+        feedback.setContent(feedbackModel.getContent());
+        feedback.setStars(feedbackModel.getStars());
+        feedback.setRatingStatus(true);
+        feedback.setCreateAt(Instant.now());
+        feedback.setInvoice(invoice);
+        try{
+            feedBackRepository.save(feedback);
+            return feedback;
+        } catch (Exception e) {
+           return null;
+        }
+
     }
 }

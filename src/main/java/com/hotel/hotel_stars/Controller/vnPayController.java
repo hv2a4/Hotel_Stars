@@ -6,6 +6,7 @@ import com.hotel.hotel_stars.Repository.BookingRepository;
 import com.hotel.hotel_stars.Repository.DiscountAccountRepository;
 import com.hotel.hotel_stars.Repository.DiscountRepository;
 import com.hotel.hotel_stars.Repository.StatusBookingRepository;
+import com.hotel.hotel_stars.Service.BookingService;
 import com.hotel.hotel_stars.utils.SessionService;
 import com.hotel.hotel_stars.utils.paramService;
 
@@ -46,6 +47,8 @@ public class vnPayController {
     private DiscountAccountRepository discountAccountRepositorys;
     @Autowired
     SessionService sessionService;
+    @Autowired
+    BookingService bookingService;
     @GetMapping("/vnpay-payment")
     public void handleVNPayPayment(HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException {
         String orderInfo = request.getParameter("vnp_OrderInfo");
@@ -68,18 +71,21 @@ public class vnPayController {
                 total=total-discountAmount;
             }
             System.out.println();
-String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
+            String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
             LocalDate startDate=paramServices.convertInstallToLocalDate(booking.getStartAt());
             LocalDate endDate=paramServices.convertInstallToLocalDate(booking.getEndAt());
             booking.setStatus(statusBooking);
             String roomsString = bookingRoomList.stream()
                     .map(bookingRoom -> bookingRoom.getRoom().getRoomName())  // Extract roomName from each BookingRoom
                     .collect(Collectors.joining(", "));
-            String idBk = "Bk" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + "" + booking.getId();
+            String idBk = "BK" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + "TT" + booking.getId();
             booking.setStatusPayment(true);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
+            String startDateStr = startDate.format(formatter);
+            String endDateStr = endDate.format(formatter);
             paramServices.sendEmails(booking.getAccount().getEmail(),"thông tin đơn hàng",
-                    paramServices.pdfDownload(idBk,booking,startDate,endDate ,formattedAmount,roomsString, paramServices.getImage()));
+                    paramServices.pdfDownload(idBk,booking,startDateStr,endDateStr ,formattedAmount,roomsString, paramServices.getImage()));
 
 
             try {
@@ -120,7 +126,8 @@ String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")
             booking.setStatus(statusBooking1);
             booking.setStatusPayment(false);
             bookingRepository.save(booking);
-String paymentStatuss = "error";
+            Boolean flag=bookingService.deleteBookingAndRelatedRooms(booking);
+            String paymentStatuss = "error";
             String messages = "Thanh toán thất bại";
             String redirectUrl = null;
             redirectUrl = String.format(
@@ -128,6 +135,7 @@ String paymentStatuss = "error";
                     URLEncoder.encode(paymentStatuss, "UTF-8"),
                     URLEncoder.encode(messages, "UTF-8")
             );
+
             try {
                 response.sendRedirect(redirectUrl);
             } catch (IOException e) {

@@ -6,8 +6,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface BookingRoomRepository extends JpaRepository<BookingRoom, Integer> {
 //	Optional<BookingRoom> findMostRecentBookingRoomByRoomIdAndStatusRoomId(Integer roomId, String statusRoomId);
@@ -27,4 +29,10 @@ public interface BookingRoomRepository extends JpaRepository<BookingRoom, Intege
     nativeQuery = true)
 	BookingRoom findFirstBookingRoomByRoomIdAndStatusNotIn(@Param("roomId") Integer roomId);
 	//khoi
+
+	@Modifying
+	@Transactional
+	@Query(value = "DELETE FROM booking_room WHERE booking_id = :bookingId", nativeQuery = true)
+	Integer deleteByBookingId(Integer bookingId);
+
 }

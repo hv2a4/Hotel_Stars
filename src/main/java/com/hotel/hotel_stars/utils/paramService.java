@@ -229,7 +229,7 @@ public class paramService {
     }
 
 
-    public String confirmBookings(String id, Booking booking, LocalDate startDate, LocalDate endDate, String total, String rooms, String image) {
+    public String confirmBookings(String id, Booking booking, String startDate, String endDate, String total, String rooms, String image) {
         return "<!DOCTYPE html>\n"
                 + "<html lang=\"en\">\n"
                 + "<head>\n"
@@ -313,8 +313,8 @@ public class paramService {
                 + "                <p>Mã đơn: <strong>" + id + "</strong></p>\n"
                 + "                <p>Tên khách hàng: <strong>" + booking.getAccount().getUsername() + "</strong></p>\n"
                 + "                <p>Số điện thoại: <strong>" + booking.getAccount().getPhone() + "</strong></p>\n"
-                + "                <p>Ngày nhận: <strong>" + startDate + "</strong></p>\n"
-                + "                <p>Ngày trả: <strong>" + endDate + "</strong></p>\n"
+                + "                <p>Ngày nhận: <strong>" + startDate + " 14:00" + "</strong></p>\n"
+                + "                <p>Ngày trả: <strong>" + endDate + " 12:00" + "</strong></p>\n"
                 + "                <p>Phòng: <strong>" + rooms + "</strong></p>\n"
                 + "                <p>Tổng tiền: <strong>" + total + "</strong></p>\n"
                 + "                <p>Trạng thái thanh toán: <strong>" + (booking.getStatusPayment() ? "Đã thanh toán" : "Chưa thanh toán") + "</strong></p>\n"
@@ -333,7 +333,7 @@ public class paramService {
                 + "</html>";
     }
 
-    public String generateBookingEmail(String id, String fullName, String token, LocalDate startDate, LocalDate endDate, String total, String rooms) {
+    public String generateBookingEmail(String id, String fullName, String token, String startDate, String endDate, String total, String rooms) {
         return "<!DOCTYPE html>\n"
                 + "<html lang=\"vi\">\n"
                 + "<head>\n"
@@ -376,8 +376,8 @@ public class paramService {
                 + "    <p>Xin chào <strong>" + fullName + "</strong>,</p>\n"
                 + "    <p>Vui lòng xem thông tin đơn đặt phòng của bạn bên dưới:</p>\n"
                 + "    <table>\n"
-                + "        <tr><th>Ngày nhận phòng</th><td>" + startDate + "</td></tr>\n"
-                + "        <tr><th>Ngày trả phòng</th><td>" + endDate + "</td></tr>\n"
+                + "        <tr><th>Ngày nhận phòng</th><td>" + startDate + " 14:00" + "</td></tr>\n"
+                + "        <tr><th>Ngày trả phòng</th><td>" + endDate + " 12:00" + "</td></tr>\n"
                 + "        <tr><th>Danh sách phòng</th><td>" + rooms + "</td></tr>\n"
                 + "        <tr><th>Tổng tiền</th><td>" + total + "</td></tr>\n"
                 + "    </table>\n"
@@ -388,8 +388,8 @@ public class paramService {
                 + "</html>";
     }
 
-    public String pdfDownload(String id, Booking booking, LocalDate startDate, LocalDate endDate, String total, String rooms, String image) {
-        return  "<!DOCTYPE html>\n"
+    public String pdfDownload(String id, Booking booking, String startDate, String endDate, String total, String rooms, String image) {
+        return "<!DOCTYPE html>\n"
                 + "<html lang=\"vi\">\n"
                 + "<head>\n"
                 + "    <meta charset=\"UTF-8\" />\n"
@@ -469,13 +469,13 @@ public class paramService {
                 + "                <h2>Đơn đặt phòng</h2>\n"
                 + "                <h1>Hotel Stars</h1>\n"
                 + "                <p>Mã đơn: <strong>" + id + "</strong></p>\n"
-                + "                <p>Tên khách hàng: <strong>"+booking.getAccount().getUsername()+"</strong></p>\n"
-                + "                <p>Số điện thoại: <strong>"+booking.getAccount().getPhone()+"</strong></p>\n"
-                + "                <p>Ngày nhận: <strong>"+startDate+"</strong></p>\n"
-                + "                <p>Ngày trả: <strong>"+endDate+"</strong></p>\n"
-                + "                <p>Phòng: <strong>"+rooms+"</strong></p>\n"
-                + "                <p>Tổng tiền: <strong>"+total+"</strong></p>\n"
-                + "                <p>Trạng thái thanh toán: <strong>"+(booking.getStatusPayment() ? "Đã thanh toán" : "Chưa thanh toán")+"</strong></p>\n"
+                + "                <p>Tên khách hàng: <strong>" + booking.getAccount().getUsername() + "</strong></p>\n"
+                + "                <p>Số điện thoại: <strong>" + booking.getAccount().getPhone() + "</strong></p>\n"
+                + "                <p>Ngày nhận: <strong>" + startDate + " 14:00" + "</strong></p>\n"
+                + "                <p>Ngày trả: <strong>" + endDate + " 12:00" + "</strong></p>\n"
+                + "                <p>Phòng: <strong>" + rooms + "</strong></p>\n"
+                + "                <p>Tổng tiền: <strong>" + total + "</strong></p>\n"
+                + "                <p>Trạng thái thanh toán: <strong>" + (booking.getStatusPayment() ? "Đã thanh toán" : "Chưa thanh toán") + "</strong></p>\n"
                 + "            </div>\n"
                 + "            <div class=\"ticket-right\">\n"
                 + "                <div class=\"qr-code\">\n"

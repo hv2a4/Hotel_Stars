@@ -27,4 +27,9 @@ public class BookingHistoryDTOs {
     private String combinedServiceNames;
     private Double combinedTotalServices;
     private Double totalBooking;
+    private Integer methodPaymentId;
+    private String methodPaymentName;
+    private String discountName;
+    private Double discountPercent;
+    private Integer statusBookingID;
 }

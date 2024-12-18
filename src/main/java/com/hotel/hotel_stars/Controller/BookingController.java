@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.hotel.hotel_stars.DTO.BookingStatisticsDTO;
+import com.hotel.hotel_stars.Models.DeleteBookingModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -84,10 +85,9 @@ public class BookingController {
     // khoi
     @GetMapping("")
     public ResponseEntity<List<accountHistoryDto>> getBookings(
-            @RequestParam(required = false) String filterType,
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) LocalDate endDate) {
-        List<accountHistoryDto> bookings = bookingService.getAllBooking(filterType, startDate, endDate);
+        List<accountHistoryDto> bookings = bookingService.getAllBooking(startDate, endDate);
         return ResponseEntity.ok(bookings);
     }
 
@@ -135,7 +135,7 @@ public class BookingController {
 
     @GetMapping("/confirmBooking")
     public ResponseEntity<?> updateBooking(@RequestParam("token") String token) {
-
+       // nghia,   hàm này được push sáng   ngày 18 tháng 12  năm 2024
         try {
             Integer id = jwtService.extractBookingId(token);
             Optional<StatusBooking> statusBooking = statusBookingRepository.findById(2);
@@ -149,11 +149,15 @@ public class BookingController {
             String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
             LocalDate startDate = paramServices.convertInstallToLocalDate(booking.getStartAt());
             LocalDate endDate = paramServices.convertInstallToLocalDate(booking.getEndAt());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+            String startDateStr = startDate.format(formatter);
+            String endDateStr = endDate.format(formatter);
             booking.setStatus(statusBooking.get());
             String roomsString = bookingRoomList.stream()
                     .map(bookingRoom -> bookingRoom.getRoom().getRoomName()) // Extract roomName from each BookingRoom
                     .collect(Collectors.joining(", "));
-            String idBk = "Bk" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "" + booking.getId();
+            String idBk = "BK" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + "TT" + booking.getId();
             System.out.println("chuỗi: " + roomsString);
             try {
                 bookingRepository.save(booking);
@@ -161,10 +165,10 @@ public class BookingController {
                 e.printStackTrace();
             }
             paramServices.sendEmails(booking.getAccount().getEmail(), "thông tin đơn hàng",
-                    paramServices.pdfDownload(idBk, booking, startDate, endDate, formattedAmount, roomsString,
+                    paramServices.pdfDownload(idBk, booking, startDateStr, endDateStr, formattedAmount, roomsString,
                             paramServices.getImage()));
             return ResponseEntity
-                    .ok(paramServices.confirmBookings(idBk, booking, startDate, endDate, formattedAmount, roomsString,
+                    .ok(paramServices.confirmBookings(idBk, booking, startDateStr, endDateStr, formattedAmount, roomsString,
                             paramServices.getImage()));
         } catch (ExpiredJwtException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -187,7 +191,7 @@ public class BookingController {
 
     @GetMapping("/downloadPdf")
     public ResponseEntity<?> downloadPdf(@RequestParam String id) {
-
+    // nghia,   hàm này được push sáng   ngày 18 tháng 12  năm 2024
         try {
             Booking booking = bookingRepository.findById(Integer.parseInt(id)).get();
             List<BookingRoom> bookingRoomList = booking.getBookingRooms();
@@ -199,17 +203,21 @@ public class BookingController {
             String formattedAmount = NumberFormat.getCurrencyInstance(new Locale("vi", "VN")).format(total);
             LocalDate startDate = paramServices.convertInstallToLocalDate(booking.getStartAt());
             LocalDate endDate = paramServices.convertInstallToLocalDate(booking.getEndAt());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+            String startDateStr = startDate.format(formatter);
+            String endDateStr = endDate.format(formatter);
             String roomsString = bookingRoomList.stream()
                     .map(bookingRoom -> bookingRoom.getRoom().getRoomName()) // Extract roomName from each BookingRoom
                     .collect(Collectors.joining(", "));
-            String idBk = "Bk" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + "" + booking.getId();
+            String idBk = "BK" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + "TT" + booking.getId();
 
             paramServices.sendEmails(booking.getAccount().getEmail(), "thông tin đơn hàng",
-                    paramServices.confirmBookings(idBk, booking, startDate, endDate, formattedAmount, roomsString,
+                    paramServices.confirmBookings(idBk, booking, startDateStr, endDateStr, formattedAmount, roomsString,
                             paramServices.getImage()));
 
             String filePath = paramServices.generatePdf(
-                    paramServices.pdfDownload(idBk, booking, startDate, endDate, formattedAmount, roomsString,
+                    paramServices.pdfDownload(idBk, booking, startDateStr, endDateStr, formattedAmount, roomsString,
                             paramServices.getImage()),
                     booking.getAccount().getFullname(), idBk);
 
@@ -229,10 +237,9 @@ public class BookingController {
     }
 
     @PostMapping("/sendBooking")
-
     public ResponseEntity<?> postBooking(@Valid @RequestBody bookingModel bookingModels, HttpServletRequest request) {
+        // nghia,   hàm này được push sáng   ngày 18 tháng 12  năm 2024
         Map<String, String> response = new HashMap<String, String>();
-
         StatusResponseDto statusResponseDto = errorsServices.errorBooking(bookingModels);
         if (statusResponseDto != null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(statusResponseDto);
@@ -307,6 +314,54 @@ public class BookingController {
         return ResponseEntity.ok(bookings);
     }
 
+    public List<BookingHistoryDTOs> getBookingsByAccountId(Integer accountId) {
+        // Lấy danh sách dữ liệu cơ bản
+        // nghia,   hàm này được push sáng   ngày 18 tháng 12  năm 2024
+        List<Object[]> results = bookingRepository.findBookingsByAccountId(accountId);
+
+        return results.stream()
+                .map(objects -> {
+                    // Lấy Booking từ repository bằng bk_id (objects[0])
+                    Booking booking = bookingRepository.findById((Integer) objects[0])
+                            .orElseThrow(() -> new RuntimeException("Booking not found with id: " + objects[0]));
+
+                    // Truy xuất thông tin bổ sung từ Booking
+                    Integer methodPaymentId = booking.getMethodPayment().getId();
+                    String methodPaymentName = booking.getMethodPayment().getMethodPaymentName();
+                    String discountName = booking.getDiscountName();
+                    Double discountPercent = booking.getDiscountPercent();
+                    Integer statusBookingID=booking.getStatus().getId();
+                    // Tạo BookingHistoryDTOs với thông tin đầy đủ
+                    return new BookingHistoryDTOs(
+                            (Integer) objects[0], // bk_id
+                            (String) objects[1], // bkformat
+                            (String) objects[2], // create_at
+                            (String) objects[3], // start_at
+                            (String) objects[4], // end_at
+                            (String) objects[5], // fullname
+                            (String) objects[6], // avatar
+                            (Integer) objects[7], // statusBkID
+                            (String) objects[8], // statusBkName
+                            (Integer) objects[9], // iv_id
+                            (Double) objects[10], // totalRoom
+                            (Integer) objects[11], // fb_id
+                            (String) objects[12], // content
+                            (Integer) objects[13], // stars
+                            (String) objects[14], // roomInfo
+                            (String) objects[15], // image
+                            (String) objects[16], // combinedServiceNames
+                            (Double) objects[17], // combinedTotalServices
+                            (Double) objects[18], // totalAmount
+                            methodPaymentId, // Lấy từ Booking
+                            methodPaymentName, // Lấy từ Booking
+                            discountName, // Lấy từ Booking
+                            discountPercent, // Lấy từ Booking
+                            statusBookingID
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
     @GetMapping("/booking-by-room/{id}")
     public ResponseEntity<?> getBookingByRoom(@PathVariable("id") Integer id) {
         return ResponseEntity.ok(bookingService.getBookingByRoom(id));
@@ -321,5 +376,43 @@ public class BookingController {
         } else {
             return new StatusResponseDto("400", "error", "Hủy đặt phòng thất bại");
         }
+    }
+
+    @PostMapping("/booking-maintenance")
+    public ResponseEntity<?> postMaintenanceSchedule(@Valid @RequestBody bookingModel bookingModels, @RequestParam("userName") String username) {
+        System.out.println(bookingModels.getUserName());
+        Map<String, String> response = new HashMap<String, String>();
+        System.out.println("2");
+        StatusResponseDto errorBookings = errorsServices.errorBooking(bookingModels);
+        System.out.println("3");
+        if (errorBookings != null) {
+            return ResponseEntity.ok(errorBookings);
+        }
+        System.out.println("4");
+        Boolean flag = bookingService.createMaintenanceSchedule(bookingModels, username);
+        if (flag == true) {
+            response = paramServices.messageSuccessApi(201, "success", "Tạo lịch thành công");
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } else {
+            response = paramServices.messageSuccessApi(400, "error", "Tạo lịch thất bại");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+    @PostMapping("/delete-booking")
+    public ResponseEntity<?> deleteBooking(@Valid @RequestBody DeleteBookingModel bookingModels) {
+        // nghia,   hàm này được push sáng   ngày 18 tháng 12  năm 2024
+        Map<String, String> response = new HashMap<String, String>();
+        StatusResponseDto statusResponseDto = errorsServices.errorDeleteBooking(bookingModels);
+        if (statusResponseDto != null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(statusResponseDto);
+        }
+       Boolean flag=bookingService.deleteBookings(bookingModels);
+       if(!flag){
+           response=paramServices.messageSuccessApi(400,"error","Hủy phòng thất bại");
+           return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+       }else {
+           response=paramServices.messageSuccessApi(201,"success","Hủy phòng thành công");
+           return ResponseEntity.status(HttpStatus.CREATED).body(response);
+       }
     }
 }

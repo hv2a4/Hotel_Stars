@@ -206,7 +206,6 @@ public class AccountController {
 
 	@PutMapping("/updateAccount")
 	public ResponseEntity<?> update(@RequestBody accountModel accountModels) {
-		System.out.println(accountModels.getGender() + "  giới tính");
 		Map<String, String> response = new HashMap<String, String>();
 		System.out.println(accountModels.getUsername());
 		boolean flag = accountService.updateProfiles(accountModels);

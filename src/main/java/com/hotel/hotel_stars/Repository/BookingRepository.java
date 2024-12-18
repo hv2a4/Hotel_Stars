@@ -1,17 +1,12 @@
 package com.hotel.hotel_stars.Repository;
 
-import com.hotel.hotel_stars.DTO.BookingStatisticsDTO;
 import com.hotel.hotel_stars.DTO.Select.CustomerReservation;
 import com.hotel.hotel_stars.Entity.Booking;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -97,8 +92,8 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 			    OR (:startDate IS NULL AND :endDate IS NULL)
 			ORDER BY b.createAt DESC
 			""")
-	List<Booking> findBookingsByTime(@Param("filterType") String filterType, @Param("startDate") LocalDate startDate,
-			@Param("endDate") LocalDate endDate);
+	List<Booking> findBookingsByTime(@Param("startDate") LocalDate startDate,
+									 @Param("endDate") LocalDate endDate);
 
 	// khoi
 	@Query("SELECT b FROM Booking b JOIN b.bookingRooms br WHERE br.room.id = :roomId AND b.status.id IN (2, 4,6, 7,8)")
@@ -193,8 +188,8 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
     )
     SELECT  
         bk.id AS bk_id,
-        CONCAT('BK', DATE_FORMAT(bk.create_at, '%d%m%Y'), bk.id) AS bkformat,
-        DATE_FORMAT(bk.create_at, '%d/%m/%Y') AS create_at,
+        CONCAT('BK', DATE_FORMAT(bk.create_at, '%d%m%Y'),'TT', bk.id) AS bkformat,
+        DATE_FORMAT(bk.create_at, '%d/%m/%Y %H:%i:%s') AS create_at,
         DATE_FORMAT(bk.start_at, '%d/%m/%Y') AS start_at,
         DATE_FORMAT(bk.end_at, '%d/%m/%Y') AS end_at,
         ac.fullname AS fullname,
@@ -246,7 +241,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
     LEFT JOIN FinalAggregatedRooms fr ON bk.id = fr.booking_id
     LEFT JOIN AggregatedImages ai ON bk.id = ai.booking_id
     LEFT JOIN AggregatedServiceHotel arsh ON bk.id = arsh.booking_id
-    WHERE bk.account_id = :accountId AND bk.status_id != 1
+    WHERE bk.account_id = :accountId 
     GROUP BY 
         bk.id,
         ac.fullname,

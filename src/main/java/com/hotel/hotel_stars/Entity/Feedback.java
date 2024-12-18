@@ -14,6 +14,7 @@ import java.time.Instant;
 public class Feedback {
     @Id
     @Column(name = "id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(name = "content")
