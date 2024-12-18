@@ -359,7 +359,8 @@ public class SecurityConfig {
                                 .requestMatchers("/api/booking/confirmBooking").permitAll()
                                 .requestMatchers("/api/type-room/find-type-room",
                                         "/api/amenitiesHotel/getAll",
-                                        "/api/room/top-5-type-room"
+                                        "/api/room/top-5-type-room",
+                                        "/api/account/updateAccountCustomer"
                                         )
                                 .permitAll()
                                 // nghia

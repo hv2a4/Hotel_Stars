@@ -758,4 +758,24 @@ public class AccountService {
 			throw new RuntimeException("Có lỗi xảy ra khi cập nhật tài khoản", e);
 		}
 	}
+
+	public boolean updateProfileCustomer(accountModel accountModels) {
+		System.out.println(accountModels);
+		if (accountModels == null) {
+			return false;
+		}
+		Optional<Account> getAccount = accountRepository.findByUsername(accountModels.getUsername());
+		getAccount.get().setEmail(accountModels.getEmail());
+		getAccount.get().setFullname(accountModels.getFullname());
+		getAccount.get().setGender(accountModels.getGender());
+		getAccount.get().setPhone(accountModels.getPhone());
+		getAccount.get().setAvatar(accountModels.getAvatar());
+		try{
+			accountRepository.save(getAccount.get());
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
 }

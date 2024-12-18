@@ -43,7 +43,7 @@ public class BookingRoomService {
                 tr.getAcreage(), tr.getGuestLimit(), typeBedDto, tr.getDescribes(), typeRoomImageDtos);
     }
 
-    public BookingRoomDto toDTO(BookingRoom bookingRoom) {
+	public BookingRoomDto toDTO(BookingRoom bookingRoom) {
 		BookingRoomDto bookingRoomDto = modelMapper.map(bookingRoom, BookingRoomDto.class);
 
 		RoleDto roleDto = new RoleDto();
@@ -58,19 +58,19 @@ public class BookingRoomService {
 		typeBedDto.setId(bookingRoom.getRoom().getTypeRoom().getId());
 		typeBedDto.setBedName(bookingRoom.getRoom().getTypeRoom().getTypeRoomName());
 
-	    AccountDto accountDto = null;
-	    if (bookingRoom.getAccount() != null) {
-	        accountDto = new AccountDto();
-	        accountDto.setId(bookingRoom.getAccount().getId());
-	        accountDto.setUsername(bookingRoom.getAccount().getUsername());
-	        accountDto.setFullname(bookingRoom.getAccount().getFullname());
-	        accountDto.setPhone(bookingRoom.getAccount().getPhone());
-	        accountDto.setEmail(bookingRoom.getAccount().getEmail());
-	        accountDto.setAvatar(bookingRoom.getAccount().getAvatar());
-	        accountDto.setGender(bookingRoom.getAccount().getGender());
-	        accountDto.setIsDelete(bookingRoom.getAccount().getIsDelete());
-	        accountDto.setRoleDto(roleDto);
-	    }
+		AccountDto accountDto = null;
+		if (bookingRoom.getAccount() != null) {
+			accountDto = new AccountDto();
+			accountDto.setId(bookingRoom.getAccount().getId());
+			accountDto.setUsername(bookingRoom.getAccount().getUsername());
+			accountDto.setFullname(bookingRoom.getAccount().getFullname());
+			accountDto.setPhone(bookingRoom.getAccount().getPhone());
+			accountDto.setEmail(bookingRoom.getAccount().getEmail());
+			accountDto.setAvatar(bookingRoom.getAccount().getAvatar());
+			accountDto.setGender(bookingRoom.getAccount().getGender());
+			accountDto.setIsDelete(bookingRoom.getAccount().getIsDelete());
+			accountDto.setRoleDto(roleDto);
+		}
 
 		BookingDto bookingDto = new BookingDto();
 		bookingDto.setId(bookingRoom.getBooking().getId());
@@ -94,7 +94,6 @@ public class BookingRoomService {
 		accountBookingDto.setGender(bookingRoom.getBooking().getAccount().getGender());
 		accountBookingDto.setIsDelete(bookingRoom.getBooking().getAccount().getIsDelete());
 		bookingDto.setAccountDto(accountBookingDto);
-
 		StatusRoomDto statusRoomDto = new StatusRoomDto();
 		statusRoomDto.setId(bookingRoom.getRoom().getStatusRoom().getId());
 		statusRoomDto.setStatusRoomName(bookingRoom.getRoom().getStatusRoom().getStatusRoomName());
