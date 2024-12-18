@@ -22,4 +22,5 @@ public class accountHistoryDto {
     List<BookingRoomDto> bookingRooms;
     List<InvoiceDto> invoiceDtos;
     String disCountName;
+    Double discountPercent;
 }

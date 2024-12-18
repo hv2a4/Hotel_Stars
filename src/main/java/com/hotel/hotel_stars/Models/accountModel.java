@@ -11,7 +11,6 @@ public class accountModel {
     @NotBlank(message = "Không được bỏ trống username")
     private String username;
 
-    @NotBlank(message = "Không được bỏ trống passwords")
     @Size(min = 6, message = "Mật khẩu phải có ít nhất 6 ký tự")
     private String passwords;
 

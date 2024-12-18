@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.hotel.hotel_stars.Config.JwtService;
 import com.hotel.hotel_stars.Config.UserInfoService;
 import com.hotel.hotel_stars.DTO.AccountDto;
+import com.hotel.hotel_stars.DTO.StatusResponseDto;
 import com.hotel.hotel_stars.Exception.CustomValidationException;
 import com.hotel.hotel_stars.Models.accountModel;
 import com.hotel.hotel_stars.Models.changePasswordModel;
@@ -206,7 +207,6 @@ public class AccountController {
 
 	@PutMapping("/updateAccount")
 	public ResponseEntity<?> update(@RequestBody accountModel accountModels) {
-		System.out.println(accountModels.getGender() + "  giới tính");
 		Map<String, String> response = new HashMap<String, String>();
 		System.out.println(accountModels.getUsername());
 		boolean flag = accountService.updateProfiles(accountModels);
@@ -219,4 +219,14 @@ public class AccountController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 	}
+	@DeleteMapping("/deleteAccount/{id}")
+	public StatusResponseDto delete(@PathVariable Integer id) {
+	    boolean result = accountService.deleteAccountEmployee(id);
+	    if (result) {
+	    	return new StatusResponseDto("200","success","Xóa nhân viên thành công");
+	    } else {
+	        return new StatusResponseDto("400","error","Nhân viên này đã xác nhận hóa đơn không thể xóa");
+	    }
+	}
+
 }

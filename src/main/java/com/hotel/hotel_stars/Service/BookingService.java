@@ -545,6 +545,7 @@ public class BookingService {
 		}
         
         dto.setDisCountName(booking.getDiscountName());
+        dto.setDiscountPercent(booking.getDiscountPercent());
 
         // Kiểm tra null trước khi tạo MethodPaymentDto
         if (booking.getMethodPayment() != null) {
@@ -771,6 +772,7 @@ public class BookingService {
         bookingDto.setEndAt(bookingRoom.getBooking().getEndAt());
         bookingDto.setDescriptions(bookingRoom.getBooking().getDescriptions());
         bookingDto.setStatusPayment(bookingRoom.getBooking().getStatusPayment());
+        bookingDto.setDiscountPercent(bookingRoom.getBooking().getDiscountPercent());
         StatusBookingDto statusBookingDto = new StatusBookingDto();
         statusBookingDto.setStatusBookingName(bookingRoom.getBooking().getStatus().getStatusBookingName());
         statusBookingDto.setId(bookingRoom.getBooking().getStatus().getId());

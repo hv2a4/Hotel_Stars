@@ -34,5 +34,6 @@ public class BookingDto implements Serializable {
     AccountDto accountDto;
     MethodPaymentDto methodPaymentDto;
     String discountName;
+    Double discountPercent;
     //List<BookingRoomDto> bookingRooms;
 }

@@ -551,6 +551,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/invoice/getAll-statistics").permitAll()
                                 .requestMatchers("/api/invoice/maintenance").permitAll()
                                 .requestMatchers("/api/invoice/getAll-reservation").permitAll()
+                                .requestMatchers("/api/account/deleteAccount/**").permitAll()
                                 .requestMatchers("/api/booking/by-start-date-with-invoice").permitAll()
                                 .requestMatchers("/api/booking/update-status/**").permitAll()
                                 .requestMatchers("/api/booking/update-checkIn/**").permitAll()
