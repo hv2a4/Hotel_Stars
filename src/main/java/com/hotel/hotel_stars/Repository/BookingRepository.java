@@ -275,7 +275,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
             "ROUND((COUNT(DISTINCT br.room_id) / (SELECT COUNT(DISTINCT r.id) FROM room r)) * 100, 2) AS usagePercentage " +
             "FROM booking_room br " +
             "JOIN booking ON br.booking_id = booking.id " +
-            "WHERE booking.status_id = 7 " +
+            "WHERE booking.status_id = 4 " +
             "AND (" +
             "    (br.check_in < :endDate AND br.check_out > :startDate) " +
             "    OR " +

@@ -8,9 +8,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.hotel.hotel_stars.DTO.Select.*;
+import com.hotel.hotel_stars.Repository.TypeRoomRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -47,7 +49,8 @@ public class RoomService {
     ModelMapper modelMapper;
     @Autowired
     StatusRoomRepository statusRoomRepository;
-
+    @Autowired
+    TypeRoomRepository typeRoomRepository;
     @Autowired
     TypeRoomImageRepository typeRoomImageRepository;
 
@@ -434,9 +437,41 @@ public class RoomService {
                 }
             }
         }
-
         // Trả về đối tượng DTO với giá trị mặc định nếu không có kết quả
         return new RoomOccupancyDTO(0L, 0L, 0.0);  // Giá trị mặc định nếu không có kết quả
     }
 
+    public List<RoomRevenueDTO> getTopRoomRevenue(Integer filterOption) {
+        // Lấy kết quả từ repository
+        List<Object[]> result = roomRepository.getTopRoomRevenue(filterOption);
+        // Sau khi kiểm tra kiểu dữ liệu, bạn có thể tiếp tục chuyển đổi Object[] thành DTO
+        List<RoomRevenueDTO> roomRevenueDTOList = new ArrayList<>();
+        result.forEach(row -> {
+            RoomRevenueDTO dto = new RoomRevenueDTO();
+            Integer type_id = (Integer) row[0]; // Lấy type_id từ mảng
+            Optional<TypeRoom> typeRoomOpt = typeRoomRepository.findById(type_id);
+
+            if (typeRoomOpt.isPresent()) {
+                TypeRoom typeRoom = typeRoomOpt.get();
+
+                // Tạo đối tượng TypeRoomDto và ánh xạ từ typeRoom sang typeRoomDto
+                TypeRoomDto typeRoomDto = new TypeRoomDto();
+                modelMapper.map(typeRoom, typeRoomDto);  // Sửa lại ánh xạ từ typeRoom sang typeRoomDto
+                dto.setTypeRoomId(typeRoomDto); // Kiểm tra kiểu là Integer
+            } else {
+                // Nếu không tìm thấy TypeRoom, xử lý trường hợp không có dữ liệu
+                System.out.println("Không tìm thấy TypeRoom với ID: " + type_id);
+            }
+            dto.setTypeRoomName((String) row[1]); // Kiểm tra kiểu là String
+            dto.setRevenue((Double) row[2]); // Kiểm tra kiểu là Double
+            dto.setBookingCount((Long) row[3]); // Kiểm tra kiểu là Long
+            dto.setAvgRevenuePerBooking((Double) row[4]); // Kiểm tra kiểu là Double
+            dto.setAvgDiscountPercent((Double) row[5]); // Kiểm tra kiểu là Double
+            dto.setRevenuePercentage((Double) row[6]); // Kiểm tra kiểu là Double
+
+            roomRevenueDTOList.add(dto);
+        });
+
+        return roomRevenueDTOList;
+    }
 }

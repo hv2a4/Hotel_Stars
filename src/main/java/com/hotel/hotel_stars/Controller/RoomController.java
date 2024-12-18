@@ -181,7 +181,7 @@ public class RoomController {
         return ResponseEntity.ok(roomService.getListById(roomId));
     }
 
-    @GetMapping("/room-usage")
+    @GetMapping("/room-occupancy")
     public ResponseEntity<?> getRoomOccupancy(@RequestParam(required = false) String startDate,
                                               @RequestParam(required = false) String endDate) {
         if ("null".equals(startDate)) {
@@ -195,5 +195,10 @@ public class RoomController {
 
         // Trả về kết quả
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("top-5-type-room")
+    public ResponseEntity<?> getTopRoomRevenue(@RequestParam Integer filterOption) {
+        return ResponseEntity.ok(roomService.getTopRoomRevenue(filterOption));
     }
 }

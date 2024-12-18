@@ -143,7 +143,7 @@ public class SecurityConfig {
                                                                 "/api/image/getAll",
                                                                 "/api/service-hotel/getAll",
                                                                 "/api/discount-accounts/getAll",
-                                                                "/api/booking/room-occupancy"
+                                                                "/api/booking/room-usage"
                                                                 )
                                                 .permitAll()
 
@@ -340,7 +340,7 @@ public class SecurityConfig {
                                         "/api/image/getAll",
                                         "/api/service-hotel/getAll",
                                         "/api/discount-accounts/getAll",
-                                        "/api/room/list-room-id","/api/room/room-usage"
+                                        "/api/room/list-room-id","/api/room/room-occupancy"
                                 )
                                 .permitAll()
 
@@ -355,7 +355,9 @@ public class SecurityConfig {
                                 .requestMatchers("/api/room/getCountRoom").permitAll()
                                 .requestMatchers("/api/booking/confirmBooking").permitAll()
                                 .requestMatchers("/api/type-room/find-type-room",
-                                        "/api/amenitiesHotel/getAll")
+                                        "/api/amenitiesHotel/getAll",
+                                        "/api/room/top-5-type-room"
+                                        )
                                 .permitAll()
                                 // nghia
 

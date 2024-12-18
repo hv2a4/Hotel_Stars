@@ -312,7 +312,7 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
             "ROUND((COUNT(DISTINCT br.room_id) / (SELECT COUNT(DISTINCT r.id) FROM room r)) * 100, 2) AS usagePercentage " +
             "FROM booking_room br " +
             "JOIN booking ON br.booking_id = booking.id " +
-            "WHERE booking.status_id = 4 " +
+            "WHERE booking.status_id = 7 " +
             "AND (" +
             "    (DATE(br.check_in) < COALESCE(:endDate, CURRENT_DATE) " +
             "     AND DATE(br.check_out) > COALESCE(:startDate, CURRENT_DATE)) " +
@@ -321,4 +321,42 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
             ")", nativeQuery = true)
     Object[] findRoomOccupancy(@Param("startDate") String startDate, @Param("endDate") String endDate);
 
+    @Query(value = "SELECT tr.id as typeRoomId, " +
+            "tr.type_room_name AS typeRoomName, " +
+            "SUM(i.total_amount - IFNULL(i.total_amount * b.discount_percent / 100, 0)) AS revenue, " +
+            "COUNT(br.id) AS bookingCount, " +
+            "SUM(i.total_amount - IFNULL(i.total_amount * b.discount_percent / 100, 0)) / NULLIF(COUNT(br.id), 0) AS avgRevenuePerBooking, " +
+            "AVG(IFNULL(b.discount_percent, 0)) AS avgDiscountPercent, " +
+            "(SUM(i.total_amount - IFNULL(i.total_amount * b.discount_percent / 100, 0)) / " +
+            "(SELECT SUM(i2.total_amount - IFNULL(i2.total_amount * b2.discount_percent / 100, 0)) " +
+            "FROM booking_room br2 " +
+            "JOIN booking b2 ON br2.booking_id = b2.id " +
+            "JOIN invoice i2 ON b2.id = i2.booking_id " +
+            "WHERE " +
+            "CASE " +
+            "WHEN :filterOption = 1 THEN DATE(b2.create_at) = CURDATE() " +
+            "WHEN :filterOption = 2 THEN DATE(b2.create_at) = CURDATE() - INTERVAL 1 DAY " +
+            "WHEN :filterOption = 3 THEN DATE(b2.create_at) >= CURDATE() - INTERVAL 7 DAY " +
+            "WHEN :filterOption = 4 THEN MONTH(b2.create_at) = MONTH(CURDATE()) AND YEAR(b2.create_at) = YEAR(CURDATE()) " +
+            "WHEN :filterOption = 5 THEN MONTH(b2.create_at) = MONTH(CURDATE() - INTERVAL 1 MONTH) " +
+            "AND YEAR(b2.create_at) = YEAR(CURDATE() - INTERVAL 1 MONTH) " +
+            "END) * 100) AS revenuePercentage " +
+            "FROM booking_room br " +
+            "JOIN room r ON br.room_id = r.id " +
+            "JOIN type_room tr ON r.type_room_id = tr.id " +
+            "JOIN booking b ON br.booking_id = b.id " +
+            "JOIN invoice i ON b.id = i.booking_id " +
+            "WHERE " +
+            "CASE " +
+            "WHEN :filterOption = 1 THEN DATE(b.create_at) = CURDATE() " +
+            "WHEN :filterOption = 2 THEN DATE(b.create_at) = CURDATE() - INTERVAL 1 DAY " +
+            "WHEN :filterOption = 3 THEN DATE(b.create_at) >= CURDATE() - INTERVAL 7 DAY " +
+            "WHEN :filterOption = 4 THEN MONTH(b.create_at) = MONTH(CURDATE()) AND YEAR(b.create_at) = YEAR(CURDATE()) " +
+            "WHEN :filterOption = 5 THEN MONTH(b.create_at) = MONTH(CURDATE() - INTERVAL 1 MONTH) " +
+            "AND YEAR(b.create_at) = YEAR(CURDATE() - INTERVAL 1 MONTH) " +
+            "END " +
+            "GROUP BY tr.type_room_name , tr.id " +
+            "ORDER BY revenue DESC " +
+            "LIMIT 5", nativeQuery = true)
+    List<Object[]> getTopRoomRevenue(@Param("filterOption") Integer filterOption);
 }

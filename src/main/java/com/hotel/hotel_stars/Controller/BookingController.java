@@ -382,7 +382,7 @@ public class BookingController {
         }
     }
 
-    @GetMapping("/room-occupancy")
+    @GetMapping("/room-usage")
     public ResponseEntity<?> getRoomUsage(
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate) {
