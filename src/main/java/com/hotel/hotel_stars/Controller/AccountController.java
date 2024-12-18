@@ -228,7 +228,11 @@ public class AccountController {
     }
 
     @PutMapping("/updateAccount")
-    public ResponseEntity<?> update(@RequestBody accountModel accountModels) {
+    public ResponseEntity<?> update(@Valid @RequestBody accountModel accountModels) {
+        StatusResponseDto statusResponseDto = errorsServices.errorUpdateProfile(accountModels);
+        if (statusResponseDto != null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(statusResponseDto);
+        }
         Map<String, String> response = new HashMap<String, String>();
         boolean flag = accountService.updateProfiles(accountModels);
         if (flag) {
@@ -292,7 +296,7 @@ public class AccountController {
     }
 
     @PutMapping("/updateAccountCustomer")
-    public ResponseEntity<?> updateProfile(@RequestBody accountModel accountModels) {
+    public ResponseEntity<?> updateProfile(@Valid @RequestBody accountModel accountModels) {
         StatusResponseDto statusResponseDto = errorsServices.errorUpdateProfile(accountModels);
         if (statusResponseDto != null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(statusResponseDto);

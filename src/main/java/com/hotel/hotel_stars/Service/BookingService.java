@@ -887,7 +887,7 @@ public class BookingService {
 					String discountName = booking.getDiscountName();
 					Double discountPercent = booking.getDiscountPercent();
 					Integer statusBookingID = booking.getStatus().getId();
-					// Tạo BookingHistoryDTOs với thông tin đầy đủ
+					// Tạo BookingHistory	DTOs với thông tin đầy đủ
 					return new BookingHistoryDTOs(
 							(Integer) objects[0], // bk_id
 							(String) objects[1], // bkformat

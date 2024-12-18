@@ -2,10 +2,7 @@ package com.hotel.hotel_stars.Exception;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import com.hotel.hotel_stars.Entity.Booking;
 import com.hotel.hotel_stars.Entity.Invoice;
@@ -89,7 +86,7 @@ public class ErrorsService {
                 }
             }
         }
-        if(bookingModels.getRoomId().size()>7){
+        if (bookingModels.getRoomId().size() > 7) {
             responseDto.setCode("400");
             responseDto.setStatus("error");
             responseDto.setMessage("Vui lòng không đặt quá 7 phòng trong một lần.");
@@ -119,7 +116,7 @@ public class ErrorsService {
             errors.add(new ValidationError("room", "Id: " + rooms.getId() + ", " + "Phòng: " + rooms.getRoomName() + ", Loại phòng: " + rooms.getTypeRoom().getTypeRoomName() + ", Đã có người đặt rồi"));
             responseDto.setCode("400");
             responseDto.setStatus("error");
-            responseDto.setMessage("Từ: " + bookingModels.getStartDate() + " đến " + bookingModels.getEndDate() + "," + rooms.getRoomName()+", Đã có người đặt rồi");
+            responseDto.setMessage("Từ: " + bookingModels.getStartDate() + " đến " + bookingModels.getEndDate() + "," + rooms.getRoomName() + ", Đã có người đặt rồi");
             return responseDto;
         }
 
@@ -129,27 +126,27 @@ public class ErrorsService {
     public StatusResponseDto errorFeedBack(FeedbackModel feedbackModel) throws CustomValidationException {
 
         StatusResponseDto responseDto = new StatusResponseDto();
-        Optional<Invoice> invoice =invoiceRepository.findById(feedbackModel.getIdInvoice());
-        if(!invoice.isPresent()){
+        Optional<Invoice> invoice = invoiceRepository.findById(feedbackModel.getIdInvoice());
+        if (!invoice.isPresent()) {
             responseDto.setCode("400");
             responseDto.setStatus("error");
             responseDto.setMessage("Bạn cần có hóa đơn để trả phòng và đánh giá.");
             return responseDto;
         }
-        System.out.println("độ dài invoice: "+invoice.get().getFeedbackList().size());
-        if(invoice.get().getFeedbackList().size()>=1){
+        System.out.println("độ dài invoice: " + invoice.get().getFeedbackList().size());
+        if (invoice.get().getFeedbackList().size() >= 1) {
             responseDto.setCode("400");
             responseDto.setStatus("error");
             responseDto.setMessage("Bạn đã đánh giá rồi, không được đánh giá nữa");
             return responseDto;
         }
-        if(feedbackModel.getContent().isEmpty() || feedbackModel.getContent()==null){
+        if (feedbackModel.getContent().isEmpty() || feedbackModel.getContent() == null) {
             responseDto.setCode("400");
             responseDto.setStatus("error");
             responseDto.setMessage("Bạn cần nhập nội dung để đánh giá");
             return responseDto;
         }
-        if(feedbackModel.getStars()==0 || feedbackModel.getStars()==null){
+        if (feedbackModel.getStars() == 0 || feedbackModel.getStars() == null) {
             responseDto.setCode("400");
             responseDto.setStatus("error");
             responseDto.setMessage("Chúng tôi rất mong nhận được đánh giá của bạn! Vui lòng chọn số sao.");
@@ -158,23 +155,24 @@ public class ErrorsService {
 
         return null;
     }
+
     public StatusResponseDto errorDeleteBooking(DeleteBookingModel bookingModels) throws CustomValidationException {
         StatusResponseDto responseDto = new StatusResponseDto();
-        Optional<Booking> booking =bookingRepository.findById(bookingModels.getBookingId());
-        if(!booking.isPresent()){
+        Optional<Booking> booking = bookingRepository.findById(bookingModels.getBookingId());
+        if (!booking.isPresent()) {
             responseDto.setCode("400");
             responseDto.setStatus("error");
             responseDto.setMessage("Đơn đặt phòng này không tồn tại");
             return responseDto;
         }
-        Integer statusID=booking.get().getStatus().getId();
+        Integer statusID = booking.get().getStatus().getId();
         if (statusID != 1 && statusID != 2) {
             responseDto.setCode("400");
             responseDto.setStatus("error");
             responseDto.setMessage("Đơn đặt phòng này không thể hủy, Vui lòng liên hệ khách sạn!");
             return responseDto;
         }
-        if(bookingModels.getDescriptions().isEmpty() || bookingModels.getDescriptions()==null){
+        if (bookingModels.getDescriptions().isEmpty() || bookingModels.getDescriptions() == null) {
             responseDto.setCode("400");
             responseDto.setStatus("error");
             responseDto.setMessage("Bạn phải có lý do để hủy phòng!");
@@ -184,56 +182,10 @@ public class ErrorsService {
         return null;
     }
 
-    public StatusResponseDto errorUpdateProfile(accountModel accountModels) throws CustomValidationException {
-        StatusResponseDto responseDto = new StatusResponseDto();
-        Optional<Account> account=accountRepository.findByUsername(accountModels.getUsername());
-        if(!account.isPresent()){
-            responseDto.setCode("400");
-            responseDto.setStatus("error");
-            responseDto.setMessage("Người dùng này không tồn tại");
-            return responseDto;
-        }
-        if(accountModels.getEmail().isEmpty() ||accountModels.getEmail()==null){
-            responseDto.setCode("400");
-            responseDto.setStatus("error");
-            responseDto.setMessage("Email không được trống");
-            return responseDto;
-        }
-        if(accountModels.getPhone().isEmpty() ||accountModels.getEmail()==null){
-            responseDto.setCode("400");
-            responseDto.setStatus("error");
-            responseDto.setMessage("Số điện thoại không được để trống");
-            return responseDto;
-        }
-        boolean isPhoneNumberDuplicate = accountRepository.findAll().stream()
-                .anyMatch(acc ->
-                        !acc.getUsername().equals(accountModels.getUsername()) && // Loại trừ tài khoản hiện tại
-                                acc.getPhone().equals(accountModels.getPhone())    // Trùng số điện thoại
-                );
-        if (isPhoneNumberDuplicate) {
-            responseDto.setCode("400");
-            responseDto.setStatus("error");
-            responseDto.setMessage("Số điện thoại đã tồn tại trong hệ thống");
-            return responseDto;
-        }
-
-        boolean isEmailDuplicate =accountRepository.findAll().stream()
-                .anyMatch(acc ->
-                        !acc.getUsername().equals(accountModels.getUsername()) && // Loại trừ tài khoản hiện tại
-                                acc.getEmail().equals(accountModels.getEmail())    // Trùng số điện thoại
-                );
-        if (isEmailDuplicate) {
-            responseDto.setCode("400");
-            responseDto.setStatus("error");
-            responseDto.setMessage("Email đã tồn tại trong hệ thống");
-            return responseDto;
-        }
-        return null;
-    }
     public StatusResponseDto errorRegister(accountModel accountModels) throws CustomValidationException {
         StatusResponseDto responseDto = new StatusResponseDto();
-        Optional<Account> account=accountRepository.findByUsername(accountModels.getUsername());
-        if(account.isPresent()){
+        Optional<Account> account = accountRepository.findByUsername(accountModels.getUsername());
+        if (account.isPresent()) {
             responseDto.setCode("400");
             responseDto.setStatus("error");
             responseDto.setMessage("Tên tài khoản đã tồn tại");
@@ -338,4 +290,53 @@ public class ErrorsService {
                 .orElse(false);
     }
 
+    public StatusResponseDto errorUpdateProfile(accountModel accountModels) throws CustomValidationException {
+        StatusResponseDto responseDto = new StatusResponseDto();
+        Optional<Account> account = accountRepository.findByUsername(accountModels.getUsername());
+        if (!account.isPresent()) {
+            responseDto.setCode("400");
+            responseDto.setStatus("error");
+            responseDto.setMessage("Người dùng này không tồn tại");
+            return responseDto;
+        }
+        if (accountModels.getEmail().isEmpty() || accountModels.getEmail() == null) {
+            responseDto.setCode("400");
+            responseDto.setStatus("error");
+            responseDto.setMessage("Email không được trống");
+            return responseDto;
+        }
+        if (accountModels.getPhone().isEmpty() || accountModels.getEmail() == null) {
+            responseDto.setCode("400");
+            responseDto.setStatus("error");
+            responseDto.setMessage("Số điện thoại không được để trống");
+            return responseDto;
+        }
+
+        boolean isPhoneNumberDuplicate = accountModels.getPhone() != null &&
+                accountRepository.findAll().stream()
+                        .anyMatch(acc ->
+                                !Objects.equals(acc.getUsername(), accountModels.getUsername()) && // Loại trừ tài khoản hiện tại
+                                        Objects.equals(acc.getPhone(), accountModels.getPhone())       // Kiểm tra trùng số điện thoại
+                        );
+        if (isPhoneNumberDuplicate) {
+            responseDto.setCode("400");
+            responseDto.setStatus("error");
+            responseDto.setMessage("Số điện thoại đã tồn tại trong hệ thống");
+            return responseDto;
+        }
+
+        boolean isEmailDuplicate = accountModels.getEmail() != null &&
+                accountRepository.findAll().stream()
+                        .anyMatch(acc ->
+                                !Objects.equals(acc.getUsername(), accountModels.getUsername()) && // Loại trừ tài khoản hiện tại
+                                        Objects.equals(acc.getEmail(), accountModels.getEmail())        // Kiểm tra trùng email
+                        );
+        if (isEmailDuplicate) {
+            responseDto.setCode("400");
+            responseDto.setStatus("error");
+            responseDto.setMessage("Email đã tồn tại trong hệ thống");
+            return responseDto;
+        }
+        return null;
+    }
 }
