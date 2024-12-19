@@ -45,8 +45,8 @@ public class ServiceRoomService {
     // chuyển đổi entity sang dto (đổ dữ liệu lên web)
     public ServiceRoomDto convertToDto(ServiceRoom sr) {
         ServiceRoomDto serviceRoomDto = new ServiceRoomDto();
-        List<BookingRoomServiceRoomDto> bookingRoomServiceRoomDtos = sr.getBookingRoomServiceRooms().stream().map(this::convertDto).toList();
-        serviceRoomDto.setBookingRoomServiceRooms(bookingRoomServiceRoomDtos);
+//        List<BookingRoomServiceRoomDto> bookingRoomServiceRoomDtos = sr.getBookingRoomServiceRooms().stream().map(this::convertDto).toList();
+//        serviceRoomDto.setBookingRoomServiceRooms(bookingRoomServiceRoomDtos);
         serviceRoomDto.setId(sr.getId());
         serviceRoomDto.setImageName(sr.getImageName());
         serviceRoomDto.setPrice(sr.getPrice());
@@ -94,7 +94,6 @@ public class ServiceRoomService {
         try {
             ServiceRoom sr = new ServiceRoom();
             TypeServiceRoom typeServiceRoom = typeRoomServiceRepository.findById(srmodel.getTypeServiceRoom()).get();
-
             sr.setServiceRoomName(srmodel.getServiceRoomName());
             sr.setPrice(srmodel.getPrice());
             sr.setImageName(srmodel.getImageName());
@@ -106,7 +105,8 @@ public class ServiceRoomService {
         } catch (DataIntegrityViolationException e) {
             throw new RuntimeException("Có lỗi xảy ra do vi phạm tính toàn vẹn dữ liệu", e);
         } catch (Exception e) {
-            throw new RuntimeException("Có lỗi xảy ra khi thêm dịch vụ phòng!", e);
+            e.printStackTrace();
+            throw new RuntimeException("", e);
         }
     }
 
@@ -148,6 +148,7 @@ public class ServiceRoomService {
         	TypeServiceRoom typeServiceRoom = typeRoomServiceRepository.findById(srmodel.getTypeServiceRoom()).get();
             existingServiceRoom.setServiceRoomName(srmodel.getServiceRoomName());
             existingServiceRoom.setPrice(srmodel.getPrice());
+            System.out.println(srmodel.getImageName());
             existingServiceRoom.setImageName(srmodel.getImageName());
             existingServiceRoom.setTypeServiceRoomId(typeServiceRoom);
             // Lưu tài khoản đã cập nhật vào cơ sở dữ liệu và chuyển đổi sang DTO

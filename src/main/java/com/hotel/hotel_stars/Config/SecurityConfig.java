@@ -164,7 +164,7 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/type-room/find-type-room",
                                                                 "/api/amenitiesHotel/getAll",
                                                                 "/api/list-controller/get-staff",
-                                                                "/api/feedback/get-all-use"
+                                                                "/api/feedback/get-all-use",  "/api/account/update-account-staff/**"
                                                                 )
                                                 .permitAll()
                                                 // nghia
@@ -212,7 +212,6 @@ public class SecurityConfig {
 
                                                 .requestMatchers(
                                                                 "/api/account/login",
-                                                                "/api/account/update-account-staff/{id}",
                                                                 "/api/account/delete-account-staff/{id}",
                                                                 "api/hotel/update-hotel/{id}",
                                                                 "api/overview/room-types/get-all",
@@ -409,7 +408,6 @@ public class SecurityConfig {
 
                                 .requestMatchers(
                                         "/api/account/login",
-                                        "/api/account/update-account-staff/{id}",
                                         "/api/account/delete-account-staff/{id}",
                                         "api/hotel/update-hotel/{id}",
                                         "api/overview/room-types/get-all",

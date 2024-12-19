@@ -41,14 +41,8 @@ public class TypeRoomServiceController {
 	
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<String> deleteTypeRoomService(@PathVariable Integer id) {
-	    try {
-	    	service.deleteTypeRoomService(id);
-	        return ResponseEntity.ok("Xóa thành công!");
-	    } catch (DataIntegrityViolationException e) {
-	        return ResponseEntity.status(HttpStatus.CONFLICT).body("Không thể xóa vì đang có dữ liệu liên quan!");
-	    } catch (Exception e) {
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Có lỗi xảy ra trong quá trình xóa!");
-	    }
+	    	String mesages = service.deleteTypeRoomService(id);
+	        return ResponseEntity.ok(mesages);
 	}
 
 }

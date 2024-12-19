@@ -555,13 +555,10 @@ public class AccountService {
     }
 
     public boolean updateProfiles(accountModel accountModels) {
-        System.out.println(accountModels);
         if (accountModels == null) {
             return false;
         }
         Optional<Account> getAccount = accountRepository.findByUsername(accountModels.getUsername());
-        System.out.println("tài khoản được tìm thấy: " + getAccount.get().getUsername());
-        System.out.println("id được tìm thấy: " + getAccount.get().getId());
         getAccount.get().setEmail(accountModels.getEmail());
         getAccount.get().setFullname(accountModels.getFullname());
         getAccount.get().setGender(accountModels.getGender());
@@ -608,44 +605,6 @@ public class AccountService {
     }
 
     public AccountDto AddAccountStaff(accountModel accountModel) {
-        List<ValidationError> validationErrors = new ArrayList<>(); // Danh sách lưu trữ các thông báo lỗi
-        System.out.println(accountModel.getAvatar());
-        if (!isValidUsername(accountModel.getUsername())) {
-            validationErrors.add(new ValidationError("username",
-                    "Tên người dùng không hợp lệ. Tên người dùng phải có ít nhất 6 ký tự và chỉ chứa chữ cái, số, dấu gạch dưới và dấu chấm, không được bắt đầu bằng số."));
-        }
-        // Kiểm tra xem các trường có giá trị hợp lệ hay không
-        if (accountModel.getUsername() == null || accountModel.getUsername().isEmpty()) {
-            validationErrors.add(new ValidationError("username", "Tên người dùng không được để trống"));
-        }
-        if (accountModel.getEmail() == null || accountModel.getEmail().isEmpty()) {
-            validationErrors.add(new ValidationError("email", "Email không được để trống"));
-        }
-        if (accountModel.getPhone() == null || accountModel.getPhone().isEmpty()) {
-            validationErrors.add(new ValidationError("phone", "Số điện thoại không được để trống"));
-        }
-        if (accountModel.getPasswords() == null || accountModel.getPasswords().length() < 6) {
-            validationErrors.add(new ValidationError("passwords", "Mật khẩu phải có ít nhất 6 ký tự"));
-        }
-        // Kiểm tra xem tên người dùng, email và số điện thoại đã tồn tại hay chưa
-        if (accountRepository.existsByUsername(accountModel.getUsername())) {
-            validationErrors.add(new ValidationError("username", "Tên người dùng đã tồn tại"));
-        }
-        if (accountRepository.existsByEmail(accountModel.getEmail())) {
-            validationErrors.add(new ValidationError("email", "Email đã tồn tại"));
-        }
-        if (accountRepository.existsByPhone(accountModel.getPhone())) {
-            validationErrors.add(new ValidationError("phone", "Số điện thoại đã tồn tại"));
-        }
-        if (!isValidPhoneNumber(accountModel.getPhone())) {
-            validationErrors.add(new ValidationError("phone", "Số điện thoại không hợp lệ"));
-        }
-
-        // Nếu có lỗi, ném ngoại lệ với thông báo lỗi
-        if (!validationErrors.isEmpty()) {
-            throw new CustomValidationException(validationErrors); // Ném ngoại lệ tùy chỉnh
-        }
-
         try {
             // Tạo đối tượng Role và thiết lập ID
             Role role = new Role();
@@ -685,19 +644,12 @@ public class AccountService {
 
 		Account existingAccount = existingAccountOpt.get();
 
-		boolean isPhoneNumberDuplicate = accountRepository.findAll().stream()
-				.anyMatch(acc -> acc.getPhone()==(accountModel.getPhone()));
-		System.out.println(isPhoneNumberDuplicate);
-
-		boolean isEmailDuplicate = accountRepository.findAll().stream()
-				.anyMatch(acc -> acc.getEmail()==(accountModel.getEmail()));
 		try {
 			// Cập nhật các thuộc tính cho tài khoản
 			existingAccount.setUsername(accountModel.getUsername());
 			existingAccount.setFullname(accountModel.getFullname());
 			existingAccount.setPhone(accountModel.getPhone());
 			existingAccount.setEmail(accountModel.getEmail());
-
 			// Kiểm tra và mã hóa mật khẩu nếu có thay đổi
 			if (accountModel.getPasswords() != null && !accountModel.getPasswords().isEmpty()) {
 				String encodedPassword = encoder.encode(accountModel.getPasswords());
@@ -705,7 +657,7 @@ public class AccountService {
 			}
 			existingAccount.setAvatar(accountModel.getAvatar());
 			existingAccount.setGender(accountModel.getGender());
-			existingAccount.setIsDelete(false); // Đảm bảo tài khoản không bị xóa
+			existingAccount.setIsDelete(true); // Đảm bảo tài khoản không bị xóa
 
 			// Lưu tài khoản đã cập nhật vào cơ sở dữ liệu và chuyển đổi sang DTO
 			Account updatedAccount = accountRepository.save(existingAccount);

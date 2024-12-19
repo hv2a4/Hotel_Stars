@@ -212,64 +212,43 @@ public class ErrorsService {
         return null;
     }
 
-    public StatusResponseDto errorAccountStaff(accountModel accountModel, boolean isUpdate) throws CustomValidationException {
+    public void  errorAccountStaff(accountModel accountModel, boolean isUpdate) {
         StatusResponseDto responseDto = new StatusResponseDto();
 
         // Kiểm tra các trường bắt buộc
         if (accountModel.getUsername() == null || accountModel.getUsername().isEmpty()) {
-            responseDto.setCode("400");
-            responseDto.setStatus("error");
-            responseDto.setMessage("Username không được để trống");
-            return responseDto;
+
+            throw new RuntimeException("Username không được để trống!");
         }
         if (accountModel.getEmail() == null || accountModel.getEmail().isEmpty()) {
-            responseDto.setCode("400");
-            responseDto.setStatus("error");
-            responseDto.setMessage("Email không được để trống");
-            return responseDto;
+
+            throw new RuntimeException("Email không được để trống!");
         }
         if (accountModel.getPhone() == null || accountModel.getPhone().isEmpty()) {
-            responseDto.setCode("400");
-            responseDto.setStatus("error");
-            responseDto.setMessage("Số điện thoại không được để trống");
-            return responseDto;
+            throw new RuntimeException("Số điện thoại không được để trống!");
         }
-        if (accountModel.getPasswords() == null || accountModel.getPasswords().length() < 6) {
-            responseDto.setCode("400");
-            responseDto.setStatus("error");
-            responseDto.setMessage("Mật khẩu phải có ít nhất 6 ký tự");
-            return responseDto;
+        if (!isUpdate && (accountModel.getPasswords() == null || accountModel.getPasswords().length() < 6)) {
+            throw new RuntimeException("Mật khẩu phải có ít nhất 6 ký tự!");
         }
 
         // Kiểm tra trùng lặp
         if (!isUpdate || !isSameUsername(accountModel)) {
             if (accountRepository.existsByUsername(accountModel.getUsername())) {
-                responseDto.setCode("400");
-                responseDto.setStatus("error");
-                responseDto.setMessage("Username đã tồn tại trong hệ thống");
-                return responseDto;
+                throw new RuntimeException("Username đã tồn tại trong hệ thống!");
             }
         }
 
         if (!isUpdate || !isSameEmail(accountModel)) {
             if (accountRepository.existsByEmail(accountModel.getEmail())) {
-                responseDto.setCode("400");
-                responseDto.setStatus("error");
-                responseDto.setMessage("Email đã tồn tại trong hệ thống");
-                return responseDto;
+                throw new RuntimeException("Email đã tồn tại trong hệ thống!");
             }
         }
 
         if (!isUpdate || !isSamePhone(accountModel)) {
             if (accountRepository.existsByPhone(accountModel.getPhone())) {
-                responseDto.setCode("400");
-                responseDto.setStatus("error");
-                responseDto.setMessage("Số điện thoại đã tồn tại trong hệ thống");
-                return responseDto;
+                throw new RuntimeException("Số điện thoại đã tồn tại trong hệ thống!");
             }
         }
-
-        return null;
     }
 
     private boolean isSameUsername(accountModel accountModel) {

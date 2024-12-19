@@ -141,32 +141,30 @@ public class AccountController {
     @PostMapping("add-account-staff")
     public ResponseEntity<?> addAccountStaff(@Valid @RequestBody accountModel accountModel) {
         // Kiểm tra lỗi cho thêm mới
-        StatusResponseDto statusResponseDto = errorsServices.errorAccountStaff(accountModel, false);
-        if (statusResponseDto != null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(statusResponseDto);
+        try {
+            errorsServices.errorAccountStaff(accountModel, false);
+            AccountDto createdAccount = accountService.AddAccountStaff(accountModel);
+            StatusResponseDto response = new StatusResponseDto("200", "SUCCESS", "Thêm nhân viên thành công!.");
+            return ResponseEntity.ok(response);
+        }catch (RuntimeException e){
+            StatusResponseDto response = new StatusResponseDto("400", "FAILURE", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
-        AccountDto createdAccount = accountService.AddAccountStaff(accountModel);
-        return ResponseEntity.ok(createdAccount);
     }
 
     @PutMapping("update-account-staff/{id}")
     public ResponseEntity<?> updateAccountStaff(@PathVariable Integer id,
                                                 @Valid @RequestBody accountModel accountModel) {
-        // Kiểm tra lỗi cho cập nhật
-        StatusResponseDto statusResponseDto = errorsServices.errorAccountStaff(accountModel, true);
-        if (statusResponseDto != null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(statusResponseDto);
-        }
         try {
+            errorsServices.errorAccountStaff(accountModel, true);
             // Gọi phương thức trong service để cập nhật tài khoản
             AccountDto updatedAccount = accountService.UpdateAccountStaff(id, accountModel);
-            return ResponseEntity.ok(updatedAccount); // Trả về tài khoản đã cập nhật
-        } catch (CustomValidationException ex) {
-            // Trả về lỗi xác thực với danh sách thông báo lỗi
-            return ResponseEntity.badRequest().body(ex.getErrorMessages());
-        } catch (RuntimeException ex) {
+            StatusResponseDto response = new StatusResponseDto("200", "SUCCESS", "Cập nhật nhân viên thành công!.");
+            return ResponseEntity.ok(response);
+        }catch (RuntimeException e) {
             // Trả về lỗi chung cho các lỗi không xác thực
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Có lỗi xảy ra: " + ex.getMessage());
+            StatusResponseDto response = new StatusResponseDto("400", "FAILURE", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 
